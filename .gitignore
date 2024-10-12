@@ -167,6 +167,7 @@ dist
 .pnp.*
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 .vscode/
 .tailwind.config.js/
 =======
@@ -176,3 +177,6 @@ dist
 =======
 .tailwind.config.js
 >>>>>>> 29086cc (added tail.config.js to .gitignore)
+=======
+.vscode/
+>>>>>>> 64465c3 (stopped tracking .vscode changes)
