@@ -166,5 +166,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+.vscode/
 .vscode
 .tailwind.config.js
