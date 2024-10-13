@@ -171,4 +171,8 @@ dist
 .tailwind.config.js/
 =======
 .vscode
+<<<<<<< HEAD
 >>>>>>> ffb1217 (updated gitignore)
+=======
+.tailwind.config.js
+>>>>>>> 29086cc (added tail.config.js to .gitignore)
