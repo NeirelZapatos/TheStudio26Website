@@ -167,5 +167,4 @@ dist
 .pnp.*
 
 .vscode/
-.vscode
-.tailwind.config.js
+.tailwind.config.js/
