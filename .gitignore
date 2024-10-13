@@ -170,6 +170,7 @@ dist
 <<<<<<< HEAD
 .vscode/
 .tailwind.config.js/
+<<<<<<< HEAD
 =======
 .vscode
 <<<<<<< HEAD
@@ -180,3 +181,5 @@ dist
 =======
 .vscode/
 >>>>>>> 64465c3 (stopped tracking .vscode changes)
+=======
+>>>>>>> 21f97b8 (added tailwind.config.js to .gitignore)
