@@ -25,15 +25,15 @@ const Footer = () => (
 );
 
 export default function Calendar() {
-    return (
-      <StrictMode>
-        <div>
-          <Header />
-          <main className="flex-grow p-4">
-            Body
-          </main>
-          <Footer />
-        </div>
-      </StrictMode>
-    );
-  }
+  return (
+    <StrictMode>
+      <div>
+        <Header />
+        <main className="flex-grow p-4">
+          Body
+        </main>
+        <Footer />
+      </div>
+    </StrictMode>
+  );
+}
