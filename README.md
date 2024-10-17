@@ -3,6 +3,7 @@
 ### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Alexander Bass, Priyatham Dasigandla
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Developed by: Zachary Attiya, 
 
 ## Getting Started
 
