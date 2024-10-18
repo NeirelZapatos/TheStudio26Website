@@ -4,8 +4,12 @@
 
 =======
 ## TheStudio26Website Developed
+<<<<<<< HEAD
 # by: Zachary Attiya, Neirel Zapatos
 >>>>>>> 821e4dc (S26W-99)
+=======
+### Developed by: Zachary Attiya, Neirel Zapatos
+>>>>>>> 4b74e1f (Fixed formatted for readme)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
