@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## TheStudio26Website
 ### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Alexander Bass, Priyatham Dasigandla
 
@@ -8,6 +9,9 @@
 # by: Zachary Attiya, Neirel Zapatos
 >>>>>>> 821e4dc (S26W-99)
 =======
+=======
+## TheStudio26Website
+>>>>>>> ddc3164 (Removed redundant wording)
 ### Developed by: Zachary Attiya, Neirel Zapatos
 >>>>>>> 4b74e1f (Fixed formatted for readme)
 
