@@ -1,5 +1,5 @@
 ## TheStudio26Website Developed
-# by: Zachary Attiya, Neirel Zapatos
+### Developed by: Zachary Attiya, Neirel Zapatos
 
 ### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Alexander Bass, Priyatham Dasigandla
 
