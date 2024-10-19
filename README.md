@@ -1,5 +1,5 @@
 ## TheStudio26Website
-### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza
+### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, 
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
