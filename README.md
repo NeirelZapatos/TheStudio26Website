@@ -1,5 +1,9 @@
 ## TheStudio26Website
+<<<<<<< HEAD
 ### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Priyatham Dasigandla
+=======
+### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Alexander Bass
+>>>>>>> b1f56dca2787d77a70e3940b93de78471cda8a24
 
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
