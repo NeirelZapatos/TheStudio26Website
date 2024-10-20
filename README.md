@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## TheStudio26Website
 ### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Alexander Bass, Priyatham Dasigandla
 
@@ -14,6 +15,11 @@
 >>>>>>> ddc3164 (Removed redundant wording)
 ### Developed by: Zachary Attiya, Neirel Zapatos
 >>>>>>> 4b74e1f (Fixed formatted for readme)
+=======
+## TheStudio26Website
+### Developed by: Zachary Attiya, Neirel Zapatos, Alexandrea Mendoza, Omar Betancourt, Ray Laciste, Phillip Harris, Priyatham Dasigandla
+
+>>>>>>> 559c75f (Added name to README.md)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
