@@ -2,6 +2,7 @@ import Hero from "./test-components/Hero";
 import ClassCard from "./test-components/ClassCard";
 
 export default function Page() {
+
     return (
       <div className="flex w-full flex-col border-opacity-50">
         <Hero />
@@ -16,6 +17,6 @@ export default function Page() {
           <ClassCard />
         </div>
         <div className="divider"></div>
-      </div>
+      </div> 
     );
   }
