@@ -1,8 +1,8 @@
-import mongoose, { Document, Schema } from "mongoose"
+import mongoose, { Document, Schema, Types } from "mongoose"
 
 export interface IBooking extends Document {
-    course_id: string;
-    customer_id: string;
+    course_id: Types.ObjectId;
+    customer_id: Types.ObjectId;
     booking_date: Date;
     payment_status: string;
 }
@@ -11,10 +11,12 @@ export interface IBooking extends Document {
 const bookingSchema:Schema = new mongoose.Schema({
     course_id: {
         type: Schema.Types.ObjectId,
+        ref: 'Course',
         required: true,
     },
     customer_id: {
         type: Schema.Types.ObjectId,
+        ref: 'Customer',
         required: true,
     },
     booking_date: {
