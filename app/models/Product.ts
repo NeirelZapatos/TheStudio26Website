@@ -22,6 +22,7 @@ const productSchema:Schema = new mongoose.Schema({
     price: {
         type: Number,
         required: true,
+        min: 0
     },
     description: {
         type: String,
@@ -44,6 +45,7 @@ const productSchema:Schema = new mongoose.Schema({
     quantity_in_stock: {
         type: Number,
         required: true,
+        min: 0
     },
 });
 
