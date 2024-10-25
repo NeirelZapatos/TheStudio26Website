@@ -13,35 +13,41 @@ export interface IProduct extends Document {
     quantity_in_stock: number;
 }
 
-/*
+
 const productSchema:Schema = new mongoose.Schema({
     name: {
-
-    }
+        type: String,
+        required: true,
+    },
     price: {
-
-    }
+        type: Number,
+        required: true,
+    },
     description: {
-        
-    }
+        type: String,
+    },
     category: {
-        
-    }
+        type: String,
+    },
     material: {
-        
-    }
+        type: String,
+    },
     image_url: {
-
-    }
+        type: String,
+    },
     size: {
-        
-    }
+        type: String,
+    },
     color: {
-        
-    }
+        type: String,
+    },
     quantity_in_stock: {
-        
-    }
+        type: Number,
+        required: true,
+    },
 });
 
-*/
+const Product = mongoose.models.Product || mongoose.model<IProduct>('Product', productSchema);
+
+export default Product;
+
