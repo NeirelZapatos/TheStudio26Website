@@ -1,3 +1,5 @@
+// Bypassing this straight to product
+
 import mongoose, { Document, Schema, Types } from "mongoose"
 
 export interface IOrderItem extends Document {

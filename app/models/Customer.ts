@@ -1,14 +1,14 @@
-import mongoose, { Document, Schema } from "mongoose"
+import mongoose, { Document, Schema, Types } from "mongoose"
 
 export interface ICustomer extends Document {
     first_name: string;
     last_name: string;
     email: string;
-    phone_number: string;
+    phone_number: number;
     shipping_address: string;
     billing_address: string;
+    orders: Types.ObjectId[];
 }
-
 
 const customerSchema:Schema = new mongoose.Schema({
     first_name: {
@@ -24,14 +24,21 @@ const customerSchema:Schema = new mongoose.Schema({
         required: true,
     },
     phone_number: {
-        type: String,
+        type: Number,
     },
-    shipping_address: {
-        type: String,
-    },
-    billing_address: {
-        type: String,
-    },
+    orders: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Order'
+    }],
+    // hashed_password: { not required for scope
+    //     type: String
+    // },
+    // shipping_address: { For now lets store this is the orders area to make it less complicated
+    //     type: String,
+    // },
+    // billing_address: {
+    //     type: String,
+    // },
 });
 
 const Customer = mongoose.models.Customer || mongoose.model<ICustomer>('Customer', customerSchema);
