@@ -2,15 +2,16 @@ import mongoose, { Document, Schema, Types } from "mongoose"
 
 export interface IOrder extends Document {
     customer_id: Types.ObjectId;
-    products: [{
-        product: Types.ObjectId;
-        quantity: number;
-    }]
+    product_items: Types.ObjectId[];
     order_date: Date;
     total_amount: number;
     shipping_method: string;
     payment_method: string;
     order_status: 'pending' | 'shipped' | 'delivered';
+    // products: [{
+    //     product: Types.ObjectId;
+    //     quantity: number;
+    // }]
 }
 
 
@@ -20,18 +21,10 @@ const orderSchema:Schema = new mongoose.Schema({
         ref: 'Customer',
         required: true,
     },
-    products: {
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1
-        }
-    },
+    product_items: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Product'
+    }],
     order_date: {
         type: Date,
         required: true,
@@ -52,6 +45,26 @@ const orderSchema:Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    shipping_address: { 
+        type: String,
+        required: true
+    },
+    billing_address: {
+        type: String,
+        required: true
+    },
+//     products: {
+//         product: {
+//             type: Schema.Types.ObjectId,
+//             ref: 'Product',
+//             required: true
+//         },
+//         quantity: {
+//             type: Number,
+//             required: true,
+//             min: 1
+//         }
+//     },
 });
 
 const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', orderSchema);

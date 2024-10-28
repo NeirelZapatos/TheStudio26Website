@@ -9,15 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "daisyui": "^4.12.12",
     "dotenv": "^16.4.5",
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.2",
     "next": "14.2.14",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^20",
     "@types/react": "^18",
