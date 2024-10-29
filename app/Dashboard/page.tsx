@@ -9,7 +9,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="h-screen flex">
-      {/* Sidebar */}
+      {/* Sidebar Menu*/}
       <aside className="w-64 bg-gray-800 text-white p-4">
         <h2 className="text-2xl font-bold mb-8">Studio 26</h2>
         <nav className="space-y-2">
