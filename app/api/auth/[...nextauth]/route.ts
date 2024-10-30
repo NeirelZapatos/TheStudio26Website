@@ -23,19 +23,28 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials, req) {
-        if (!credentials?.email || !credentials.password) return null;
+        // if (!credentials?.email || !credentials.password) return null;
+        if (!credentials?.email || !credentials.password){
+          throw new Error("Email and password are required.");
+        }
 
         await dbConnect();
 
         const admin = await Admin.findOne({
           email: credentials.email,
         });
+        
+        if (!admin || !admin.hashed_password){
+          throw new Error("Incorrect Username or password");
+        }
 
-        if (!admin) return null;
+        // console.log("User password:", credentials.password);
+        // console.log("Stored hashed password:", admin.hashed_password);
+
 
         const passwordsMatch = await bcrypt.compare(
           credentials.password,
-          admin.hashedPassword!
+          admin.hashed_password
         );
 
         return passwordsMatch ? admin : null;
@@ -48,9 +57,6 @@ export const authOptions: NextAuthOptions = {
   theme: {
     colorScheme: "light", // Sets light mode
   },
-//   pages: {
-//     signIn: '/Login'
-//   }
 };
 
 export const handler = NextAuth(authOptions);
