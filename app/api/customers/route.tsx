@@ -11,16 +11,14 @@ export async function POST(request: NextRequest) {
 
         const validation = schema.safeParse(body);
         if (!validation.success) {
-            return NextResponse.json(validation.error.errors, {
+            return NextResponse.json({ errors: validation.error.errors }, {
                 status: 400
-            })
+            });
         }
 
         await dbConnect();
 
-        const customer = await Customer.findOne({
-            email: body.email
-        });
+        const customer = await Customer.findOne({ email: body.email });
 
         if (customer) {
             return NextResponse.json(
@@ -29,26 +27,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // const hashed_password = await bcrypt.hash(body.password, 10); // not required for scope
+       // const hashed_password = await bcrypt.hash(body.password, 10); // not required for scope
 
         const newCustomer = new Customer({
             "first_name": body.first_name,
             "last_name": body.last_name,
             "email": body.email,
-            // "hashed_password": hashed_password, // not required for scope
+            // "hashed_password": hashed_password, // Not required for scope
             "phone_number": body.phone_number,
-        })
+        });
 
         await newCustomer.save();
 
         return NextResponse.json({ email: newCustomer.email }, { status: 201 });
 
     } catch (err: unknown) {
+        // Handle any errors that occur during operation
         if (err instanceof Error) {
-            return NextResponse.json({ error: err.message }, { status: 500 })
+            console.error("Error in POST /api/customers:", err);
+            return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
-        return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
     }
 }
 
@@ -59,13 +59,38 @@ export async function GET(request: NextRequest) {
 
         const customers = await Customer.find({});
         return NextResponse.json(customers);
+
     } catch (err: unknown) {
         if (err instanceof Error) {
-            return NextResponse.json({ error: err.message }, { status: 500 })
+            console.error("Error in GET /api/customers:", err);
+            return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
-        return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
     }
 }
 
+// This deletes a customer from the database
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        await dbConnect();
 
+        // Find the customer by ID
+        const existingCustomer = await Customer.findById(params.id);
+        if (!existingCustomer) {
+            return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+        }
+
+        await Customer.deleteOne({ _id: params.id });
+
+        return NextResponse.json({ message: `Customer ${existingCustomer.email} deleted successfully` }, { status: 200 });
+
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            console.error("Error in DELETE /api/customers/[id]:", err);
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
+    }
+}
