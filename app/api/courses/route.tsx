@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
-import Order from '@/app/models/Order';
+import Course from '@/app/models/Course';
 
 export async function GET(request: NextRequest){
     try {
         await dbConnect();
 
-        const orders = await Order.find({});
-        return NextResponse.json(orders);
+        const courses = await Course.find({});
+        return NextResponse.json(courses);
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 })
@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
-        const newOrder = new Order(body);
-        await newOrder.save();
+        const newCourse = new Course(body);
+        await newCourse.save();
 
-        return NextResponse.json(newOrder, { status: 201 });
+        return NextResponse.json(newCourse, { status: 201 });
 
     } catch (err: unknown) {
         if (err instanceof Error) {
