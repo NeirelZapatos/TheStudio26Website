@@ -3,6 +3,20 @@ import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
 import Product from '@/app/models/Product';
 
+
+// JSON example for this endpoint
+// {
+//     "name": "Classic White T-Shirt",
+//     "price": 19.99,
+//     "description": "A classic white t-shirt made from 100% cotton, perfect for everyday wear.",
+//     "category": "Clothing",
+//     "material": "Cotton",
+//     "image_url": "https://example.com/images/classic-white-tshirt.jpg",
+//     "size": "M",
+//     "color": "White",
+//     "quantity_in_stock": 150
+// }
+
 export async function GET(request: NextRequest){
     try {
         await dbConnect();

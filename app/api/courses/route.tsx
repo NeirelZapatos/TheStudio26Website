@@ -1,7 +1,22 @@
+// might not be used
+
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
 import Course from '@/app/models/Course';
+
+// Example JSON to send to this endpoint
+// {
+//   "name": "Introduction to Web Development",
+//   "price": 299.99,
+//   "description": "A comprehensive course covering the fundamentals of web development, including HTML, CSS, and JavaScript.",
+//   "time": "10:00 AM",
+//   "duration": 4,
+//   "image_url": "https://example.com/images/web-development-course.jpg",
+//   "instructor": "John Doe",
+//   "location": "Room 101, Tech Building",
+//   "max_capacity": 30
+// }
 
 export async function GET(request: NextRequest){
     try {
@@ -23,7 +38,7 @@ export async function POST(request: NextRequest) {
         await dbConnect();
 
         const body = await request.json();
-        // body.order_date = new Date(body.order_date);
+        body.order_date = new Date();
         const validation = schema.safeParse(body);
 
         if (!validation.success) {

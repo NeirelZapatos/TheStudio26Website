@@ -4,7 +4,16 @@ import Customer from '@/app/models/Customer';
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 
-// This adds a customer to the database
+// Example JSON to to send to this endpoint
+// {
+//     "first_name": "Alice",
+//     "last_name": "Smith",
+//     "email": "alice.smith@example.com",
+//     "phone_number": 1234567890,
+//     "orders": ["671ef81602098f94990d0c0f", "671d62eb17058eb97e7c7f4e"],
+//     "courses": ["671d630017058eb97e7c7f52", "671d630017058eb97e7c7f53"]
+// }
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();

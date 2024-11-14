@@ -13,8 +13,8 @@ const objectIdSchema = z
 const schema = z.object({
   customer_id: objectIdSchema,
   product_items: z.array(objectIdSchema),
-//   order_date: z.date(),
-  order_date: z.string(),
+  order_date: z.date(),
+  // order_date: z.string(),
   total_amount: z.number().min(0, { message: "Total amount must be a positive number" }),
   shipping_method: z.string(),
   payment_method: z.string(),
