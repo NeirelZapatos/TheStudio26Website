@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useState } from "react";
-import Header2 from "../../Components/Header2";
-import Footer2 from "../../Components/Footer2";
 import EmailList from "../../Components/EmailList";
 import Image from "next/image";
 
@@ -36,7 +34,6 @@ const ClassCatalog: React.FC = () => {
 
   return (
     <div>
-      <Header2 />
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Class Catalog</h1>
 
@@ -126,7 +123,6 @@ const ClassCatalog: React.FC = () => {
       </div>
 
       <EmailList />
-      <Footer2 />
     </div>
   );
 };
