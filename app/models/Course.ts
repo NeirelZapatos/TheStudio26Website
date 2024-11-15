@@ -4,13 +4,14 @@ export interface ICourse extends Document {
     name: string;
     price: number;
     description: string;
-    date: Date;
+    date: String;
     time: string;
     duration: number;
     image_url: string;
     instructor: string;
     location: string;
     max_capacity: number;
+    stripeProductId: string;
 }
 
 
@@ -26,13 +27,21 @@ const courseSchema:Schema = new mongoose.Schema({
     description: {
         type: String,
     },
-    date: {
-        type: Date,
-        required: true,
-    },
-    time: {
+    purchaseType: {
         type: String,
         required: true,
+    },
+    date: {
+        type: String,
+        required: function(this: { purchaseType: string }) {
+            return this.purchaseType === "Course";
+        },
+    },
+    time: { 
+        type: String, 
+        required: function(this: { purchaseType: string }) { 
+            return this.purchaseType === 'Course'; 
+        }
     },
     duration: {
         type: Number,
@@ -48,6 +57,11 @@ const courseSchema:Schema = new mongoose.Schema({
     },
     max_capacity: {
         type: Number,
+    },
+    stripeProductId: {
+        type: String,
+        required: true,
+        unique: true,
     },
 });
 

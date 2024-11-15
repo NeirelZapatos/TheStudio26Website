@@ -18,14 +18,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   setShowCalendar,
 }) => {
   return (
-    <aside className="w-64 bg-gray-800 text-white p-4">
+    <aside className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 overflow-y-auto">
       <h2 className="text-2xl font-bold mb-8">Studio 26</h2>
       <nav className="space-y-2">
         <button
           onClick={() => setActiveSection("home")}
-          className={`block w-full text-left p-2 rounded-lg ${
-            activeSection === "home" ? "bg-gray-700" : "hover:bg-gray-600"
-          }`}
+          className={`block w-full text-left p-2 rounded-lg ${activeSection === "home" ? "bg-gray-700" : "hover:bg-gray-600"
+            }`}
         >
           Home
         </button>
@@ -40,25 +39,22 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="pl-4 space-y-1">
               <button
                 onClick={() => setActiveSection("connect")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "connect" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "connect" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
               >
                 Connect & Setup
               </button>
               <button
                 onClick={() => setActiveSection("invoices")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "invoices" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "invoices" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
               >
                 Invoices
               </button>
               <button
                 onClick={() => setActiveSection("pos")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "pos" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "pos" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
               >
                 Point of Sale
               </button>
@@ -76,17 +72,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="pl-4 space-y-1">
               <button
                 onClick={() => setActiveSection("calendar")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "calendar" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "calendar" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
               >
                 Calendar
               </button>
               <button
                 onClick={() => setActiveSection("work")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "work" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "work" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
               >
                 Work Schedule
               </button>
@@ -95,11 +89,17 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <button
           onClick={() => setActiveSection("customerManagement")}
-          className={`block w-full text-left p-2 rounded-lg ${
-            activeSection === "customerManagement" ? "bg-gray-700" : "hover:bg-gray-600"
-          }`}
+          className={`block w-full text-left p-2 rounded-lg ${activeSection === "customerManagement" ? "bg-gray-700" : "hover:bg-gray-600"
+            }`}
         >
           Customer Management
+        </button>
+        <button
+          onClick={() => setActiveSection("productAndClass")}
+          className={`block w-full text-left p-2 rounded-lg ${activeSection === "productAndClass" ? "bg-gray-700" : "hover:bg-gray-600"
+            }`}
+        >
+          Products and Class
         </button>
       </nav>
     </aside>

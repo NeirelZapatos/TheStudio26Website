@@ -12,6 +12,7 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
+import ProductAndClassSection from "./components/ProductAndClassSection";
 
 const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -20,15 +21,17 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="h-screen flex">
-      <Sidebar
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        showGettingPaid={showGettingPaid}
-        setShowGettingPaid={setShowGettingPaid}
-        showCalendar={showCalendar}
-        setShowCalendar={setShowCalendar}
-      />
-      <main className="flex-1 bg-gray-100 p-8">
+      <div className="fixed w-64 bg-gray-800 p-4 h-full">
+        <Sidebar
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          showGettingPaid={showGettingPaid}
+          setShowGettingPaid={setShowGettingPaid}
+          showCalendar={showCalendar}
+          setShowCalendar={setShowCalendar}
+        />
+      </div>
+      <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
         <Header />
         {activeSection === "home" && <HomeSection />}
         {activeSection === "connect" && <ConnectSetupSection />}
@@ -37,6 +40,7 @@ const DashboardPage: React.FC = () => {
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
         {activeSection === "customerManagement" && <CustomerManagementSection />}
+        {activeSection == "productAndClass" && <ProductAndClassSection />}
       </main>
     </div>
   );
