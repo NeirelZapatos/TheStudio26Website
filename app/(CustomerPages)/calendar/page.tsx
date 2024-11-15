@@ -1,13 +1,15 @@
-import { StrictMode } from 'react';
+'use client'
+
+import React from 'react'
+import MyCalendar from './Components/Calendar'
 
 export default function Calendar() {
-    return (
-      <StrictMode>
-        <div>
-          <main className="flex-grow p-4">
-            Body
-          </main>
-        </div>
-      </StrictMode>
-    );
-  }
+  return (
+    <div>
+      <MyCalendar />
+    </div>
+  )
+};
+
+
+

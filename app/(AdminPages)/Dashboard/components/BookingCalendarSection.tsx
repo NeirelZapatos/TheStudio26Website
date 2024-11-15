@@ -1,5 +1,5 @@
 import React from "react";
-import MyCalendar from "@/app/calendar/Components/Calendar";
+import MyCalendar from "@/app/(CustomerPages)/calendar/Components/Calendar";
 
 const BookingCalendarSection: React.FC = () => {
   return (
