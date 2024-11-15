@@ -1,7 +1,7 @@
 
 import mongoose, { Document, Schema } from "mongoose"
 
-export interface IProduct extends Document {
+export interface IItem extends Document {
     name: string;
     price: number;
     description: string;
@@ -11,10 +11,11 @@ export interface IProduct extends Document {
     size: string;
     color: string;
     quantity_in_stock: number;
+    stripeProductId: string;
 }
 
 
-const productSchema:Schema = new mongoose.Schema({
+const itemSchema:Schema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -26,6 +27,10 @@ const productSchema:Schema = new mongoose.Schema({
     },
     description: {
         type: String,
+    },
+    purchaseType: {
+        type: String,
+        required: true,
     },
     category: {
         type: String,
@@ -44,12 +49,17 @@ const productSchema:Schema = new mongoose.Schema({
     },
     quantity_in_stock: {
         type: Number,
+        // required: true,
+        default: 0,
+        min: 0,
+    },
+    stripeProductId: {
+        type: String,
         required: true,
-        min: 0
+        unique: true,
     },
 });
 
-const Product = mongoose.models.Product || mongoose.model<IProduct>('Product', productSchema);
+const Item = mongoose.models.Item || mongoose.model<IItem>('Item', itemSchema);
 
-export default Product;
-
+export default Item;
