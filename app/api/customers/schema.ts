@@ -13,6 +13,7 @@ const schema = z.object({
     // password: z.string().min(5), // not required for scope
     phone_number: z.number().optional(),
     orders: z.array(objectIdValidator).optional(),
+    courses: z.array(objectIdValidator).optional()
 });
 
 export default schema;

@@ -46,6 +46,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Connect & Setup
               </button>
+              
+              <button
+                onClick={() => setActiveSection("financialAnalytics")}
+                className={`block w-full text-left p-2 rounded-lg ${
+                  activeSection === "financialAnalytics" ? "bg-gray-700" : "hover:bg-gray-600"
+                }`}
+              >
+                Financial Analytics
+              </button>
+
               <button
                 onClick={() => setActiveSection("invoices")}
                 className={`block w-full text-left p-2 rounded-lg ${

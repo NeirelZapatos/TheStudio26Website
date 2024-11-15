@@ -1,5 +1,3 @@
-// Dashboard/page.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -12,6 +10,7 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
+import FinancialAnalytics from "./components/FinancialAnalytics"; // Import the financial analytics section
 
 const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -37,6 +36,8 @@ const DashboardPage: React.FC = () => {
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
         {activeSection === "customerManagement" && <CustomerManagementSection />}
+        {activeSection === "financialAnalytics" && <FinancialAnalytics />} {/* Display Financial Analytics */}
+    
       </main>
     </div>
   );

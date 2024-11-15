@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
-import Product from '@/app/models/Product';
+import Order from '@/app/models/Order';
 
-
-// JSON example for this endpoint
+// Example of JSON to send to this api endpoint
 // {
-//     "name": "Classic White T-Shirt",
-//     "price": 19.99,
-//     "description": "A classic white t-shirt made from 100% cotton, perfect for everyday wear.",
-//     "category": "Clothing",
-//     "material": "Cotton",
-//     "image_url": "https://example.com/images/classic-white-tshirt.jpg",
-//     "size": "M",
-//     "color": "White",
-//     "quantity_in_stock": 150
-// }
+//     "customer_id": "671ef81602098f94990d0c0f",
+//     "product_items": ["671d62eb17058eb97e7c7f4e", "671d630017058eb97e7c7f52"],
+//     "total_amount": 150.60,
+//     "shipping_method": "Ground",
+//     "payment_method": "Credit Card",
+//     "order_status": "pending",
+//     "shipping_address": "123 Main St, Springfield",
+//     "billing_address": "123 Main St, Springfield"
+//  }
 
 export async function GET(request: NextRequest){
     try {
         await dbConnect();
 
-        const products = await Product.find({});
-        return NextResponse.json(products);
+        const orders = await Order.find({});
+        return NextResponse.json(orders);
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 })
@@ -37,22 +35,17 @@ export async function POST(request: NextRequest) {
         await dbConnect();
 
         const body = await request.json();
+        body.order_date = new Date();
         const validation = schema.safeParse(body);
 
         if (!validation.success) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
-        const checkProduct = await Product.findOne({ name: body.name });
+        const newOrder = new Order(body);
+        await newOrder.save();
 
-        if (checkProduct) {
-            return NextResponse.json({ error: 'Product already exits' }, { status: 409 })
-        }
-
-        const newProduct = new Product(body);
-        await newProduct.save();
-
-        return NextResponse.json(newProduct, { status: 201 });
+        return NextResponse.json(newOrder, { status: 201 });
 
     } catch (err: unknown) {
         if (err instanceof Error) {
