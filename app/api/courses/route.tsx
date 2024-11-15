@@ -1,28 +1,29 @@
+// might not be used
+
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
-import Product from '@/app/models/Product';
+import Course from '@/app/models/Course';
 
-
-// JSON example for this endpoint
+// Example JSON to send to this endpoint
 // {
-//     "name": "Classic White T-Shirt",
-//     "price": 19.99,
-//     "description": "A classic white t-shirt made from 100% cotton, perfect for everyday wear.",
-//     "category": "Clothing",
-//     "material": "Cotton",
-//     "image_url": "https://example.com/images/classic-white-tshirt.jpg",
-//     "size": "M",
-//     "color": "White",
-//     "quantity_in_stock": 150
+//   "name": "Introduction to Web Development",
+//   "price": 299.99,
+//   "description": "A comprehensive course covering the fundamentals of web development, including HTML, CSS, and JavaScript.",
+//   "time": "10:00 AM",
+//   "duration": 4,
+//   "image_url": "https://example.com/images/web-development-course.jpg",
+//   "instructor": "John Doe",
+//   "location": "Room 101, Tech Building",
+//   "max_capacity": 30
 // }
 
 export async function GET(request: NextRequest){
     try {
         await dbConnect();
 
-        const products = await Product.find({});
-        return NextResponse.json(products);
+        const courses = await Course.find({});
+        return NextResponse.json(courses);
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 })
@@ -37,22 +38,17 @@ export async function POST(request: NextRequest) {
         await dbConnect();
 
         const body = await request.json();
+        body.order_date = new Date();
         const validation = schema.safeParse(body);
 
         if (!validation.success) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
-        const checkProduct = await Product.findOne({ name: body.name });
+        const newCourse = new Course(body);
+        await newCourse.save();
 
-        if (checkProduct) {
-            return NextResponse.json({ error: 'Product already exits' }, { status: 409 })
-        }
-
-        const newProduct = new Product(body);
-        await newProduct.save();
-
-        return NextResponse.json(newProduct, { status: 201 });
+        return NextResponse.json(newCourse, { status: 201 });
 
     } catch (err: unknown) {
         if (err instanceof Error) {

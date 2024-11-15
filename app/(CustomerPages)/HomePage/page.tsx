@@ -1,31 +1,17 @@
-import Image from "next/image";
-import { StrictMode } from "react";
-import env from "dotenv";
-import Header2 from "./Components/Header2";
-import Footer2 from "./Components/Footer2";
+//import Head from 'next/head';
+import Header1 from "../../Components/Header1";
+import Footer1 from "../../Components/Footer1";
+import Header2 from "../../Components/Header2";
+import Footer2 from "../../Components/Footer2";
 
-// allows for use of environment variables
-// ex: to get an environment variable called TESTING you would type process.env.TESTING
-env.config();
-
-export default function Home() {
+export default function Page() {
   return (
-    <StrictMode>
-      <Header2 />
+    <>
+    <Header2/>
       <header className="text-center py-5 bg-white-800 text-black">
         <h1 className="text-4xl font-bold text-red-600">The Studio 26</h1>
         <p className="text-lg text-gray-400">4100 Cameron Park Drive #118, Cameron Park, CA 95682</p>
       </header>
-
-      <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px]">
-        <Image
-          src="https://picsum.photos/1920/1080" //placeholder
-          alt="Studio Workspace"
-          layout="fill"
-          objectFit="cover"
-          priority
-        />
-      </div>
 
       <div className="bg-white">
       <section className="text-center p-10 bg-white-100">
@@ -50,54 +36,6 @@ export default function Home() {
     </div>
 
     <section className="bg-white py-10">
-        <h3 className="text-3xl font-bold text-center text-gray-800 mb-6">Past Projects Created At The Studio 26, LLC</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 1"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 2"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 3"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 4"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 5"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-          <Image
-            src="https://picsum.photos/300/300"
-            alt="Project Image 6"
-            width={300}
-            height={300}
-            className="rounded-lg"
-          />
-        </div>
-      </section>
-
-    <section className="bg-white py-10">
       <div className="max-w-6xl mx-auto px-4 text-center">
         <p className="text-lg">Subscribe to our mailing list</p>
         <form className="flex justify-center mt-4">
@@ -116,6 +54,6 @@ export default function Home() {
       </div>
     </section>
     <Footer2 />
-    </StrictMode>
+    </>
   );
 }

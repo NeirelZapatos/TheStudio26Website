@@ -4,7 +4,12 @@ import Admin from '@/app/models/Admin';
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 
-// creates a new admin
+// Example JSON to send to this endpoint
+// {
+//     "email": "admin@example.com",
+//     "password": "hashedPasswordHere123"
+// }
+  
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();

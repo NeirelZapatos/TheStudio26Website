@@ -30,6 +30,10 @@ const customerSchema:Schema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Order'
     }],
+    courses: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Course'
+    }]
     // hashed_password: { not required for scope
     //     type: String
     // },
