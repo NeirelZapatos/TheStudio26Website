@@ -1,6 +1,7 @@
+import Link from "next/link";
+
 const Header2 = () => {
     return (
-        <>
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
@@ -21,27 +22,31 @@ const Header2 = () => {
           <ul
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-            <li><a>Online Store</a></li>
-            <li>
+            <li><Link href="/Store">Online Store</Link></li>
+            <li><Link href="/class-catalog">Class Catalog</Link></li>
+            <li><Link href="/calendar">Calendar</Link></li>
+            <li><Link href="/OpenLab">Open Lab</Link></li>
+            <li><Link href="/GiftCards">Gift Cards</Link></li>
+            <li><Link href="/Contact">Contact</Link></li>
+            {/* <li>
               <a>Parent</a>
               <ul className="p-2">
                 <li><a>Submenu 1</a></li>
                 <li><a>Submenu 2</a></li>
               </ul>
-            </li>
-            <li><a>Item 3</a></li>
+            </li> */}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl text-[#8B0000]">The Studio 26</a>
+        <Link href="/" className="btn btn-ghost text-xl text-[#8B0000]">The Studio 26</Link>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
-          <li><a>Online Store</a></li>
-          <li><a>Class Catalog</a></li>
-          <li><a>Calendar</a></li>
-          <li><a>Open Lab</a></li>
-          <li><a>Gift Cards</a></li>
-          <li><a>Contact Us</a></li>
+        <li><Link href="/Store">Online Store</Link></li>
+            <li><Link href="/class-catalog">Class Catalog</Link></li>
+            <li><Link href="/calendar">Calendar</Link></li>
+            <li><Link href="/OpenLab">Open Lab</Link></li>
+            <li><Link href="/GiftCards">Gift Cards</Link></li>
+            <li><Link href="/Contact">Contact</Link></li>
           {/* <li>
             <details>
               <summary>Parent</summary>
@@ -109,7 +114,6 @@ const Header2 = () => {
         </div>
       </div>
     </div>
-    </>
   );
 }
 
