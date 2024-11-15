@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-      domains: ['picsum.photos'],
+        domains: [process.env.S3_BUCKET_DOMAIN],
     },
-  };
-  
-  export default nextConfig;
+};
+
+export default nextConfig;
