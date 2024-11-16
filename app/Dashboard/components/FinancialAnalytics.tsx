@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState } from "react";
 
 interface CategoryRevenue {
@@ -26,6 +28,8 @@ const FinancialAnalytics: React.FC = () => {
   const [timeFrame, setTimeFrame] = useState<string>("Daily");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   const productCategories = ["All Categories", "Courses", "Jewelry", "Stones", "Supplies"];
   const timeFrames = ["Daily", "Monthly", "Quarterly", "Yearly"];
@@ -70,6 +74,18 @@ const FinancialAnalytics: React.FC = () => {
     fetchOrders();
   }, []);
 
+  const fetchDataDate = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const formatRevenue = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -103,9 +119,8 @@ const FinancialAnalytics: React.FC = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`p-2 rounded-lg ${
-                selectedCategory === category ? "bg-blue-600" : "bg-gray-800"
-              } text-white`}
+              className={`p-2 rounded-lg ${selectedCategory === category ? "bg-blue-600" : "bg-gray-800"
+                } text-white`}
             >
               {category}
             </button>
@@ -115,18 +130,55 @@ const FinancialAnalytics: React.FC = () => {
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Revenue:</h3>
-        <div className="flex flex-wrap gap-2">
-          {timeFrames.map((frame) => (
+        <div className="flex flex-wrap items-center justify-between">
+          {/* Revenue Options */}
+          <div className="flex gap-2">
+            {timeFrames.map((frame) => (
+              <button
+                key={frame}
+                onClick={() => setTimeFrame(frame)}
+                className={`p-2 rounded-lg ${timeFrame === frame ? "bg-blue-600 text-white" : "bg-gray-800 text-white"
+                  }`}
+              >
+                {frame}
+              </button>
+            ))}
+          </div>
+
+          {/* Date Pickers */}
+          <div className="flex items-center gap-4">
+            <div>
+              <label htmlFor="start-date" className="block text-gray-400 mb-1">
+                Start Date:
+              </label>
+              <input
+                type="date"
+                id="start-date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-gray-800 text-white p-2 rounded-lg"
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date" className="block text-gray-400 mb-1">
+                End Date:
+              </label>
+              <input
+                type="date"
+                id="end-date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-gray-800 text-white p-2 rounded-lg"
+              />
+            </div>
+            {/* Button */}
             <button
-              key={frame}
-              onClick={() => setTimeFrame(frame)}
-              className={`p-2 rounded-lg ${
-                timeFrame === frame ? "bg-blue-600" : "bg-gray-800"
-              } text-white`}
+              onClick={fetchDataDate}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 mt-7 rounded-lg"
             >
-              {frame}
+              Filter
             </button>
-          ))}
+          </div>
         </div>
       </div>
 
@@ -158,7 +210,7 @@ const FinancialAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <h3 className="text-lg font-semibold mb-4">Orders</h3>
             <div className="space-y-2">
               {orders.length > 0 ? (
@@ -197,7 +249,7 @@ const FinancialAnalytics: React.FC = () => {
                 Create Order
               </button>
             </div>
-          </div>
+          </div> */}
         </>
       )}
     </section>
