@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from '@/app/lib/dbConnect';
 import Order from "@/app/models/Order";
+import Item from "@/app/models/Item";
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -47,20 +48,32 @@ export async function GET(request: NextRequest) {
                 $lte: endDate
             }
         });
-
+        
         const categoryRevenue: { [key: string]: { revenue: number } } = {};
+
         let totalRevenue = 0;
-
-        allCategoriesData.forEach(catData => {
-            // categoryRevenue[]
+        let jewelryRevenue = 0;
+        let suppliesRevenue = 0;
+        let stonesRevenue = 0;
+        for (const catData of allCategoriesData) {
             totalRevenue += catData.total_amount;
-        });
+            for (let i = 0; i < catData.product_items.length; i++) {
+                const productId = catData.product_items[i];
+                const product = await Item.findById(productId); // Await the product fetch
+        
+                if (product.category === "Jewelry") {
+                    jewelryRevenue += product.price;
+                } else if (product.category === "Stones") {
+                    stonesRevenue += product.price;
+                } else if (product.category === "Supplies") {
+                    suppliesRevenue += product.price;
+                }
+            }
+        }
 
-        // allCategoriesData.forEach(catData => {
-        //     const revenue = catData.revenue[timeFrame][0] || 0;
-        //     categoryRevenue[catData.category] = { revenue };
-        //     totalRevenue += revenue;
-        //   });
+        categoryRevenue["Jewelry"] = { revenue: jewelryRevenue };
+        categoryRevenue["Stones"] = { revenue: stonesRevenue };
+        categoryRevenue["Supplies"] = { revenue: suppliesRevenue };
 
         return NextResponse.json({
             revenue: totalRevenue,
@@ -71,8 +84,4 @@ export async function GET(request: NextRequest) {
         console.error(err);
         return NextResponse.json({ error: err instanceof Error ? err.message : "An unknown error occurred" }, { status: 500 });
     }
-
-    return NextResponse.json({
-        startDate: startDate,
-    }, { status: 200 })
 }

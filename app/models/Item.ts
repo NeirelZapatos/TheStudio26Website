@@ -33,9 +33,9 @@ const itemSchema:Schema = new mongoose.Schema({
         required: true,
     },
     category: { 
-        // Categories include Courses, Jewlery, Stones, Supplies
+        // Categories Jewlery, Stones, Supplies
         type: String,
-        required: true
+        // required: true
     },
     material: {
         type: String,
