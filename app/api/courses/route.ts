@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse} from "next/server";
 import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
 import Course from "@/app/models/Course";

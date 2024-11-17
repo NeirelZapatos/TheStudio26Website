@@ -1,33 +1,46 @@
-import type { CalendarProps } from 'react-big-calendar';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';  
 import type { View } from 'react-big-calendar';
 import { Views } from 'react-big-calendar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ICourse } from '@/app/models/Course';
 
 import moment from 'moment';
+import { CLIENT_STATIC_FILES_RUNTIME_AMP } from 'next/dist/shared/lib/constants';
+import { MongoClientBulkWriteCursorError } from 'mongodb';
 
 const localizer = momentLocalizer(moment);
 
 const MyCalendar: React.FC = () => {
-    const [events, setEvents] = useState<CalendarProps['events']>([
-        {
-            title: 'Jewelry Making for Beginners',
-            start: new Date(2024, 10, 16, 9, 30),
-            end: new Date(2024, 10, 16, 14, 30),
-        },
-        {
-            title: 'Rock Time!',
-            start: new Date(2024, 10, 16, 12, 30),
-            end: new Date(2024, 10, 16, 13, 30),
-        },
-        {
-            title: 'Advanced Silver Smithing',
-            start: new Date(2024, 10, 20, 10, 30),
-            end: new Date(2024, 10, 20, 13, 0),
-        },
-    ]);
-    
+
+    const [courses, setCourses] = useState<ICourse[]>([]);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+        const res = await fetch('/api/courses.ts');
+        const data = await res.json();
+        setCourses(data);  
+
+        };
+        fetchCourses();
+    }, []);
+
+    const events = courses.map((course) => {
+        const [year, month, day] = course.date.split('-').map(Number);
+        const [hours, minutes] = course.time.split(':').map(Number);
+
+        const startDate = new Date(year, month - 1, day, hours, minutes);
+
+        const endDate = new Date(startDate);
+        endDate.setMinutes(endDate.getMinutes() + course.duration);
+
+        return {
+            title: course.name,
+            start: startDate,
+            end: endDate
+        };
+    });
+
     const [view, setView] = useState<View>(Views.MONTH); 
     const [date, setDate] = useState(new Date());
 
