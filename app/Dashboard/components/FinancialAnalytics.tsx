@@ -1,4 +1,4 @@
-'use client'
+// 'use client'
 
 import React, { useEffect, useState } from "react";
 
@@ -78,7 +78,14 @@ const FinancialAnalytics: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-
+      // console.log(startDate);
+      // console.log(endDate);
+      const response = await fetch(
+        `/api/financial-analytics/date-filter?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const data = await response.json();
+      setFinancialData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
