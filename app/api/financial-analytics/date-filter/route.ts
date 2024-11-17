@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from '@/app/lib/dbConnect';
 import Order from "@/app/models/Order";
 import Item from "@/app/models/Item";
+import Course from "@/app/models/Course";
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         let jewelryRevenue = 0;
         let suppliesRevenue = 0;
         let stonesRevenue = 0;
+        let courseRevenue = 0;
         for (const catData of allCategoriesData) {
             totalRevenue += catData.total_amount;
             for (let i = 0; i < catData.product_items.length; i++) {
@@ -69,11 +71,18 @@ export async function GET(request: NextRequest) {
                     suppliesRevenue += product.price;
                 }
             }
+            for(let i = 0; i < catData.course_items.length; i++) {
+                const courseId = catData.course_items[i];
+                const course = await Course.findById(courseId);
+                courseRevenue += course.price;
+                console.log(courseRevenue);
+            }
         }
 
         categoryRevenue["Jewelry"] = { revenue: jewelryRevenue };
         categoryRevenue["Stones"] = { revenue: stonesRevenue };
         categoryRevenue["Supplies"] = { revenue: suppliesRevenue };
+        categoryRevenue["Courses"] = { revenue: courseRevenue };
 
         return NextResponse.json({
             revenue: totalRevenue,
