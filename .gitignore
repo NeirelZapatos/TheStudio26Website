@@ -166,5 +166,20 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 .vscode/
 .tailwind.config.js/
+<<<<<<< HEAD
+=======
+.vscode
+<<<<<<< HEAD
+>>>>>>> ffb1217 (updated gitignore)
+=======
+.tailwind.config.js
+>>>>>>> 29086cc (added tail.config.js to .gitignore)
+=======
+.vscode/
+>>>>>>> 64465c3 (stopped tracking .vscode changes)
+=======
+>>>>>>> 21f97b8 (added tailwind.config.js to .gitignore)
