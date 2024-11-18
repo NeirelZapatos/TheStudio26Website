@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse} from "next/server";
 import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
 import Course from "@/app/models/Course";
@@ -39,5 +39,26 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+    }
+}
+
+export async function GET(request: NextRequest) {
+    try {
+        // Connect to the database
+        await dbConnect();
+
+        // Retrieve all customers from the database
+        const courses = await Course.find({});
+        return NextResponse.json(courses);
+
+    } catch (err: unknown) {
+        // Handle any errors that occur during the GET operation
+        if (err instanceof Error) {
+            console.error("Error in GET /api/customers:", err); // Added for better debugging
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+
+        // Catch-all for unknown errors
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
     }
 }

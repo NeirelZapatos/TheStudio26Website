@@ -25,6 +25,10 @@ const orderSchema:Schema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Product'
     }],
+    course_items: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Course'
+    }],
     order_date: {
         type: Date,
         required: true,
