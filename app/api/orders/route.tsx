@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
+        // let total_amount = 0;
+        // for(let i = 0; i < body.product_items.length; i++) {
+            
+        // }
+
         const newOrder = new Order(body);
         await newOrder.save();
 
