@@ -32,8 +32,10 @@ const itemSchema:Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    category: {
+    category: { 
+        // Categories Jewlery, Stones, Supplies
         type: String,
+        // required: true
     },
     material: {
         type: String,
