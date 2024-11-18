@@ -6,8 +6,6 @@ import { useState, useEffect } from 'react';
 import { ICourse } from '@/app/models/Course';
 
 import moment from 'moment';
-import { CLIENT_STATIC_FILES_RUNTIME_AMP } from 'next/dist/shared/lib/constants';
-import { MongoClientBulkWriteCursorError } from 'mongodb';
 
 const localizer = momentLocalizer(moment);
 
@@ -17,10 +15,9 @@ const MyCalendar: React.FC = () => {
 
     useEffect(() => {
         const fetchCourses = async () => {
-        const res = await fetch('/api/courses.ts');
+        const res = await fetch('/api/courses');
         const data = await res.json();
         setCourses(data);  
-
         };
         fetchCourses();
     }, []);
