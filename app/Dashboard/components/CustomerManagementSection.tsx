@@ -37,18 +37,31 @@ const CustomerManagementSection: React.FC = () => {
   const fetchCustomers = async () => {
     setLoading(true);
     let query = `/api/customers?`;
-    if (searchQuery) query += `search=${searchQuery}&`;
+    if (searchQuery) query += `search=${encodeURIComponent(searchQuery)}&`; // Add encodeURIComponent for safety
     if (dateRange.start) query += `start=${dateRange.start}&`;
     if (dateRange.end) query += `end=${dateRange.end}&`;
     if (timeInterval) query += `interval=${timeInterval}&`;
-
+  
     try {
       const response = await fetch(query);
       if (!response.ok) throw new Error("Failed to fetch customers.");
       const data = await response.json();
-      setCustomers(data);
+      if (searchQuery) {
+        // Filter results locally if needed (depends on server implementation)
+        const filteredData = data.filter(
+          (customer: Customer) =>
+            customer.email.includes(searchQuery) ||
+            `${customer.first_name} ${customer.last_name}`
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+        );
+        setCustomers(filteredData);
+      } else {
+        setCustomers(data);
+      }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
+      setCustomers([]); // Clear customers in case of an error
     } finally {
       setLoading(false);
     }
@@ -57,10 +70,16 @@ const CustomerManagementSection: React.FC = () => {
   // Fetch orders for a specific customer
   const fetchOrders = async (customerId: string) => {
     try {
-      const response = await fetch(`/api/orders/${customerId}`);
+      const response = await fetch(`/api/orders`);
       if (!response.ok) throw new Error("Failed to fetch orders.");
       const data = await response.json();
-      setOrders((prev) => ({ ...prev, [customerId]: data }));
+      let customerOrders = []
+      for(let i = 0; i < data.length; i++) {
+        if(data[i].customer_id == customerId) {
+          customerOrders.push(data[i])
+        }
+      }
+      setOrders((prev) => ({ ...prev, [customerId]: customerOrders }));
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     }
