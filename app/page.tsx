@@ -106,25 +106,6 @@ export default function Page() {
           />
         </div>
       </section>
-
-      <section className="bg-white py-10">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-lg">Subscribe to our mailing list</p>
-          <form className="flex justify-center mt-4">
-            <input
-              type="email"
-              placeholder="Email"
-              className="p-3 w-64 border border-gray-300 rounded-l-lg focus:outline-none bg-white text-black"
-            />
-            <button
-              type="submit"
-              className="bg-gray-800 text-white px-4 py-3 rounded-r-lg hover:bg-gray-700"
-            >
-              →
-            </button>
-          </form>
-        </div>
-      </section>
       <Footer2 />
     </StrictMode>
   );

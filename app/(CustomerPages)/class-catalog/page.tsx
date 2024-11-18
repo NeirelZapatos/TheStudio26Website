@@ -121,8 +121,6 @@ const ClassCatalog: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <EmailList />
     </div>
   );
 };
