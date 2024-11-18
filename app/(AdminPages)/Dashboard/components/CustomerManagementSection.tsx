@@ -1,45 +1,87 @@
 import React, { useState, useEffect } from "react";
 
 interface Customer {
-  _id: string;
+  _id?: string; // Make _id optional
   first_name: string;
   last_name: string;
   email: string;
-  order_number?: string;
-  purchase_type?: string;
-  date?: string;
+}
+
+interface Order {
+  _id: string;
+  customer_id: string;
+  product_items: string[];
+  total_amount: number;
+  shipping_method: string;
+  payment_method: string;
+  order_status: string;
+  shipping_address: string;
+  billing_address: string;
+  order_date: string;
 }
 
 const CustomerManagementSection: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [newCustomer, setNewCustomer] = useState({
+  const [orders, setOrders] = useState<{ [key: string]: Order[] }>({});
+  const [newCustomer, setNewCustomer] = useState<Customer>({
     first_name: "",
     last_name: "",
     email: "",
-    order_number: "",
-    purchase_type: "",
   });
-
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [timeInterval, setTimeInterval] = useState("1_month");
-  const [purchaseType, setPurchaseType] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Fetch customers based on filter criteria
   const fetchCustomers = async () => {
+    setLoading(true);
     let query = `/api/customers?`;
-    if (searchQuery) query += `search=${searchQuery}&`;
+    if (searchQuery) query += `search=${encodeURIComponent(searchQuery)}&`; // Add encodeURIComponent for safety
     if (dateRange.start) query += `start=${dateRange.start}&`;
     if (dateRange.end) query += `end=${dateRange.end}&`;
     if (timeInterval) query += `interval=${timeInterval}&`;
-    if (purchaseType) query += `type=${purchaseType}&`;
-
+  
     try {
       const response = await fetch(query);
+      if (!response.ok) throw new Error("Failed to fetch customers.");
       const data = await response.json();
-      setCustomers(data);
+      if (searchQuery) {
+        // Filter results locally if needed (depends on server implementation)
+        const filteredData = data.filter(
+          (customer: Customer) =>
+            customer.email.includes(searchQuery) ||
+            `${customer.first_name} ${customer.last_name}`
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+        );
+        setCustomers(filteredData);
+      } else {
+        setCustomers(data);
+      }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
+      setCustomers([]); // Clear customers in case of an error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch orders for a specific customer
+  const fetchOrders = async (customerId: string) => {
+    try {
+      const response = await fetch(`/api/orders`);
+      if (!response.ok) throw new Error("Failed to fetch orders.");
+      const data = await response.json();
+      let customerOrders = []
+      for(let i = 0; i < data.length; i++) {
+        if(data[i].customer_id == customerId) {
+          customerOrders.push(data[i])
+        }
+      }
+      setOrders((prev) => ({ ...prev, [customerId]: customerOrders }));
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
     }
   };
 
@@ -51,13 +93,13 @@ const CustomerManagementSection: React.FC = () => {
     fetchCustomers();
   };
 
-  // Handle input change for new customer form
-  const handleNewCustomerChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleNewCustomerChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setNewCustomer((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Add a new customer to the database
   const addCustomer = async () => {
     try {
       const response = await fetch("/api/customers", {
@@ -71,13 +113,7 @@ const CustomerManagementSection: React.FC = () => {
       if (response.ok) {
         const addedCustomer = await response.json();
         setCustomers((prev) => [...prev, addedCustomer]); // Add the new customer to the list
-        setNewCustomer({
-          first_name: "",
-          last_name: "",
-          email: "",
-          order_number: "",
-          purchase_type: "",
-        }); // Reset form
+        setNewCustomer({ first_name: "", last_name: "", email: "" }); // Reset form
         alert("Customer added successfully!");
       } else {
         const errorData = await response.json();
@@ -92,7 +128,6 @@ const CustomerManagementSection: React.FC = () => {
     }
   };
 
-  // Delete a customer from the database
   const deleteCustomer = async (id: string) => {
     try {
       const response = await fetch(`/api/customers/${id}`, {
@@ -108,6 +143,18 @@ const CustomerManagementSection: React.FC = () => {
     } catch (error) {
       console.error("Error deleting customer:", error);
       alert("An unexpected error occurred.");
+    }
+  };
+
+  const handleShowOrders = (customerId: string) => {
+    if (!orders[customerId]) {
+      fetchOrders(customerId);
+    } else {
+      setOrders((prev) => {
+        const updatedOrders = { ...prev };
+        delete updatedOrders[customerId];
+        return updatedOrders;
+      });
     }
   };
 
@@ -143,30 +190,13 @@ const CustomerManagementSection: React.FC = () => {
             onChange={handleNewCustomerChange}
             className="p-2 border border-gray-300 rounded-lg"
           />
-          <input
-            type="text"
-            name="order_number"
-            placeholder="Order Number"
-            value={newCustomer.order_number}
-            onChange={handleNewCustomerChange}
-            className="p-2 border border-gray-300 rounded-lg"
-          />
-          <select
-            name="purchase_type"
-            value={newCustomer.purchase_type}
-            onChange={handleNewCustomerChange}
-            className="p-2 border border-gray-300 rounded-lg"
-          >
-            <option value="">Select Purchase Type</option>
-            <option value="class">Class Booking</option>
-            <option value="store">Online Store Item</option>
-          </select>
         </div>
         <button
           onClick={addCustomer}
           className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg"
+          disabled={loading}
         >
-          Add Customer
+          {loading ? "Adding..." : "Add Customer"}
         </button>
       </div>
 
@@ -174,11 +204,11 @@ const CustomerManagementSection: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Search by Name, Email, or Order Number
+            Search by Name or Email
           </label>
           <input
             type="text"
-            placeholder="Enter name, email, or order number"
+            placeholder="Enter name or email"
             className="w-full p-2 border border-gray-300 rounded-lg"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -220,22 +250,7 @@ const CustomerManagementSection: React.FC = () => {
             <option value="1_year">1 Year</option>
           </select>
         </div>
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Purchase Type
-          </label>
-          <select
-            value={purchaseType}
-            onChange={(e) => setPurchaseType(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg"
-          >
-            <option value="">All</option>
-            <option value="class">Class Bookings</option>
-            <option value="store">Online Store Items</option>
-          </select>
-        </div>
       </div>
-
       <button
         onClick={handleFilterApply}
         className="bg-blue-500 text-white py-2 px-4 rounded-lg"
@@ -243,25 +258,63 @@ const CustomerManagementSection: React.FC = () => {
         Apply Filters
       </button>
 
-      {/* Customer Data Display */}
+      {/* Customer List */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-4">Customer List</h3>
         <ul>
           {customers.length > 0 ? (
             customers.map((customer) => (
               <li key={customer._id} className="p-4 border-b border-gray-300">
-                <p className="font-medium">
-                  {customer.first_name} {customer.last_name} - {customer.email}
-                </p>
-                <p>Order Number: {customer.order_number}</p>
-                <p>Purchase Type: {customer.purchase_type}</p>
-                <p>Date: {customer.date}</p>
-                <button
-                  onClick={() => deleteCustomer(customer._id)}
-                  className="text-red-500 mt-2"
-                >
-                  Delete
-                </button>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">
+                      {customer.first_name} {customer.last_name} - {customer.email}
+                    </p>
+                  </div>
+                  <div className="space-x-2">
+                    {/* Show/Hide Orders Button */}
+                    <button
+                      onClick={() => handleShowOrders(customer._id!)}
+                      className="mt-2 bg-blue-500 text-white py-1 px-3 rounded-lg"
+                    >
+                      {orders[customer._id!] ? "Hide Orders" : "Show Orders"}
+                    </button>
+                    {/* Delete Customer Button */}
+                    <button
+                      onClick={() => deleteCustomer(customer._id!)}
+                      className="mt-2 bg-red-500 text-white py-1 px-3 rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                {/* Display Orders */}
+                {orders[customer._id!] && (
+                  <div className="mt-4">
+                    <h4 className="text-md font-semibold mb-2">Orders:</h4>
+                    <ul className="list-disc pl-6">
+                      {orders[customer._id!].map((order) => (
+                        <li key={order._id} className="mb-2">
+                          <p>
+                            <strong>Order ID:</strong> {order._id}
+                          </p>
+                          <p>
+                            <strong>Order Date:</strong>{" "}
+                            {new Date(order.order_date).toLocaleDateString()}
+                          </p>
+                          <p>
+                            <strong>Status:</strong> {order.order_status}
+                          </p>
+                          <p>
+                            <strong>Total Amount:</strong> $
+                            {order.total_amount.toFixed(2)}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </li>
             ))
           ) : (
