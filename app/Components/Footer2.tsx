@@ -1,7 +1,6 @@
 const Footer2 = () => {
     return (
-        <>
-    <footer className="footer bg-base-200 text-base-content p-10 py-6 fixed inset-x-0 bottom-0">
+    <footer className="footer bg-base-200 text-base-content p-10">
       <nav>
         <h6 className="footer-title">Location</h6>
         <a className="link link-hover">
@@ -34,7 +33,6 @@ const Footer2 = () => {
         </fieldset>
       </form>
     </footer>
-    </>
   );
 }
 
