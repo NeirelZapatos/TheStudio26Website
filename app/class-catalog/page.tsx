@@ -101,7 +101,7 @@ const ClassCatalog: React.FC = () => {
               {/* Example Class Card */}
               <div className="border p-4 rounded-lg shadow">
                 <img
-                  src="https://via.placeholder.com/150"
+                  src="https://www.reddit.com/r/PixelArt/comments/1ebnqf1/third_piece_my_cat_yoshi_150x150_3_colors/"   //for reference
                   alt="Class"
                   className="w-full h-40 object-cover mb-4 rounded"
                 />
@@ -109,7 +109,7 @@ const ClassCatalog: React.FC = () => {
                 <p className="text-sm text-gray-500">Beginner</p>
                 <p className="mt-2 text-red-500 font-semibold">$100</p>
               </div>
-              {/* Add additional class cards here */}
+              {/*additional class cards */}
             </div>
           </div>
         </div>
