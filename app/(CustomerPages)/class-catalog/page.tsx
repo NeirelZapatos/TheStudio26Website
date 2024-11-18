@@ -1,7 +1,10 @@
+"use client"
+
 import React, { useState } from "react";
-import Header2 from "./Components/Header2";
-import Footer2 from "./Components/Footer2";
-import EmailList from "./Components/EmailList";
+import Header2 from "../../Components/Header2";
+import Footer2 from "../../Components/Footer2";
+import EmailList from "../../Components/EmailList";
+import Image from "next/image";
 
 const ClassCatalog: React.FC = () => {
   const [filters, setFilters] = useState({
@@ -21,14 +24,15 @@ const ClassCatalog: React.FC = () => {
     setFilters({ ...filters, priceRange: newRange });
   };
 
-  const toggleExperienceLevel = (level: string) => {
-    setFilters((prev) => {
-      const newLevels = prev.experienceLevel.includes(level)
-        ? prev.experienceLevel.filter((l) => l !== level)
-        : [...prev.experienceLevel, level];
-      return { ...prev, experienceLevel: newLevels };
-    });
-  };
+  // ! FIX THIS
+  // const toggleExperienceLevel = (level: string) => {
+  //   setFilters((prev) => {
+  //     const newLevels = prev.experienceLevel.includes(level)
+  //       ? prev.experienceLevel.filter((l) => l !== level)
+  //       : [...prev.experienceLevel, level];
+  //     return { ...prev, experienceLevel: newLevels };
+  //   });
+  // };
 
   return (
     <div>
@@ -79,7 +83,9 @@ const ClassCatalog: React.FC = () => {
             <div>
               <label className="block mb-2 font-semibold">Experience Level</label>
               <div className="flex flex-col space-y-2">
-                {["Beginner", "Intermediate", "Advanced"].map((level) => (
+
+                { /* // ! FIX THIS */ }
+                {/* {["Beginner", "Intermediate", "Advanced"].map((level) => (
                   <label key={level} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -89,7 +95,9 @@ const ClassCatalog: React.FC = () => {
                     />
                     <span>{level}</span>
                   </label>
-                ))}
+                ))} */}
+
+
               </div>
             </div>
           </div>
@@ -100,9 +108,11 @@ const ClassCatalog: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Example Class Card */}
               <div className="border p-4 rounded-lg shadow">
-                <img
-                  src="https://www.reddit.com/r/PixelArt/comments/1ebnqf1/third_piece_my_cat_yoshi_150x150_3_colors/"   //for reference
+                <Image
+                  src="https://picsum.photos/300"   //for reference
                   alt="Class"
+                  width={300}
+                  height={300}
                   className="w-full h-40 object-cover mb-4 rounded"
                 />
                 <h3 className="text-lg font-bold">Sample Class Name</h3>
