@@ -18,7 +18,7 @@ MongoDB, React, Nextjs, Nodejs
 </p>
 
 # Synopsis
-
+This project is a comprehensive web-based solution designed to streamline class scheduling, product management, and financial tracking for small businesses. Built with a robust tech stack, including MongoDB, Next.js, Node.js, React, Stripe, and ShipStation, the application replaces manual processes with a centralized, intuitive dashboard. This system empowers business owners to enhance operational efficiency, improve customer engagement, and make data-driven decisions.
 
 ## clone or download
 ```terminal
@@ -54,7 +54,6 @@ TheStudio26Website
 # Usage (run fullstack app on your machine)
 
 ## Dependencies (Tech Stacks)
-[comment]: <> (ADJUST THIS)
 | **Category**      | **Client-side**                | **Server-side**              |
 |-------------------|--------------------------------|------------------------------|
 | Dependencies      | axios: ^1.7.7                 | bcrypt: ^5.1.1              |
@@ -77,7 +76,6 @@ TheStudio26Website
 |                   | tailwindcss: ^3.4.1           |                              |
 |                   | typescript: ^5                |                              |
 
-</br>
 </br>
 
 # ⚠️ Important Notice
