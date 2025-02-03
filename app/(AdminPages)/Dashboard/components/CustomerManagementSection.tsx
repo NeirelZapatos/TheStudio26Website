@@ -30,67 +30,161 @@ const CustomerManagementSection: React.FC = () => {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [timeInterval, setTimeInterval] = useState("1_month");
+  const [timeInterval, setTimeInterval] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch customers based on filter criteria
+  // Function to normalize dates to UTC
+  const getUTCDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toISOString().split("T")[0]; // Convert to YYYY-MM-DD in UTC
+  };
+
   const fetchCustomers = async () => {
     setLoading(true);
     let query = `/api/customers?`;
-    if (searchQuery) query += `search=${encodeURIComponent(searchQuery)}&`; // Add encodeURIComponent for safety
-    if (dateRange.start) query += `start=${dateRange.start}&`;
-    if (dateRange.end) query += `end=${dateRange.end}&`;
-    if (timeInterval) query += `interval=${timeInterval}&`;
+    if (searchQuery) query += `search=${encodeURIComponent(searchQuery)}&`;
+    if (timeInterval !== "") query += `interval=${timeInterval}&`;
   
     try {
-      const response = await fetch(query);
-      if (!response.ok) throw new Error("Failed to fetch customers.");
-      const data = await response.json();
-      if (searchQuery) {
-        // Filter results locally if needed (depends on server implementation)
-        const filteredData = data.filter(
-          (customer: Customer) =>
-            customer.email.includes(searchQuery) ||
-            `${customer.first_name} ${customer.last_name}`
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-        );
-        setCustomers(filteredData);
-      } else {
-        setCustomers(data);
+      console.log("Fetching customers with query:", query);
+  
+      // Step 1: Fetch Customers Based on Name or Email
+      const customerResponse = await fetch(query);
+      if (!customerResponse.ok) throw new Error("Failed to fetch customers.");
+      const customersData: Customer[] = await customerResponse.json();
+  
+      console.log("Raw Customers Data:", customersData);
+  
+      // Step 2: Filter Customers Based on Search Query (Email or Name)
+      const filteredCustomers = customersData.filter((customer: Customer) =>
+        customer.email.includes(searchQuery) ||
+        `${customer.first_name} ${customer.last_name}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+  
+      console.log("Filtered Customers:", filteredCustomers);
+  
+      if (filteredCustomers.length === 0) {
+        setCustomers([]);
+        setOrders({});
+        setLoading(false);
+        return;
       }
+  
+      // Step 3: Fetch All Orders
+      const orderResponse = await fetch(`/api/orders`);
+      if (!orderResponse.ok) throw new Error("Failed to fetch orders.");
+      let ordersData: Order[] = await orderResponse.json();
+  
+      console.log("Raw Orders Data:", ordersData);
+  
+      // Step 4: Match Orders with Filtered Customers
+      const matchedOrders = ordersData.filter((order) =>
+        filteredCustomers.some((customer) => customer._id === order.customer_id)
+      );
+  
+      console.log("Matched Orders Before Date Filter:", matchedOrders);
+  
+      // Step 5: Apply Date Range Filtering (if provided)
+      let finalOrders: Order[] = matchedOrders;
+  
+      if (dateRange.start && dateRange.end) {
+        finalOrders = matchedOrders.filter((order: Order) => {
+          const orderDateStr = getUTCDate(order.order_date);
+          const startDateStr = getUTCDate(dateRange.start);
+          const endDateStr = getUTCDate(dateRange.end);
+  
+          return orderDateStr >= startDateStr && orderDateStr <= endDateStr;
+        });
+  
+        console.log("Final Orders After Date Filtering:", finalOrders);
+      }
+  
+      // Step 6: Organize Orders by Customer ID
+      const ordersByCustomer: { [key: string]: Order[] } = {};
+      filteredCustomers.forEach((customer) => {
+        ordersByCustomer[customer._id!] = finalOrders.filter(
+          (order) => order.customer_id === customer._id
+        );
+      });
+  
+      console.log("Orders Organized by Customer ID:", ordersByCustomer);
+  
+      // Step 7: Update State
+      setCustomers(filteredCustomers);
+      setOrders(ordersByCustomer);
     } catch (error) {
       console.error("Failed to fetch customers:", error);
-      setCustomers([]); // Clear customers in case of an error
+      setCustomers([]);
+      setOrders({});
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch orders for a specific customer
   const fetchOrders = async (customerId: string) => {
     try {
+      // Debugging: Log the customer ID being fetched
+      console.log("Fetching orders for customer ID:", customerId);
+
+      // Fetch all orders
       const response = await fetch(`/api/orders`);
       if (!response.ok) throw new Error("Failed to fetch orders.");
-      const data = await response.json();
-      let customerOrders = []
-      for(let i = 0; i < data.length; i++) {
-        if(data[i].customer_id == customerId) {
-          customerOrders.push(data[i])
+      let data: Order[] = await response.json();
+
+      // Debugging: Log the raw orders data
+      console.log("Raw Orders Data for Customer:", customerId, data);
+
+      // Normalize `order_date` to ensure consistent UTC format
+      data = data.map(order => ({
+        ...order,
+        order_date: getUTCDate(order.order_date), // Use UTC date
+      }));
+
+      // Filter orders for the specific customer and date range
+      const filteredOrders = data.filter((order: Order) => {
+        if (order.customer_id !== customerId) {
+          return false;
         }
-      }
-      setOrders((prev) => ({ ...prev, [customerId]: customerOrders }));
+
+        if (dateRange.start && dateRange.end) {
+          const orderDateStr = order.order_date;
+          const startDateStr = getUTCDate(dateRange.start);
+          const endDateStr = getUTCDate(dateRange.end);
+
+          // Debugging: Log order date and date range
+          console.log("Order Date (UTC):", orderDateStr);
+          console.log("Date Range Start (UTC):", startDateStr);
+          console.log("Date Range End (UTC):", endDateStr);
+
+          // Compare dates without buffer
+          return orderDateStr >= startDateStr && orderDateStr <= endDateStr;
+        }
+
+        return true;
+      });
+
+      // Debugging: Log the filtered orders
+      console.log("Filtered Orders for Customer:", customerId, filteredOrders);
+
+      // Update state with filtered orders
+      setOrders((prev) => ({ ...prev, [customerId]: filteredOrders }));
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     }
   };
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
   const handleFilterApply = () => {
+    console.log("Applying Filters with Date Range:", dateRange);
     fetchCustomers();
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setDateRange({ start: "", end: "" });
+    setTimeInterval("");
+    setCustomers([]);
   };
 
   const handleNewCustomerChange = (
@@ -129,11 +223,18 @@ const CustomerManagementSection: React.FC = () => {
   };
 
   const deleteCustomer = async (id: string) => {
+    // Step 1: Ask for confirmation before proceeding
+    const confirmDelete = window.confirm("Are you sure you want to delete this customer? This action cannot be undone.");
+  
+    if (!confirmDelete) {
+      return; // Exit if the user cancels
+    }
+  
     try {
       const response = await fetch(`/api/customers/${id}`, {
         method: "DELETE",
       });
-
+  
       if (response.ok) {
         setCustomers((prev) => prev.filter((customer) => customer._id !== id));
         alert("Customer deleted successfully!");
@@ -156,6 +257,38 @@ const CustomerManagementSection: React.FC = () => {
         return updatedOrders;
       });
     }
+  };
+
+  const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all");
+
+  const handleCategoryChange = (category: "all" | "classes" | "products") => {
+    setOrderCategory(category);
+  };
+
+  const exportOrdersToCSV = () => {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, "-").split("T").join("_").replace("Z", ""); 
+    const filename = `customer_orders_${timestamp}.csv`;
+  
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Order ID,Customer Name,Email,Order Date,Total Amount,Status,Items\n";
+  
+    customers.forEach((customer) => {
+      if (orders[customer._id!]) {
+        orders[customer._id!].forEach((order) => {
+          const items = order.product_items.join(" | ");
+          const row = `${order._id},${customer.first_name} ${customer.last_name},${customer.email},${order.order_date},$${order.total_amount.toFixed(2)},${order.order_status},${items}`;
+          csvContent += row + "\n";
+        });
+      }
+    });
+  
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
   };
 
   return (
@@ -244,6 +377,7 @@ const CustomerManagementSection: React.FC = () => {
             onChange={(e) => setTimeInterval(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-lg"
           >
+            <option value="">Select Interval</option>
             <option value="1_month">1 Month</option>
             <option value="3_months">3 Months</option>
             <option value="6_months">6 Months</option>
@@ -251,13 +385,30 @@ const CustomerManagementSection: React.FC = () => {
           </select>
         </div>
       </div>
-      <button
-        onClick={handleFilterApply}
-        className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-      >
-        Apply Filters
-      </button>
 
+      <div className="flex flex-wrap gap-4 mt-4">
+        <button
+          onClick={handleFilterApply}
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+        >
+          Apply Filters
+        </button>
+
+        <button
+          onClick={handleClearSearch}
+          className="bg-gray-500 text-white py-2 px-4 rounded-lg"
+        >
+          Clear Search
+        </button>
+
+        <button
+          onClick={exportOrdersToCSV}
+          className="bg-green-500 text-white py-2 px-4 rounded-lg"
+        >
+          Export Orders
+        </button>
+      </div>
+      
       {/* Customer List */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-4">Customer List</h3>
@@ -290,31 +441,51 @@ const CustomerManagementSection: React.FC = () => {
                 </div>
 
                 {/* Display Orders */}
-                {orders[customer._id!] && (
-                  <div className="mt-4">
-                    <h4 className="text-md font-semibold mb-2">Orders:</h4>
-                    <ul className="list-disc pl-6">
-                      {orders[customer._id!].map((order) => (
-                        <li key={order._id} className="mb-2">
-                          <p>
-                            <strong>Order ID:</strong> {order._id}
-                          </p>
-                          <p>
-                            <strong>Order Date:</strong>{" "}
-                            {new Date(order.order_date).toLocaleDateString()}
-                          </p>
-                          <p>
-                            <strong>Status:</strong> {order.order_status}
-                          </p>
-                          <p>
-                            <strong>Total Amount:</strong> $
-                            {order.total_amount.toFixed(2)}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+{orders[customer._id!] && (
+  <div className="mt-4">
+    <h4 className="text-md font-semibold mb-2">Orders:</h4>
+
+    {/* Filter Buttons */}
+    <div className="flex gap-2 mb-3">
+      <button onClick={() => handleCategoryChange("all")} className={`px-3 py-1 rounded-lg ${orderCategory === "all" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+        All
+      </button>
+      <button onClick={() => handleCategoryChange("classes")} className={`px-3 py-1 rounded-lg ${orderCategory === "classes" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+        Classes
+      </button>
+      <button onClick={() => handleCategoryChange("products")} className={`px-3 py-1 rounded-lg ${orderCategory === "products" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+        Products
+      </button>
+    </div>
+
+    {/* Filtered Orders List */}
+    <ul>
+      {orders[customer._id!]
+        .filter((order) => 
+          orderCategory === "all" ||
+          (orderCategory === "classes" && order.product_items.includes("class")) ||
+          (orderCategory === "products" && order.product_items.includes("product"))
+        )
+        .map((order) => (
+          <li key={order._id} className="p-4 border-b border-gray-300">
+            <p className="font-medium">Order ID: {order._id}</p>
+            <p>Total: ${order.total_amount.toFixed(2)}</p>
+            <p>Status: {order.order_status}</p>
+            <p>Items: {order.product_items.join(", ")}</p>
+          </li>
+        ))}
+
+      {/* Display message when no orders exist for the selected category */}
+      {orders[customer._id!].filter((order) =>
+        orderCategory === "all" ||
+        (orderCategory === "classes" && order.product_items.includes("class")) ||
+        (orderCategory === "products" && order.product_items.includes("product"))
+      ).length === 0 && (
+        <p className="text-gray-500 italic">No orders found for this category.</p>
+      )}
+    </ul>
+  </div>
+)}
               </li>
             ))
           ) : (
@@ -324,6 +495,6 @@ const CustomerManagementSection: React.FC = () => {
       </div>
     </section>
   );
-};
+}
 
 export default CustomerManagementSection;
