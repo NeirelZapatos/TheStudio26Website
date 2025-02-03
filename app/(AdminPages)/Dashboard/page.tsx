@@ -12,6 +12,7 @@ import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
 import ProductAndClassSection from "./components/ProductAndClassSection";
 import FinancialAnalytics from "./components/FinancialAnalytics"; // Import the financial analytics section
+import NewsletterSection from "./components/NewsletterSection";
 
 const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -41,6 +42,7 @@ const DashboardPage: React.FC = () => {
         {activeSection === "customerManagement" && <CustomerManagementSection />}
         {activeSection == "productAndClass" && <ProductAndClassSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />} {/* Display Financial Analytics */}
+        {activeSection == "newsletter" && <NewsletterSection />}
     
       </main>
     </div>
