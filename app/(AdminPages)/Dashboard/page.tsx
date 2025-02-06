@@ -10,13 +10,11 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
-
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
 import ProductAndClassSection from "./components/ItemSection";
-
-
-import FinancialAnalytics from "./components/FinancialAnalytics"; // Import the financial analytics section
+import FinancialAnalytics from "./components/FinancialAnalytics";
+import ProductList from "./components/ProductList";
 
 const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -36,6 +34,8 @@ const DashboardPage: React.FC = () => {
           setShowCalendar={setShowCalendar}
           showProductCreator={showProductCreator}
           setShowProductCreator={setShowProductCreator}
+          showProductList={showProductCreator}
+          setShowProductList={setShowProductCreator}
         />
       </div>
       <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
@@ -50,7 +50,8 @@ const DashboardPage: React.FC = () => {
         {activeSection == "class" && <ClassSection /> }
         {activeSection === "customerManagement" && <CustomerManagementSection />}
         {activeSection == "productAndClass" && <ProductAndClassSection />}
-        {activeSection === "financialAnalytics" && <FinancialAnalytics />} {/* Display Financial Analytics */}
+        {activeSection === "financialAnalytics" && <FinancialAnalytics />}
+        {activeSection === "productList" && <ProductList />}
     
       </main>
     </div>

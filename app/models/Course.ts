@@ -4,7 +4,7 @@ export interface ICourse extends Document {
     name: string;
     price: number;
     description: string;
-    date: String;
+    date: string;
     time: string;
     duration: number;
     image_url: string;
