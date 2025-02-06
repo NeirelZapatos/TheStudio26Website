@@ -11,7 +11,6 @@ export interface IItem extends Document {
     size: string;
     color: string;
     quantity_in_stock: number;
-    stripeProductId: string;
 }
 
 
@@ -28,14 +27,11 @@ const itemSchema:Schema = new mongoose.Schema({
     description: {
         type: String,
     },
+    itemType: {
+        type: String,
+    },
     purchaseType: {
         type: String,
-        required: true,
-    },
-    category: { 
-        // Categories Jewlery, Stones, Supplies
-        type: String,
-        // required: true
     },
     material: {
         type: String,
@@ -54,11 +50,6 @@ const itemSchema:Schema = new mongoose.Schema({
         // required: true,
         default: 0,
         min: 0,
-    },
-    stripeProductId: {
-        type: String,
-        required: true,
-        unique: true,
     },
 });
 

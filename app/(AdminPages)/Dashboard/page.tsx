@@ -10,13 +10,19 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
-import ProductAndClassSection from "./components/ProductAndClassSection";
+
+import ItemSection from "./components/ItemSection";
+import ClassSection from "./components/ClassSection";
+import ProductAndClassSection from "./components/ItemSection";
+
+
 import FinancialAnalytics from "./components/FinancialAnalytics"; // Import the financial analytics section
 
 const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [showGettingPaid, setShowGettingPaid] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showProductCreator, setShowProductCreator] = useState(false);
 
   return (
     <div className="h-screen flex">
@@ -28,6 +34,8 @@ const DashboardPage: React.FC = () => {
           setShowGettingPaid={setShowGettingPaid}
           showCalendar={showCalendar}
           setShowCalendar={setShowCalendar}
+          showProductCreator={showProductCreator}
+          setShowProductCreator={setShowProductCreator}
         />
       </div>
       <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
@@ -38,6 +46,8 @@ const DashboardPage: React.FC = () => {
         {activeSection === "pos" && <PointOfSaleSection />}
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
+        {activeSection == "item" && <ItemSection /> }
+        {activeSection == "class" && <ClassSection /> }
         {activeSection === "customerManagement" && <CustomerManagementSection />}
         {activeSection == "productAndClass" && <ProductAndClassSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />} {/* Display Financial Analytics */}

@@ -17,7 +17,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         const existingProduct = await Item.findById(params.id);
         if(!existingProduct) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-
         }
 
         existingProduct.name = body.name ?? existingProduct.name; // Update name if provided

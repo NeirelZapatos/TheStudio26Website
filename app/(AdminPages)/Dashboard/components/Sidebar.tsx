@@ -7,6 +7,8 @@ interface SidebarProps {
   setShowGettingPaid: (show: boolean) => void;
   showCalendar: boolean;
   setShowCalendar: (show: boolean) => void;
+  showProductCreator: boolean;
+  setShowProductCreator: (show: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -16,6 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   setShowGettingPaid,
   showCalendar,
   setShowCalendar,
+  showProductCreator,
+  setShowProductCreator,
 }) => {
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 overflow-y-auto">
@@ -97,6 +101,34 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
+        {/* ------------------------ Item and Class Creator Section V ------------------------ */}
+        <div>
+          <button
+            onClick={() => setShowProductCreator(!showProductCreator)}
+            className="block w-full text-left p-2 rounded-lg hover:bg-gray-600"
+          >
+            Create Product
+          </button>
+          {showProductCreator && (
+            <div className="pl-4 space-y-1">
+              <button
+                onClick={() => setActiveSection("item")}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "item" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
+              >
+                Item
+              </button>
+              <button
+                onClick={() => setActiveSection("class")}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "class" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
+              >
+                Class
+              </button>
+            </div>
+          )}
+        </div>
+        {/* ------------------------ Item and Class Creator Section ^ ------------------------ */}
         <button
           onClick={() => setActiveSection("customerManagement")}
           className={`block w-full text-left p-2 rounded-lg ${activeSection === "customerManagement" ? "bg-gray-700" : "hover:bg-gray-600"
