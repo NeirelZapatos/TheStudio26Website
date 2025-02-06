@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+import { productTemplates } from '@/utils/productTemplates';
+
 type Product = {
   id: string;
   name: string;
@@ -24,19 +26,19 @@ export default function Page() {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [itemType, setItemType] = useState<string>(''); // Ring, Necklace, etc...
-  const [price, setPrice] = useState<number>(); // Default to 0
+  const [price, setPrice] = useState<string>(""); // Default to 0
   const [recurring, setRecurring] = useState<boolean>(false); // true for Recurring, false for One-Time
-  const [date, setDate] = useState<string>(getCurrentDate);
-  const [time, setTime] = useState<string>(getCurrentTime);
-  const [instructor, setInstructor] = useState<string>('');
-  const [duration, setDuration] = useState<number | undefined>();
+  const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
+  const [instructor, setInstructor] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
   const [location, setLocation] = useState<string>('4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682');
 
   const createClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating class");
 
-    const priceInCents = Math.round((price || 0) * 100);
+    const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
+    const convertedDuration = duration ? parseInt(duration) : undefined;
 
     try {
       const stripeResponse = await axios.post('/api/stripe/create-product', {
@@ -45,7 +47,8 @@ export default function Page() {
         itemType,
         purchaseType: "Course",
         recurring,
-        price: priceInCents,
+        price: convertedPrice,
+        duration: convertedDuration
       });
       const createdProduct = stripeResponse.data;
 
@@ -60,12 +63,12 @@ export default function Page() {
         itemType,
         purchaseType: 'Course',
         recurring,
-        price: priceInCents,
+        price: convertedPrice,
         stripeProductId: createdProduct.product.id,
         date,
         time,
         instructor,
-        duration,
+        duration: convertedDuration,
         location,
       };
 
@@ -77,14 +80,28 @@ export default function Page() {
       setDescription('');
       setItemType('');
       setRecurring(false);
-      setPrice(undefined);
-      setDate(getCurrentDate);
-      setTime(getCurrentTime);
+      setPrice("");
+      setDate("");
+      setTime("");
       setInstructor('');
-      setDuration(undefined);
+      setDuration("");
+      setLocation('4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682');
     } catch (error) {
       setMessage('Error creating product');
       console.error("Error in create Product");
+    }
+  };
+
+  const loadTemplate = (index: string) => {
+    if (index !== "") {
+      const template = productTemplates[parseInt(index)];
+      setName(template.name);
+      setDescription(template.description);
+      setRecurring(template.recurring);
+      setPrice(template.price);
+      setInstructor(template.instructor);
+      setDuration(template.duration);
+      setLocation(template.location);
     }
   };
 
@@ -95,6 +112,19 @@ export default function Page() {
 
         {/* --------------- Left Column ---------------*/}
         <div className="space-y-4">
+          <div>
+            <select
+              onChange={(e) => loadTemplate(e.target.value)}
+              className="select select-bordered select-sm"
+              >
+              <option value="">Select Template...</option>
+              {productTemplates.map((template, index) => (
+                <option key={index} value={index}>
+                  {template.name}
+                </option>
+              ))}
+              </select>
+          </div>
           {/* --------------- Name ---------------*/}
           <div className="form-control">
             <label className="label">
@@ -208,9 +238,13 @@ export default function Page() {
             <input
               type="number"
               value={duration}
-              step='15'
               min={0}
-              onChange={(e) => setDuration(parseInt(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) { // Regex to allow only whole numbers
+                  setDuration(value);
+                }
+              }}
               className="input input-bordered input-sm"
             />
           </div>
@@ -222,7 +256,12 @@ export default function Page() {
             <input
               type="number"
               value={price} // Adjust to match your state variable
-              onChange={(e) => setPrice(parseFloat(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) { // Regex to allow only whole numbers
+                  setPrice(value);
+                }
+              }}
               onWheel={(e) => e.preventDefault()}
               placeholder="Price"
               step="0.01"
