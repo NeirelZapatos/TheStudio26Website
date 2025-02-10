@@ -40,10 +40,9 @@ const DashboardPage: React.FC = () => {
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
         {activeSection === "customerManagement" && <CustomerManagementSection />}
-        {activeSection == "productAndClass" && <ProductAndClassSection />}
+        {activeSection === "productAndClass" && <ProductAndClassSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />} {/* Display Financial Analytics */}
-        {activeSection == "newsletter" && <NewsletterSection />}
-    
+        {activeSection === "newsletter" && <NewsletterSection />}
       </main>
     </div>
   );
