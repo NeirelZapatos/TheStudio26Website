@@ -22,7 +22,6 @@ interface Order {
 }
 
 const CustomerManagementSection: React.FC = () => {
-  // State declarations
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [orders, setOrders] = useState<{ [key: string]: Order[] }>({});
   const [newCustomer, setNewCustomer] = useState<Customer>({
@@ -259,11 +258,6 @@ const exportOrdersToCSV = () => {
     const productsPurchased = order.product_items.filter(
       (item) => !item.includes("Class")
     );
-    
-    // let productsPurchase []
-    // for(let i = 0; i < productsPurchase.length; i++) {
-
-    // }
 
     return (
       <li key={order._id} className="mb-4 border p-3 rounded-md bg-gray-100">
