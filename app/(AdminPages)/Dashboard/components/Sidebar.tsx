@@ -155,6 +155,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Newsletter
         </button>
+
+                {/* Added Manage Orders Button */}
+                <button
+          onClick={() => setActiveSection("manageOrders")}
+          className={`block w-full text-left p-2 rounded-lg ${activeSection === "ManageOrders" ? "bg-gray-700" : "hover:bg-gray-600"}`}
+        >
+          Manage Orders
+        </button>
+
       </nav>
     </aside>
   );

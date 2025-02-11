@@ -7,7 +7,7 @@ export interface ICustomer extends Document {
     phone_number: number;
     shipping_address: string;
     billing_address: string;
-    orders: Types.ObjectId[];
+    orders: Types.ObjectId[]; // Array of Order ObjectIds related to this customer
 }
 
 const customerSchema:Schema = new mongoose.Schema({
