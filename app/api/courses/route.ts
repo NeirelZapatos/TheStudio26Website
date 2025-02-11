@@ -47,14 +47,14 @@ export async function GET(request: NextRequest) {
         // Connect to the database
         await dbConnect();
 
-        // Retrieve all customers from the database
+        // Retrieve all Courses from the database
         const courses = await Course.find({});
         return NextResponse.json(courses);
 
     } catch (err: unknown) {
         // Handle any errors that occur during the GET operation
         if (err instanceof Error) {
-            console.error("Error in GET /api/customers:", err); // Added for better debugging
+            console.error("Error in GET /api/courses:", err); // Added for better debugging
             return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
