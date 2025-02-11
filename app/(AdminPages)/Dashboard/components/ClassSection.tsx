@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-import { productTemplates } from '@/utils/productTemplates';
+import { courseTemplates } from '@/utils/productTemplates';
 
 type Product = {
   id: string;
@@ -18,10 +18,10 @@ type Product = {
 export default function Page() {
   const [message, setMessage] = useState<string>('');
 
+  // Template search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
   const [searchText, setSearchText] = useState("");
-
-  const filteredTemplateList = productTemplates.filter((template) =>
+  const filteredTemplateList = courseTemplates.filter((template) =>
     template.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
@@ -101,7 +101,7 @@ export default function Page() {
 
   const loadTemplate = (index: string) => {
     if (index !== "") {
-      const template = productTemplates[parseInt(index)];
+      const template = courseTemplates[parseInt(index)];
       setName(template.name);
       setDescription(template.description);
       setRecurring(template.recurring);
@@ -116,52 +116,51 @@ export default function Page() {
     <div className="p-6 bg-base-200 min-h-screen">
       <h2 className="text-2xl font-semibold mb-4">Create a Class</h2>
       {/* --------------- Search For Template ---------------*/}
-        <div className="mb-4">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm w-full"
-            onClick={() => setShowTemplateSearch(!showTemplateSearch)}
-          >
-            {showTemplateSearch ? "Hide Template Search" : "Search For Template"}
-          </button>
+      <div className="mb-4">
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm w-full"
+          onClick={() => setShowTemplateSearch(!showTemplateSearch)}
+        >
+          {showTemplateSearch ? "Hide Template Search" : "Search For Template"}
+        </button>
 
-          {showTemplateSearch && (
-            <div className="mt-2 p-4 border rounded bh-white shadow">
-              <input
-                type="text"
-                placeholder="Search Templates"
-                value={searchText}
-                onChange={(e) => {
-                  setSearchText(e.target.value);
-                  setShowTemplateSearch(e.target.value.trim().length > 0);
-                }}
-                className="input input-bordered input-sm w-full mb-2"
-              />
+        {showTemplateSearch && (
+          <div className="mt-2 p-4 border rounded bh-white shadow">
+            <input
+              type="text"
+              placeholder="Search Templates"
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+              }}
+              className="input input-bordered input-sm w-full mb-2"
+            />
 
-              {filteredTemplateList.length > 0 ? (
-                 <ul 
-                 className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
-                 style={{ maxHeight: filteredTemplateList.length > 4 ? '160px' : 'auto' }} // Scroll if more than 4 items
-               >
-                  {filteredTemplateList.map((template, index) => (
-                    <li key={index} 
-                      onClick={() =>{loadTemplate(index.toString()); 
-                        setShowTemplateSearch(false);
-                        setSearchText("");
-                      }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      {template.name}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500 text-sm">Nothing to Show</p>
-              )}
-        </div>
+            {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              <ul
+                className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
+                style={{ maxHeight: filteredTemplateList.length > 4 ? '160px' : 'auto' }} // Scrollable if more than 4 items
+              >
+                {filteredTemplateList.map((template, index) => (
+                  <li key={index}
+                    onClick={() => {
+                      loadTemplate(index.toString());
+                      setShowTemplateSearch(false);
+                      setSearchText("");
+                    }}
+                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                  >
+                    {template.name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">Nothing to Show</p>
             )}
+          </div>
+        )}
       </div>
-      {/* --------------- Search For Template ---------------*/}
       <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* --------------- Left Column ---------------*/}

@@ -7,10 +7,8 @@ interface SidebarProps {
   setShowGettingPaid: (show: boolean) => void;
   showCalendar: boolean;
   setShowCalendar: (show: boolean) => void;
-  showProductCreator: boolean;
-  setShowProductCreator: (show: boolean) => void;
-  showProductList: boolean;
-  setShowProductList: (show: boolean) => void;
+  showProducts: boolean;
+  setShowProducts: (show: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -20,10 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   setShowGettingPaid,
   showCalendar,
   setShowCalendar,
-  showProductCreator,
-  setShowProductCreator,
-  showProductList,
-  setShowProductList
+  showProducts,
+  setShowProducts,
 }) => {
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 overflow-y-auto">
@@ -108,29 +104,36 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
-        {/* ------------------------ Create Product Section ------------------------ */}
+        {/* ------------------------ Product Section ------------------------ */}
         <div>
           <button
-            onClick={() => setShowProductCreator(!showProductCreator)}
+            onClick={() => setShowProducts(!showProducts)}
             className="block w-full text-left p-2 rounded-lg hover:bg-gray-600"
           >
-            Create Product
+            Products
           </button>
-          {showProductCreator && (
+          {showProducts && (
             <div className="pl-4 space-y-1">
               <button
                 onClick={() => setActiveSection("item")}
                 className={`block w-full text-left p-2 rounded-lg ${activeSection === "item" ? "bg-gray-700" : "hover:bg-gray-600"
                   }`}
               >
-                Item
+                Create an Item
               </button>
               <button
                 onClick={() => setActiveSection("class")}
                 className={`block w-full text-left p-2 rounded-lg ${activeSection === "class" ? "bg-gray-700" : "hover:bg-gray-600"
                   }`}
               >
-                Class
+                Create a Class
+              </button>
+              <button
+                onClick={() => setActiveSection("productList")}
+                className={`block w-full text-left p-2 rounded-lg ${activeSection === "productList" ? "bg-gray-700" : "hover:bg-gray-600"
+                  }`}
+              >
+                Product List
               </button>
             </div>
           )}
@@ -142,14 +145,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             }`}
         >
           Customer Management
-        </button>
-        {/* ------------------------ Product List Section ------------------------ */}
-        <button
-          onClick={() => setActiveSection("productList")}
-          className={`block w-full text-left p-2 rounded-lg ${activeSection === "productList" ? "bg-gray-700" : "hover:bg-gray-600"
-            }`}
-        >
-          Products List
         </button>
       </nav>
     </aside>

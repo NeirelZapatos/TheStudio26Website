@@ -12,7 +12,6 @@ import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
-import ProductAndClassSection from "./components/ItemSection";
 import FinancialAnalytics from "./components/FinancialAnalytics";
 import ProductList from "./components/ProductList";
 
@@ -20,7 +19,7 @@ const DashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [showGettingPaid, setShowGettingPaid] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showProductCreator, setShowProductCreator] = useState(false);
+  const [showProducts, setShowProducts] = useState(false);
 
   return (
     <div className="h-screen flex">
@@ -32,11 +31,9 @@ const DashboardPage: React.FC = () => {
           setShowGettingPaid={setShowGettingPaid}
           showCalendar={showCalendar}
           setShowCalendar={setShowCalendar}
-          showProductCreator={showProductCreator}
-          setShowProductCreator={setShowProductCreator}
-          showProductList={showProductCreator}
-          setShowProductList={setShowProductCreator}
-        />
+          showProducts={showProducts}
+          setShowProducts={setShowProducts}
+        />  
       </div>
       <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
         <Header />
@@ -49,7 +46,6 @@ const DashboardPage: React.FC = () => {
         {activeSection == "item" && <ItemSection /> }
         {activeSection == "class" && <ClassSection /> }
         {activeSection === "customerManagement" && <CustomerManagementSection />}
-        {activeSection == "productAndClass" && <ProductAndClassSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {activeSection === "productList" && <ProductList />}
     

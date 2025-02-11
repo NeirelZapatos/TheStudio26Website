@@ -3,14 +3,14 @@ import mongoose, { Document, Schema } from "mongoose"
 
 export interface IItem extends Document {
     name: string;
-    price: number;
+    price: string;
     description: string;
     category: string;
     material: string;
     image_url: string;
     size: string;
     color: string;
-    quantity_in_stock: number;
+    quantity_in_stock: string;
 }
 
 
@@ -20,7 +20,7 @@ const itemSchema:Schema = new mongoose.Schema({
         required: true,
     },
     price: {
-        type: Number,
+        type: String,
         required: true,
         min: 0
     },
@@ -46,8 +46,8 @@ const itemSchema:Schema = new mongoose.Schema({
         type: String,
     },
     quantity_in_stock: {
-        type: Number,
-        // required: true,
+        type: String,
+        required: true,
         default: 0,
         min: 0,
     },

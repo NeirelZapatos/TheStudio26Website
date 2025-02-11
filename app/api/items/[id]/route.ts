@@ -8,9 +8,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         await dbConnect();
 
         const body = await request.json();
+        // console.log("Received request body:", body); // Log the request body for troubleshooting
+        
         const validation = itemSchema.safeParse(body);
 
         if (!validation.success) {
+            console.log("Validation failed:", validation.error.errors);
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
@@ -19,9 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             return NextResponse.json({ error: 'Product not found' }, { status: 404 })
         }
 
-        existingProduct.name = body.name ?? existingProduct.name; // Update name if provided
-        existingProduct.price = body.price ?? existingProduct.price; // Update price if provided
-        existingProduct.description = body.description ?? existingProduct.description; // Update description if provided
+        Object.assign(existingProduct, body);
 
         await existingProduct.save();
 
