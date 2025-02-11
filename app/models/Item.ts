@@ -3,15 +3,14 @@ import mongoose, { Document, Schema } from "mongoose"
 
 export interface IItem extends Document {
     name: string;
-    price: number;
+    price: string;
     description: string;
     category: string;
     material: string;
     image_url: string;
     size: string;
     color: string;
-    quantity_in_stock: number;
-    stripeProductId: string;
+    quantity_in_stock: string;
 }
 
 
@@ -21,21 +20,18 @@ const itemSchema:Schema = new mongoose.Schema({
         required: true,
     },
     price: {
-        type: Number,
+        type: String,
         required: true,
         min: 0
     },
     description: {
         type: String,
     },
+    itemType: {
+        type: String,
+    },
     purchaseType: {
         type: String,
-        required: true,
-    },
-    category: { 
-        // Categories Jewlery, Stones, Supplies
-        type: String,
-        // required: true
     },
     material: {
         type: String,
@@ -50,15 +46,10 @@ const itemSchema:Schema = new mongoose.Schema({
         type: String,
     },
     quantity_in_stock: {
-        type: Number,
-        // required: true,
-        default: 0,
-        min: 0,
-    },
-    stripeProductId: {
         type: String,
         required: true,
-        unique: true,
+        default: 0,
+        min: 0,
     },
 });
 

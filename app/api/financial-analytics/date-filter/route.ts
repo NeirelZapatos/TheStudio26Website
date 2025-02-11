@@ -24,25 +24,6 @@ export async function GET(request: NextRequest) {
         await dbConnect();
         const validCategories = ['Courses', 'Jewelry', 'Stones', 'Supplies'];
 
-        // If a specific category is selected, fetch data for that category
-        // if (category !== "All Categories" && validCategories.includes(category)) {
-        //   const categoryData = await FinancialData.findOne({ category });
-        //   if (!categoryData) {
-        //     return NextResponse.json({ error: "Category not found" }, { status: 404 });
-        //   }
-
-        //   const revenue = categoryData.revenue[timeFrame][0] || 0; // Fetch the selected timeframe revenue
-
-        //   return NextResponse.json({
-        //     revenue,
-        //     categoryRevenue: {
-        //       [category]: { revenue },
-        //     },
-        //   }, { status: 200 });
-        // }
-
-
-        // If 'All Categories' is selected, aggregate revenue across all categories
         const allCategoriesData = await Order.find({
             order_date: {
                 $gte: startDate,
@@ -57,25 +38,42 @@ export async function GET(request: NextRequest) {
         let suppliesRevenue = 0;
         let stonesRevenue = 0;
         let courseRevenue = 0;
+
         for (const catData of allCategoriesData) {
             totalRevenue += catData.total_amount;
-            for (let i = 0; i < catData.product_items.length; i++) {
-                const productId = catData.product_items[i];
-                const product = await Item.findById(productId); // Await the product fetch
-        
-                if (product.category === "Jewelry") {
-                    jewelryRevenue += product.price;
-                } else if (product.category === "Stones") {
-                    stonesRevenue += product.price;
-                } else if (product.category === "Supplies") {
-                    suppliesRevenue += product.price;
+            
+            // Handle product items
+            for (const productId of catData.product_items) {
+                const product = await Item.findById(productId);
+                
+                if (!product) {
+                    console.warn(`Product not found for ID: ${productId}`);
+                    continue;
+                }
+
+                switch (product.category) {
+                    case "Jewelry":
+                        jewelryRevenue += product.price;
+                        break;
+                    case "Stones":
+                        stonesRevenue += product.price;
+                        break;
+                    case "Supplies":
+                        suppliesRevenue += product.price;
+                        break;
                 }
             }
-            for(let i = 0; i < catData.course_items.length; i++) {
-                const courseId = catData.course_items[i];
+
+            // Handle course items
+            for (const courseId of catData.course_items) {
                 const course = await Course.findById(courseId);
+                
+                if (!course) {
+                    console.warn(`Course not found for ID: ${courseId}`);
+                    continue;
+                }
+
                 courseRevenue += course.price;
-                console.log(courseRevenue);
             }
         }
 
