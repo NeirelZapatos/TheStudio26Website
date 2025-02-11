@@ -16,4 +16,4 @@ const schema = z.object({
     courses: z.array(objectIdValidator).optional()
 });
 
-export default schema;
+export default schema

@@ -91,3 +91,51 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
     }
 }
+
+export async function PUT(request: NextRequest) {
+    try {
+        await dbConnect();
+
+        const body = await request.json();
+        const { orderIds, order_status } = body;
+
+        // Validate request body
+        if (!orderIds || !order_status) {
+            return NextResponse.json(
+                { error: 'orderIds and order_status are required' },
+                { status: 400 }
+            );
+        }
+
+        // Update multiple orders
+        const result = await Order.updateMany(
+            { _id: { $in: orderIds } }, // Filter by order IDs
+            { $set: { order_status } } // Update order_status
+        );
+
+        if (result.modifiedCount === 0) {
+            return NextResponse.json(
+                { error: 'No orders found or no changes made' },
+                { status: 404 }
+            );
+        }
+
+        // Fetch updated orders
+        const updatedOrders = await Order.find({ _id: { $in: orderIds } });
+
+        return NextResponse.json(updatedOrders, { status: 200 });
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            console.error(err); // Log the error
+            return NextResponse.json(
+                { error: err.message },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            { error: 'An unknown error occurred' },
+            { status: 500 }
+        );
+    }
+}

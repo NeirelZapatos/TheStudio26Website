@@ -70,19 +70,31 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
     try {
         await dbConnect();
 
-
         const order = await Order.findById(params.id);
 
         if (!order) {
-            return NextResponse.json({ error: 'order not found' }, { status: 404 });
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        return NextResponse.json(order);
+        // Return all relevant product fields (name, price, description, etc.)
+        return NextResponse.json({
+            _id: order._id,
+            name: order.name,
+            price: order.price,
+            description: order.description,
+            category: order.category,
+            material: order.material,
+            image_url: order.image_url,
+            size: order.size,
+            color: order.color,
+            quantity_in_stock: order.quantity_in_stock,
+            stripeProductId: order.stripeProductId,
+        });
     } catch (err: unknown) {
         if (err instanceof Error) {
-            return NextResponse.json({ error: err.message }, { status: 500 })
+            return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
-        return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+        return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
     }
 }

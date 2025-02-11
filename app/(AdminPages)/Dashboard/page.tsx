@@ -16,8 +16,9 @@ import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
 import FinancialAnalytics from "./components/FinancialAnalytics";
 import ProductList from "./components/ProductList";
+import ManageOrders from './components/ManageOrders/Components/ManageOrders';
 
-const DashboardPage: React.FC = () => {
+function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
   const [showGettingPaid, setShowGettingPaid] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -51,9 +52,10 @@ const DashboardPage: React.FC = () => {
         {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {activeSection === "productList" && <ProductList />}
+        {activeSection === "manageOrders" && <ManageOrders />}
       </main>
     </div>
   );
-};
+}
 
 export default DashboardPage;

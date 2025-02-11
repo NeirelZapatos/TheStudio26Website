@@ -19,7 +19,7 @@ const schema = z.object({
   // total_amount: z.number().min(0, { message: "Total amount must be a positive number" }),
   shipping_method: z.string(),
   payment_method: z.string(),
-  order_status: z.enum(['pending', 'shipped', 'delivered']),
+  order_status: z.enum(['pending', 'shipped', 'delivered', 'fulfilled']),
   shipping_address: z.string(),
   billing_address: z.string(),
   // Uncomment and adjust if using nested products

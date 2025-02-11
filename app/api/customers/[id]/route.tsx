@@ -74,19 +74,26 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         const customer = await Customer.findById(params.id);
 
         if (!customer) {
-            return NextResponse.json({ error: 'Customer not found' }, { status: 404 }); // Change: Updated "User" to "Customer"
+            return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
         }
 
-        return NextResponse.json(customer);
+        // Reuse updateCustomerFields to return the customer details
+        return NextResponse.json({
+            first_name: customer.first_name,
+            last_name: customer.last_name,
+            email: customer.email,
+            phone_number: customer.phone_number,
+        });
     } catch (err: unknown) {
         if (err instanceof Error) {
-            console.error("Error in GET /api/customers/[id]:", err); // Change: Added detailed logging
+            console.error("Error in GET /api/customers/[id]:", err);
             return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
         return NextResponse.json({ error: 'An unknown error occurred' }, { status: 500 });
     }
 }
+
 
 // Delete an existing user
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
