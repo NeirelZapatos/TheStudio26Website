@@ -16,18 +16,36 @@ import Course from '@/app/models/Course';
 //     "billing_address": "123 Main St, Springfield"
 //  }
 
-export async function GET(request: NextRequest){
+export async function GET(request: NextRequest) {
     try {
         await dbConnect();
 
-        const orders = await Order.find({});
+        const { searchParams } = new URL(request.url);
+        const startDate = searchParams.get("start");
+        const endDate = searchParams.get("end");
+
+        const query: any = {};
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            start.setUTCHours(0, 0, 0, 0); // Set start time to beginning of the day
+            end.setUTCHours(23, 59, 59, 999); // Set end time to end of the day
+
+            query.order_date = { $gte: start, $lte: end };
+        }
+
+        console.log("MongoDB Query:", query);
+
+        const orders = await Order.find(query);
         return NextResponse.json(orders);
     } catch (err: unknown) {
         if (err instanceof Error) {
-            return NextResponse.json({ error: err.message }, { status: 500 })
+            return NextResponse.json({ error: err.message }, { status: 500 });
         }
 
-        return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
     }
 }
 
