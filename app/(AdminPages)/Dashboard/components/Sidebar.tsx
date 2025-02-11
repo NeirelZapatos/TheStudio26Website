@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface SidebarProps {
   activeSection: string;
@@ -145,6 +146,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             }`}
         >
           Customer Management
+        </button>
+        
+        <button
+          onClick={() => setActiveSection("newsletter")}
+          className={`block w-full text-left p-2 rounded-lg ${activeSection === "newsletter" ? "bg-gray-700" : "hover:bg-gray-600"
+            }`}
+        >
+          Newsletter
         </button>
       </nav>
     </aside>

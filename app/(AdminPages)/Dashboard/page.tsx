@@ -10,6 +10,8 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagementSection";
+
+import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
 import FinancialAnalytics from "./components/FinancialAnalytics";
@@ -46,9 +48,9 @@ const DashboardPage: React.FC = () => {
         {activeSection == "item" && <ItemSection /> }
         {activeSection == "class" && <ClassSection /> }
         {activeSection === "customerManagement" && <CustomerManagementSection />}
+        {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {activeSection === "productList" && <ProductList />}
-    
       </main>
     </div>
   );
