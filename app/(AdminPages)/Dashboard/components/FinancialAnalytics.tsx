@@ -36,15 +36,65 @@ const FinancialAnalytics: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // setIsLoading(true);
+      // setError(null);
+      // try {
+      //   const response = await fetch(
+      //     `/api/financial-analytics?category=${selectedCategory}&timeFrame=${timeFrame.toLowerCase()}`
+      //   );
+      //   if (!response.ok) throw new Error("Failed to fetch data");
+      //   const data = await response.json();
+      //   setFinancialData(data);
+      // } catch (err) {
+      //   setError(err instanceof Error ? err.message : "An error occurred");
+      // } finally {
+      //   setIsLoading(false);
+      // }
+
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth();
+      const currentDay = new Date().getDate()
+
+      const nextDate = new Date(currentYear, currentMonth, currentDay);
+      nextDate.setDate(nextDate.getDate() + 1);
+      const nextYear = nextDate.getFullYear();
+      const nextMonth = (nextDate.getMonth() + 1).toString().padStart(2, '0');
+      const nextDay = nextDate.getDate().toString().padStart(2, '0');
+
+      let startDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${currentDay}`;
+      let endDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${nextDay}`;
+
+      if (timeFrame == "Yearly") {
+        startDate = `${currentYear}-01-01`;
+        endDate = `${currentYear}-12-31`;
+      } else if (timeFrame == "Quarterly") {
+        const quarterFirstMonth = Math.floor(currentMonth / 3) * 3;
+        const quarterLastMonth = quarterFirstMonth + 2;
+        startDate = `${currentYear}-${(quarterFirstMonth + 1).toString().padStart(2, '0')}-01`;
+        endDate = `${currentYear}-${(quarterLastMonth + 1).toString().padStart(2, '0')}-${new Date(currentYear, quarterLastMonth + 1, 0).getDate()}`;
+      } else if (timeFrame == "Monthly") {
+        startDate = `${currentYear}-01-01`;
+        endDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${new Date(currentYear, currentMonth + 1, 0).getDate().toString().padStart(2, '0')}`;
+      } else {
+
+        startDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${currentDay}`;
+        endDate = `${nextYear}-${nextMonth}-${nextDay}`;
+      }
+
+      console.log(startDate);
+      console.log(endDate);
+
+
       setIsLoading(true);
       setError(null);
       try {
         const response = await fetch(
-          `/api/financial-analytics?category=${selectedCategory}&timeFrame=${timeFrame.toLowerCase()}`
+          `/api/financial-analytics/date-filter?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
         );
         if (!response.ok) throw new Error("Failed to fetch data");
         const data = await response.json();
         setFinancialData(data);
+        // setTimeFrame(`${startDate} to ${endDate}`)
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
