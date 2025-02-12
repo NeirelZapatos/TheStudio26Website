@@ -10,13 +10,13 @@ const s3Client = new S3Client({
     },
 });
 
-// Upload Image to S3
-export const uploadFileToS3 = async (file: File): Promise<string> => {
-    const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`;
+// Upload Image to S3 with Custom File Name
+export const uploadFileToS3 = async (file: File, fileName: string): Promise<string> => {
+    const sanitizedFileName = fileName.replace(/\s+/g, "-").toLowerCase(); // Ensure clean file name
 
     const command = new PutObjectCommand({
         Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-        Key: fileName,
+        Key: sanitizedFileName,
         ContentType: file.type,
     });
 
@@ -28,11 +28,11 @@ export const uploadFileToS3 = async (file: File): Promise<string> => {
         headers: { "Content-Type": file.type },
     });
 
-    return `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${fileName}`;
+    return `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${sanitizedFileName}`;
 };
 
-// List Images from S3
-export const listS3Images = async (): Promise<string[]> => {
+// List All Images from S3 (Filtering Out Non-Image Files)
+export const listS3Images = async (): Promise<{ url: string; key: string }[]> => {
     try {
         const command = new ListObjectsV2Command({
             Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
@@ -40,8 +40,19 @@ export const listS3Images = async (): Promise<string[]> => {
 
         const { Contents } = await s3Client.send(command);
 
+        // File extensions considered as images
+        const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+
         return Contents
-            ? Contents.map((item) => `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${item.Key}`)
+            ? Contents.filter((item) => item.Key !== undefined) // Ensure Key is defined
+                .filter((item) => {
+                    const fileExtension = item.Key!.split(".").pop()?.toLowerCase();
+                    return fileExtension && imageExtensions.includes(fileExtension);
+                })
+                .map((item) => ({
+                    url: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${item.Key}`,
+                    key: item.Key as string, // Type assertion since undefined values are removed
+                }))
             : [];
     } catch (error) {
         console.error("Error fetching S3 images:", error);
