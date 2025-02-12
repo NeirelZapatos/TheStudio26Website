@@ -1,5 +1,5 @@
 const SUBCATEGORIES = [
-  { name: "Stones", selected: true, href: "#" },
+  { name: "Stones", selected: false, href: "#" },
   { name: "Jewelry", selected: false, href: "#" },
   { name: "Supplies", selected: false, href: "#" },
 ];
@@ -52,23 +52,42 @@ const PRICE_FILTERS = {
 
 const DEFAULT_CUSTOM_PRICE = [0, 500] as [number, number];
 
-interface FilterTestProps {
-  filter: any;
-  setFilter: React.Dispatch<React.SetStateAction<any>>;
+interface FilterProps {
+  filter: FilterState;
+  setFilter: React.Dispatch<React.SetStateAction<FilterState>>;
 }
 
-const Filters = ({ filter, setFilter }: FilterTestProps) => {
+interface FilterState {
+  sort: string;
+  category: string;
+  color: string[];
+  material: string[];
+  size: string[];
+  price: {
+    isCustom: boolean;
+    range: [number, number];
+  };
+}
+
+const Filters = ({ filter, setFilter }: FilterProps) => {
   console.log(filter);
+
+  const handleCategoryChange = (category: string) => {
+    setFilter((prev) => ({
+      ...prev,
+      category, // Update the selected category
+    }));
+  };
 
   const applyArrayFilter = ({
     category,
     value,
   }: {
-    category: keyof Omit<typeof filter, "price" | "sort">;
+    category: keyof Pick<FilterState, "color" | "material" | "size">;
     value: string;
   }) => {
     const isFilterApplied = filter[category].includes(value);
-    setFilter((prev: any) => ({
+    setFilter((prev: FilterState) => ({
       ...prev,
       [category]: isFilterApplied
         ? prev[category].filter((v: string) => v !== value)
@@ -79,35 +98,41 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
   const minPrice = Math.min(filter.price.range[0], filter.price.range[1]);
   const maxPrice = Math.max(filter.price.range[0], filter.price.range[1]);
 
-  // const handleSliderChange = (values: [number, number]) => {
-  //   setFilter((prev) => ({
-  //     ...prev,
-  //     price: {
-  //       ...prev.price,
-  //       range: values,
-  //     },
-  //   }));
-  // };
-
   return (
-    <div className="hidden lg:block">
+    <div className="hidden lg:block overflow-y-auto">
       <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
+        <li>
+          <button
+            onClick={() => handleCategoryChange("all")}
+            className={`w-full text-left ${
+              filter.category === "all"
+                ? "text-gray-900"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            All Items
+          </button>
+        </li>
         {SUBCATEGORIES.map((category) => (
           <li key={category.name}>
             <button
-              disabled={!category.selected}
-              className="disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => handleCategoryChange(category.name)}
+              className={`w-full text-left ${
+                filter.category === category.name.toLowerCase()
+                  ? "text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               {category.name}
             </button>
           </li>
         ))}
       </ul>
-      {/* Accordion */}
 
+      {/* Accordion */}
       {/* Color Filters */}
       <div className="collapse collapse-arrow">
-        <input type="checkbox" name="my-accordion-2" defaultChecked />
+        <input type="checkbox" name="my-accordion-2"/>
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
           <span className="font-medium text-gray-900">Color</span>
         </div>
@@ -141,7 +166,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
 
       {/* Prices Filter */}
       <div className="collapse collapse-arrow">
-        <input type="checkbox" name="my-accordion-2" defaultChecked />
+        <input type="checkbox" name="my-accordion-2" />
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
           <span className="font-medium text-gray-900">Price</span>
         </div>
@@ -152,15 +177,15 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                 <input
                   type="radio"
                   id={`price-${optionIdx}`}
-                  // onChange={() => {
-                  //   setFilter((prev) => ({
-                  //     ...prev,
-                  //     price: {
-                  //       isCustom: false,
-                  //       range: [...option.value],
-                  //     },
-                  //   }));
-                  // }}
+                  onChange={() => {
+                    setFilter((prev: FilterState) => ({
+                      ...prev,
+                      price: {
+                        isCustom: false,
+                        range: [...option.value],
+                      },
+                    }));
+                  }}
                   checked={
                     !filter.price.isCustom &&
                     filter.price.range[0] === option.value[0] &&
@@ -176,7 +201,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                 </label>
               </li>
             ))}
-            <li className="flex jsutify-center flex-col gap-2">
+            {/* <li className="flex jsutify-center flex-col gap-2">
               <div className="flex justify-between">
                 <p className="font-medium">Price</p>
                 <div>
@@ -191,7 +216,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                   value={maxPrice}
                   onChange={(e) => {
                     const newMax = Number(e.target.value);
-                    setFilter((prev: any) => ({
+                    setFilter((prev: FilterState) => ({
                       ...prev,
                       price: {
                         ...prev.price,
@@ -202,14 +227,14 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                   className="range range-sm"
                 />
               </div>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>
 
       {/* Materials Filter */}
       <div className="collapse collapse-arrow">
-        <input type="checkbox" name="my-accordion-2" defaultChecked />
+        <input type="checkbox" name="my-accordion-2" />
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
           <span className="font-medium text-gray-900">Material</span>
         </div>
@@ -230,7 +255,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                   className="checkbox checkbox-sm"
                 />
                 <label
-                  htmlFor={`color-${optionIdx}`}
+                  htmlFor={`material-${optionIdx}`}
                   className="px-2 text-sm text-gray-600"
                 >
                   {option.label}
@@ -243,7 +268,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
 
       {/* Sizes Filter */}
       <div className="collapse collapse-arrow">
-        <input type="checkbox" name="my-accordion-2" defaultChecked />
+        <input type="checkbox" name="my-accordion-2" />
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
           <span className="font-medium text-gray-900">Size</span>
         </div>
@@ -264,7 +289,7 @@ const Filters = ({ filter, setFilter }: FilterTestProps) => {
                   className="checkbox checkbox-sm"
                 />
                 <label
-                  htmlFor={`color-${optionIdx}`}
+                  htmlFor={`size-${optionIdx}`}
                   className="px-2 text-sm text-gray-600"
                 >
                   {option.label}

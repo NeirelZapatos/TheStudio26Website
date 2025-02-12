@@ -1,26 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import ProductCard from './ProductCard';
+import { useEffect, useState } from "react";
+import ProductCard from "./ProductCard";
 
 interface Product {
-    _id: string;
-    name: string;
-    price: number;
-    category: string;
-    color: string;
-    size: string;
-    material: string;
-    image_url: string;
-    description: string;
-    quantity_in_stock: number;
-    purchaseType: 'Item' | 'Course';
-    stripeProductId?: string;
+  _id: string;
+  name: string;
+  price: number;
+  category: string;
+  color: string;
+  size: string;
+  material: string;
+  image_url: string;
+  description: string;
+  quantity_in_stock: number;
+  purchaseType: "Item" | "Course";
+  stripeProductId?: string;
 }
 
 interface ProductGridProps {
   filter: {
     sort: string;
+    category: string;
     color: string[];
     material: string[];
     size: string[];
@@ -37,36 +38,42 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     const fetchProducts = async () => {
       try {
         const params = new URLSearchParams();
-        
+
+
         // Only add parameters if they have values
-        if (filter.sort !== 'none') {
-          params.append('sort', filter.sort);
+        if (filter.sort !== "none") {
+          params.append("sort", filter.sort);
+        }
+        if (filter.category && filter.category !== "all") {
+          params.append("category", filter.category);
         }
         if (filter.color.length > 0) {
-          params.append('color', filter.color.join(','));
+          params.append("color", filter.color.join(","));
         }
         if (filter.material.length > 0) {
-          params.append('material', filter.material.join(','));
+          params.append("material", filter.material.join(","));
         }
         if (filter.size.length > 0) {
-          params.append('size', filter.size.join(','));
+          params.append("size", filter.size.join(","));
         }
-        params.append('minPrice', filter.price.range[0].toString());
-        params.append('maxPrice', filter.price.range[1].toString());
+        params.append("minPrice", filter.price.range[0].toString());
+        params.append("maxPrice", filter.price.range[1].toString());
 
-        console.log('Fetching with params:', params.toString());
+        console.log("Fetching with params:", params.toString());
         const response = await fetch(`/api/items?${params.toString()}`);
-        
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch products');
+          throw new Error(errorData.error || "Failed to fetch products");
         }
-        
+
         const data = await response.json();
         setProducts(data);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load products');
+        console.error("Error fetching products:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load products"
+        );
       } finally {
         setLoading(false);
       }
@@ -84,7 +91,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }
 
   return (
-    <div className='lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8'>
+    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
       {products.map((product) => (
         <ProductCard
           key={product._id}

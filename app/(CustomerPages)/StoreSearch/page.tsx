@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import ProductGrid from "./Components/ProductGrid";
-import FilterTest from "./Components/Filters";
+import Filters from "./Components/Filters";
 import { ChevronDown, Filter } from "lucide-react";
 
 const SORT_OPTIONS = [
@@ -11,13 +11,26 @@ const SORT_OPTIONS = [
   { name: "Price: High to Low", value: "price-desc" },
 ] as const;
 
+interface FilterState {
+  sort: string;
+  category: string;
+  color: string[];
+  material: string[];
+  size: string[];
+  price: {
+    isCustom: boolean;
+    range: [number, number];
+  };
+}
+
 export default function StorePage() {
-  const [filter, setFilter] = useState({
+  const [filter, setFilter] = useState<FilterState>({
     sort: "none",
+    category: "all",
     color: [],
     material: [],
     size: [],
-    price: { isCustom: false, range: [0, 500] as [number, number] }
+    price: { isCustom: false, range: [0, 500] as [number, number] },
   });
 
   return (
@@ -71,53 +84,10 @@ export default function StorePage() {
       <section className="pb-24 pt-6">
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
           {/* Filters */}
-          <FilterTest filter={filter} setFilter={setFilter} />
+          <Filters filter={filter} setFilter={setFilter} />
           <ProductGrid filter={filter} />
-          </div>
+        </div>
       </section>
     </main>
   );
 }
-
-// export default function StorePage() {
-//   return (
-//     <div className="flex min-h-screen">
-//       {/* Filters */}
-//       {/* <FilterSidebar /> */}
-//       {/* <Sidebar /> */}
-//       <FilterTest />
-//       <main className="flex-1 p-6">
-//         {/* Search bar and sort by ascending/descending */}
-//         <div className="flex justify-between items-center mb-4">
-//           <div className="form-control w-full max-w-xs">
-//             <input
-//               type="text"
-//               placeholder="Search"
-//               className="input input-bordered w-full max-w-xs"
-//             />
-//           </div>
-//           <div className="flex space-x-2">
-//             <button className="btn btn-outline">New</button>
-//             <button className="btn btn-outline">Price ascending</button>
-//             <button className="btn btn-outline">Price descending</button>
-//           </div>
-//         </div>
-
-//         {/* Product Grid */}
-//         <ProductGrid />
-
-//         {/* Pagination */}
-//         <div className="flex justify-center items-center mt-4">
-//         <div className="join">
-//         <button className="join-item btn">«</button>
-//           <button className="join-item btn btn-active">1</button>
-//           <button className="join-item btn">2</button>
-//           <button className="join-item btn">3</button>
-//           <button className="join-item btn">4</button>
-//           <button className="join-item btn">»</button>
-//         </div>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }

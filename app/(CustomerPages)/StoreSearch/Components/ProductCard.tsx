@@ -9,11 +9,11 @@ interface ProductCardProps {
   image_url: string;
 }
 
-function ProductCard({ name, price, image_url }: ProductCardProps) {
+function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
   return (
-    <div className="group relative">
+    <div className="group relative h-full">
       <Link
-        href={"/ProductDetails/${id}"}
+        href={`/ProductDetails/${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
       >
         <div className="relative aspect-square">
@@ -30,35 +30,10 @@ function ProductCard({ name, price, image_url }: ProductCardProps) {
             <h3 className="text-sm text-gray-700">{name}</h3>
             <p className="mt-1 text-sm text-gray-500">${price.toFixed(2)}</p>
           </div>
-          {/* <p className="text-sm font-medium text-gray-900">
-            ${price.toFixed(2)}
-          </p> */}
         </div>
       </Link>
     </div>
   );
 }
-// function ProductCard({name, price, image_url}: ProductCardProps) {
-//   return (
-//     <Link
-//       href={'/ProductDetails/${id}'}
-//       className="block bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
-//     >
-//       <div className="relative aspect-square">
-//         <Image
-//           src={image_url}
-//           width={300}
-//           height={300}
-//           alt="Product Image"
-//           className="w-full h-full object-cover"
-//         />
-//       </div>
-//       <div className="p-4">
-//         <h3 className="text-gray-800 font-medium text-sm mb-2">{name}</h3>
-//         <p className="text-gray-900 font-semibold">${price.toFixed(2)}</p>
-//       </div>
-//     </Link>
-//   );
-// }
 
 export default ProductCard;
