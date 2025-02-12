@@ -4,22 +4,21 @@ import { z } from 'zod';
 const baseProductSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     price: z.number().min(0, { message: "Price must be a positive number" }),
-    description: z.string().optional(),
-    category: z.string().optional(),
-    material: z.string().optional(),
-    image_url: z.string().optional(),
-    size: z.string().optional(),
-    color: z.string().optional(),
+    description: z.string().min(1, { message: "Description is required" }),
+    category: z.string().min(1, { message: "Category is required" }),
+    material: z.string().min(1, { message: "Material is required" }),
+    color: z.string().min(1, { message: "Color is required" }),
+    size: z.string().min(1, { message: "Size is required" }),
+    image_url: z.string().min(1, { message: "Image URL is required" }),
+    quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
     purchaseType: z.enum(["Item", "Course"]),
+    stripeProductId: z.string().optional(),
 });
 
-// Schema for items, extending base schema without additional fields
-export const itemSchema = baseProductSchema.extend({
-    itemType: z.string().optional(), // Specific to items if needed
-    quantity_in_stock: z.number().min(0).optional(), // Only for items
-});
+// Schema for items
+export const itemSchema = baseProductSchema.extend({});
 
-// Schema for courses, extending base schema with course-specific fields
+// Schema for courses (if you need it)
 export const courseSchema = baseProductSchema.extend({
     date: z.string().min(1, { message: "Date is required for courses" }),
     time: z.string().min(1, { message: "Time is required for courses" }),
@@ -28,5 +27,4 @@ export const courseSchema = baseProductSchema.extend({
     location: z.string().optional(),
 });
 
-// Function to choose schema based on purchaseType
 export const productSchema = z.union([itemSchema, courseSchema]);
