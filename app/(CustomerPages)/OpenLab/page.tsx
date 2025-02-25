@@ -40,27 +40,27 @@ export default function Page() {
       </div>
 
       {/* Cards */}
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-8">
         {activeTab === "individual" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
             <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Sundays"
-                imageUrl="https://picsum.photos/200/300"
+                imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
                 price={40}
               />
             </Link>
             <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Mondays"
-                imageUrl="https://picsum.photos/200/300"
+                imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
                 price={40}
               />
             </Link>
             <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Thursdays"
-                imageUrl="https://picsum.photos/200/300"
+                imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
                 price={40}
               />
             </Link>
@@ -70,7 +70,7 @@ export default function Page() {
             <Link href="/OpenLab/SubscriptionCheckout">
               <MonthlyCard
                 title="Silver Lab Bundle"
-                imageUrl="https://picsum.photos/200/300"
+                imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
                 price={100}
                 description="Studio 26 access, 6 benches, tools. 4-hour sessions, alumni only. BYO materials, torch & butane."
               />
