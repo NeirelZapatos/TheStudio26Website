@@ -43,21 +43,21 @@ export default function Page() {
       <div className="flex justify-center">
         {activeTab === "individual" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
-            <Link href="/OpenLab/Sunday">
+            <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Sundays"
                 imageUrl="https://picsum.photos/200/300"
                 price={40}
               />
             </Link>
-            <Link href="/OpenLab/Monday">
+            <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Mondays"
                 imageUrl="https://picsum.photos/200/300"
                 price={40}
               />
             </Link>
-            <Link href="/OpenLab/Thursday">
+            <Link href="/OpenLab/Booking">
               <Card
                 title="Bench Time - Thursdays"
                 imageUrl="https://picsum.photos/200/300"
@@ -67,12 +67,14 @@ export default function Page() {
           </div>
         ) : (
           <div className="mt-8">
-            <MonthlyCard
-              title="Silver Lab Bundle"
-              imageUrl="https://picsum.photos/200/300"
-              price={100}
-              description="Studio 26 access, 6 benches, tools. 4-hour sessions, alumni only. BYO materials, torch & butane."
-            />
+            <Link href="/OpenLab/SubscriptionCheckout">
+              <MonthlyCard
+                title="Silver Lab Bundle"
+                imageUrl="https://picsum.photos/200/300"
+                price={100}
+                description="Studio 26 access, 6 benches, tools. 4-hour sessions, alumni only. BYO materials, torch & butane."
+              />
+            </Link>
           </div>
         )}
       </div>

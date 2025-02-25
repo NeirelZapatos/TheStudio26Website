@@ -117,9 +117,11 @@ export default function Page() {
             handmade jewelry, stones, and supplies, all from the comfort of your
             own home.
           </p>
-          <button className="btn bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-            <Link href="/StoreSearch">Shop All</Link>
-          </button>
+          <Link href="/StoreSearch">
+            <button className="btn bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+              <p>Shop All</p>
+            </button>
+          </Link>
         </div>
       </section>
 
