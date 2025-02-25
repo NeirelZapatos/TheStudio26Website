@@ -39,8 +39,8 @@ export async function POST(request: Request) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${request.headers.get('origin')}/checkout/success`, // Redirect URL after successful payment
-      cancel_url: `${request.headers.get('origin')}/checkout/cancel`, // Redirect URL if payment is canceled
+      success_url: `${request.headers.get('origin')}/CheckOut/success`, // Redirect URL after successful payment
+      cancel_url: `${request.headers.get('origin')}/CheckOut/cancel`, // Redirect URL if payment is canceled
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
