@@ -1,3 +1,6 @@
+'use client'
+import NewsletterForm from "./NewsletterForm";
+
 const Footer2 = () => {
     return (
     <footer className="footer bg-base-200 text-base-content p-10">
@@ -17,21 +20,7 @@ const Footer2 = () => {
         <h6 className="footer-title">Phone Number</h6>
         <a className="link link-hover">916-350-0546</a>
       </nav>
-      <form>
-        <h6 className="footer-title">Newsletter</h6>
-        <fieldset className="form-control w-80">
-          <label className="label">
-            <span className="label-text">Enter your email address</span>
-          </label>
-          <div className="join">
-            <input
-              type="text"
-              placeholder="username@site.com"
-              className="input input-bordered join-item" />
-            <button className="btn btn-primary join-item">Subscribe</button>
-          </div>
-        </fieldset>
-      </form>
+      <NewsletterForm />
     </footer>
   );
 }
