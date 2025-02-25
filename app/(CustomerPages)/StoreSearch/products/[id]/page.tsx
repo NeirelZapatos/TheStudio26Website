@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+
 
 interface Product {
   _id: string;
@@ -78,11 +81,12 @@ export default function ProductPage() {
     maxQuantity > 0 ? Array.from({ length: maxQuantity }, (_, i) => i + 1) : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
         {/* Image gallery */}
         <div className="flex flex-col">
           <div className="aspect-square rounded-lg overflow-hidden">
+            <Zoom>
             <Image
               src={product.image_url}
               alt={product.name}
@@ -91,6 +95,7 @@ export default function ProductPage() {
               className="w-full h-full object-cover"
               priority
             />
+            </Zoom>
           </div>
         </div>
 
@@ -109,7 +114,7 @@ export default function ProductPage() {
 
           <div className="mt-6">
             <h3 className="sr-only">Description</h3>
-            <p className="text-base text-gray-700">{product.description}</p>
+            <p className="text-base text-gray-500">{product.description}</p>
           </div>
 
           {/* <div className="mt-6">
