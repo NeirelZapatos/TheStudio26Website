@@ -1,128 +1,127 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
-import EmailList from "../../Components/EmailList";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const ClassCatalog: React.FC = () => {
-  const [filters, setFilters] = useState({
-    availability: false,
-    priceRange: [0, 1000],
-    experienceLevel: [],
-  });
+// Define multiple sets of prerequisites to choose from
+const prerequisitesPool = [
+  ["Basic metalsmithing skills", "Must be 18+ years old"],
+  ["No prior experience required", "Familiarity with hand tools"],
+  ["Basic jewelry design knowledge", "Comfortable with small materials"],
+  ["Some experience with shaping metal", "An interest in ring design"],
+];
 
-  const toggleAvailability = () => {
-    setFilters({ ...filters, availability: !filters.availability });
-  };
+interface CourseType {
+  _id: string;
+  name: string;
+  price: number;
+  description: string;
+  purchaseType: string;
+  date: string;
+  duration: number;
+  location: string;
+  image_url: string;
+}
 
-  const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
-    const newRange = [...filters.priceRange];
-    if (type === "min") newRange[0] = Number(event.target.value);
-    if (type === "max") newRange[1] = Number(event.target.value);
-    setFilters({ ...filters, priceRange: newRange });
-  };
+const ClassCatalogPage: React.FC = () => {
+  const [courses, setCourses] = useState<CourseType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ! FIX THIS
-  // const toggleExperienceLevel = (level: string) => {
-  //   setFilters((prev) => {
-  //     const newLevels = prev.experienceLevel.includes(level)
-  //       ? prev.experienceLevel.filter((l) => l !== level)
-  //       : [...prev.experienceLevel, level];
-  //     return { ...prev, experienceLevel: newLevels };
-  //   });
-  // };
+  useEffect(() => {
+    const fetchAndReorderCourses = async () => {
+      try {
+        // Fetch courses from API (default order)
+        const response = await axios.get("/api/courses");
+        let fetchedCourses: CourseType[] = response.data;
+
+        // Check for saved order in localStorage
+        const savedOrder = localStorage.getItem("courseOrder");
+        if (savedOrder) {
+          const order: string[] = JSON.parse(savedOrder);
+          // Reorder fetchedCourses based on the saved order
+          fetchedCourses.sort((a, b) => {
+            return order.indexOf(a._id) - order.indexOf(b._id);
+          });
+        }
+        setCourses(fetchedCourses);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchAndReorderCourses();
+  }, []);
+
+  if (loading) {
+    return <div>Loading courses...</div>;
+  }
 
   return (
-    <div>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Class Catalog</h1>
+    <div className="bg-white py-10">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Page Heading */}
+        <h1 className="text-center text-3xl font-bold mb-4">Class Catalog</h1>
+        <p className="text-center text-lg mb-8">
+          Below is a comprehensive list of the classes available at our studio.
+          If you have any questions, please contact the studio directly.
+        </p>
 
-        {/* Filters Section */}
-        <div className="flex flex-col md:flex-row md:gap-6">
-          <div className="w-full md:w-1/4 bg-gray-100 p-4 rounded-lg">
-            <h2 className="font-semibold text-lg mb-4">Filters</h2>
+        {/* Responsive Grid of Courses */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {courses.map((course) => {
+            // Randomly select one set of prerequisites from the pool
+            const randomIndex = Math.floor(
+              Math.random() * prerequisitesPool.length
+            );
+            const chosenPrerequisites = prerequisitesPool[randomIndex];
 
-            {/* Availability Filter */}
-            <div className="mb-4">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.availability}
-                  onChange={toggleAvailability}
-                  className="form-checkbox text-red-500"
+            return (
+              <div
+                key={course._id}
+                className="bg-white shadow-md rounded-lg overflow-hidden"
+              >
+                {/* Course Image */}
+                <img
+                  src={course.image_url}
+                  alt={course.name}
+                  className="w-full h-48 object-cover"
                 />
-                <span>Available</span>
-              </label>
-            </div>
 
-            {/* Price Range Filter */}
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">Price Range</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  value={filters.priceRange[0]}
-                  onChange={(e) => handlePriceChange(e, "min")}
-                  className="w-1/2 p-2 border rounded-lg"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  value={filters.priceRange[1]}
-                  onChange={(e) => handlePriceChange(e, "max")}
-                  className="w-1/2 p-2 border rounded-lg"
-                  placeholder="Max"
-                />
+                {/* Course Details */}
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-2">{course.name}</h2>
+                  <p className="text-gray-600 mb-2">{course.description}</p>
+                  <p className="text-gray-800 font-bold">
+                    ${course.price}{" "}
+                    {course.purchaseType && (
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({course.purchaseType})
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-gray-600">Date: {course.date}</p>
+                  <p className="text-gray-600">
+                    Duration: {course.duration} hours
+                  </p>
+                  <p className="text-gray-600">Location: {course.location}</p>
+                  <div className="mt-4">
+                    <h3 className="font-bold">Prerequisites:</h3>
+                    <ul className="list-disc list-inside text-gray-600">
+                      {chosenPrerequisites.map((pre, idx) => (
+                        <li key={idx}>{pre}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Experience Level Filter */}
-            <div>
-              <label className="block mb-2 font-semibold">Experience Level</label>
-              <div className="flex flex-col space-y-2">
-
-                { /* // ! FIX THIS */ }
-                {/* {["Beginner", "Intermediate", "Advanced"].map((level) => (
-                  <label key={level} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={filters.experienceLevel.includes(level)}
-                      onChange={() => toggleExperienceLevel(level)}
-                      className="form-checkbox text-red-500"
-                    />
-                    <span>{level}</span>
-                  </label>
-                ))} */}
-
-
-              </div>
-            </div>
-          </div>
-
-          {/* Class Display Section */}
-          <div className="w-full md:w-3/4">
-            <h2 className="text-xl font-semibold mb-4">Classes</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Example Class Card */}
-              <div className="border p-4 rounded-lg shadow">
-                <Image
-                  src="https://picsum.photos/300"   //for reference
-                  alt="Class"
-                  width={300}
-                  height={300}
-                  className="w-full h-40 object-cover mb-4 rounded"
-                />
-                <h3 className="text-lg font-bold">Sample Class Name</h3>
-                <p className="text-sm text-gray-500">Beginner</p>
-                <p className="mt-2 text-red-500 font-semibold">$100</p>
-              </div>
-              {/*additional class cards */}
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 };
 
-export default ClassCatalog;
+export default ClassCatalogPage;
