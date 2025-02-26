@@ -1,16 +1,30 @@
-import { IOrder } from '@/app/models/Order';
-import axios from 'axios';
+import { IOrder } from "@/app/models/Order";
+import axios from "axios";
+
+// Add Response Interface
+interface LabelResponse {
+    labelUrl?: string;
+    debug?: {
+        authHeader: string;
+        environment?: {
+            keyExists: boolean;
+            secretExists: boolean;
+            NODE_ENV: string;
+        };
+    };
+    error?: string;
+}
 
 interface ShippingLabelRequest {
     order: {
         orderId: string;
         orderTotal: number;
-        subtotal: number; // Added
-        shippingAmount: number; // Added
+        subtotal: number;
+        shippingAmount: number;
         products: Array<{
             description: string;
             quantity: number;
-            price: number; // Added to include product price
+            price: number;
         }>;
         shipping_address: {
             street1: string;
@@ -87,9 +101,12 @@ export const printShippingLabels = async (selectedOrders: string[], orders: IOrd
                     dimensions: { units: 'inches', length: 10, width: 5, height: 5 }
                 };
 
-                const response = await axios.post('/api/shipstation/create-label', requestPayload);
+// Type the axios response
+const response = await axios.post<LabelResponse>('/api/shipstation/create-label', requestPayload);                
 
                 if (response.data.debug) {
+                      const data = response.data as { [key: string]: any };
+
                     const debug = response.data.debug;
                     window.alert(`Credential Debug Info:\n
                         Auth Header: ${debug.authHeader}\n
