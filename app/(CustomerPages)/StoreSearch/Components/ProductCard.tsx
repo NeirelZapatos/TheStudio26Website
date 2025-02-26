@@ -13,7 +13,7 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
   return (
     <div className="group relative h-full">
       <Link
-        href={`/ProductDetails/${_id}`}
+        href={`/StoreSearch/products/${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
       >
         <div className="relative aspect-square">
@@ -28,7 +28,7 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
         <div className="mt-4 flex justify-between">
           <div>
             <h3 className="text-sm text-gray-700">{name}</h3>
-            {/* <p className="mt-1 text-sm text-gray-500">${price.toFixed(2)}</p> */}
+            <p className="mt-1 text-sm text-gray-500">${price}</p>
           </div>
         </div>
       </Link>
