@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose"
 
 export interface IItem extends Document {
     name: string;
-    price: string;
+    price: number;
     description: string;
     category: string;
     material: string;

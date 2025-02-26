@@ -54,3 +54,43 @@ export const sendEmail = async (
     }
 };
 
+//For Order Confirmation Email
+export const sendOrderEmail = async (
+    customerEmail: string,
+    orderId: string,
+    items: { name: string; quantity: number; price: number }[],
+    totalAmount: number,
+    estimatedDelivery: string,
+    trackingLink?: string
+) => {
+    if (!customerEmail) throw new Error('Customer email is required');
+
+    const itemsTable = items
+        .map(
+            (item) =>
+                `<tr><td>${item.name}</td><td>${item.quantity}</td><td>$${item.price.toFixed(
+                    2
+                )}</td></tr>`
+        )
+        .join("");
+
+    const htmlContent = `
+        <h2>Thank you for your order!</h2>
+        <p>Your order ID is <strong>${orderId}</strong>.</p>
+        <h3>Order Details:</h3>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr><th>Item</th><th>Quantity</th><th>Price</th></tr>
+            ${itemsTable}
+        </table>
+        <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
+        <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
+        ${
+            trackingLink
+                ? `<p><strong>Track your order:</strong> <a href="${trackingLink}">Click here</a></p>`
+                : ""
+        }
+        <p>Thank you for shopping with us!</p>
+    `;
+
+    return sendEmail(customerEmail, `Order Confirmation - #${orderId}`, htmlContent);
+};

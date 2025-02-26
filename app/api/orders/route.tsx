@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
 import dbConnect from '@/app/lib/dbConnect';
+import { sendOrderEmail } from "@/app/lib/mailer";
 import Order from '@/app/models/Order';
 import Item from '@/app/models/Item';
 import Course from '@/app/models/Course';
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         // for testing purposes
-        // body.order_date = new Date(body.order_date);
+        body.order_date = new Date(body.order_date);
         body.order_date = new Date();
         const validation = schema.safeParse(body);
 
@@ -80,6 +81,16 @@ export async function POST(request: NextRequest) {
 
         const newOrder = new Order(body);
         await newOrder.save();
+
+        // Send order confirmation email
+        await sendOrderEmail(
+            body.customer_email,
+            newOrder._id.toString(),
+            body.product_items,
+            body.course_items,
+            //total_amount, //reading it as string despite being input as Number in mailer.ts
+            body.order_date
+        );
 
         return NextResponse.json(newOrder, { status: 201 });
 
@@ -139,3 +150,4 @@ export async function PUT(request: NextRequest) {
         );
     }
 }
+    
