@@ -9,12 +9,12 @@ import InvoicesSection from "./components/InvoicesSection";
 import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
-import CustomerManagementSection from "./components/CustomerManagementSection";
+import CustomerManagementSection from "./components/CustomerManagement/CustomerManagementSection";
 
 import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
-import FinancialAnalytics from "./components/FinancialAnalytics";
+import FinancialAnalytics from "./components/FinancialAnalytics/FinancialAnalytics";
 import ProductList from "./components/ProductList";
 import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";

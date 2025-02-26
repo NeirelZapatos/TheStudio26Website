@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose"
+import mongoose, { Document, Schema, Types } from "mongoose"
 
 export interface ICourse extends Document {
+    _id: Types.ObjectId;
     name: string;
     price: number;
     description: string;
