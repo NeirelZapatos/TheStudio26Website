@@ -49,6 +49,8 @@
     "react-calendar": "^5.1.0",
     "react-colorful": "^5.6.1",
     "react-dom": "^18",
+    "react-medium-image-zoom": "^5.2.14",
+    "react-modal": "^3.16.3",
     "stripe": "^17.6.0",
     "swr": "^2.3.2",
     "uuid": "^11.1.0",
