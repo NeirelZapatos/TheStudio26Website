@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import ProductGrid from "./Components/ProductGrid";
+import CourseFilters from "./Components/CourseFilters"
+import { ChevronDown, Filter } from "lucide-react";
+
+const SORT_OPTIONS = [
+  { name: "None", value: "none" },
+  { name: "Price: Low to High", value: "price-asc" },
+  { name: "Price: High to Low", value: "price-desc" },
+] as const;
 
 // Define multiple sets of prerequisites to choose from
 const prerequisitesPool = [
@@ -11,117 +19,86 @@ const prerequisitesPool = [
   ["Some experience with shaping metal", "An interest in ring design"],
 ];
 
-interface CourseType {
-  _id: string;
-  name: string;
-  price: number;
-  description: string;
-  purchaseType: string;
-  date: string;
-  duration: number;
-  location: string;
-  image_url: string;
+interface FilterState {
+  sort: string;
+  category: string;
+  classType: string[];
+  price: {
+    isCustom: boolean;
+    range: [number, number];
+  };
 }
 
-const ClassCatalogPage: React.FC = () => {
-  const [courses, setCourses] = useState<CourseType[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAndReorderCourses = async () => {
-      try {
-        // Fetch courses from API (default order)
-        const response = await axios.get("/api/courses");
-        let fetchedCourses: CourseType[] = response.data;
-
-        // Check for saved order in localStorage
-        const savedOrder = localStorage.getItem("courseOrder");
-        if (savedOrder) {
-          const order: string[] = JSON.parse(savedOrder);
-          // Reorder fetchedCourses based on the saved order
-          fetchedCourses.sort((a, b) => {
-            return order.indexOf(a._id) - order.indexOf(b._id);
-          });
-        }
-        setCourses(fetchedCourses);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchAndReorderCourses();
-  }, []);
-
-  if (loading) {
-    return <div>Loading courses...</div>;
-  }
+export default function StorePage() {
+  const [courseFilter, setCourseFilter] = useState<FilterState>({
+    sort: "none",
+    category: "all",
+    classType: [], // Default class type
+    price: { isCustom: false, range: [0, 500] as [number, number] },
+  });
 
   return (
-    <div className="bg-white py-10">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Page Heading */}
-        <h1 className="text-center text-3xl font-bold mb-4">Class Catalog</h1>
-        <p className="text-center text-lg mb-8">
-          Below is a comprehensive list of the classes available at our studio.
-          If you have any questions, please contact the studio directly.
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="flex items-baseine justify-between border-b border-gray-200 pb-6 pt-24">
+      <div>
+        <h1 className="text-5xl font-bold tracking-tight text-gray-900 mb-4">
+          Class Catalog
+        </h1>
+        <p className="text-lg text-gray-700 max-w-2xl">
+          Below is a comprehensive list of the classes available at our studio. 
+          Should you find a class of interest that is not currently scheduled, we encourage you to contact the studio directly. 
+          We will make every effort to accommodate your request; 
+          however, please note that most classes require a minimum of three participants to proceed.
         </p>
-
-        {/* Responsive Grid of Courses */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {courses.map((course) => {
-            // Randomly select one set of prerequisites from the pool
-            const randomIndex = Math.floor(
-              Math.random() * prerequisitesPool.length
-            );
-            const chosenPrerequisites = prerequisitesPool[randomIndex];
-
-            return (
-              <div
-                key={course._id}
-                className="bg-white shadow-md rounded-lg overflow-hidden"
-              >
-                {/* Course Image */}
-                <img
-                  src={course.image_url}
-                  alt={course.name}
-                  className="w-full h-48 object-cover"
-                />
-
-                {/* Course Details */}
-                <div className="p-4">
-                  <h2 className="text-xl font-semibold mb-2">{course.name}</h2>
-                  <p className="text-gray-600 mb-2">{course.description}</p>
-                  <p className="text-gray-800 font-bold">
-                    ${course.price}{" "}
-                    {course.purchaseType && (
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({course.purchaseType})
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-gray-600">Date: {course.date}</p>
-                  <p className="text-gray-600">
-                    Duration: {course.duration} hours
-                  </p>
-                  <p className="text-gray-600">Location: {course.location}</p>
-                  <div className="mt-4">
-                    <h3 className="font-bold">Prerequisites:</h3>
-                    <ul className="list-disc list-inside text-gray-600">
-                      {chosenPrerequisites.map((pre, idx) => (
-                        <li key={idx}>{pre}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      </div>
+        {/* Dropdown menu to sort by asc/desc */}
+        <div className="flex items-center">
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn m-1 btn-ghost font-medium"
+            >
+              Sort
+              <ChevronDown className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></ChevronDown>
+            </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <li key={option.name}>
+                  <button
+                    className={`btn btn-ghost font-medium text-left w-full block px-4 py-2 ${courseFilter.sort === option.value
+                        ? "bg-gray-100 text-gray-800" // Highlight selected option
+                        : "text-gray-500 hover:bg-gray-100" // Grey out other options
+                      }`}
+                    onClick={() => {
+                      setCourseFilter((prev) => ({
+                        ...prev,
+                        sort: option.value,
+                      }));
+                    }}
+                  >
+                    {option.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button className="-m-2 m1-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden">
+              <Filter className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-export default ClassCatalogPage;
+      <section className="pb-24 pt-6">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+          {/* Filters */}
+          <CourseFilters courseFilter={courseFilter} setCourseFilter={setCourseFilter} />
+          <ProductGrid filter={courseFilter} />
+        </div>
+      </section>
+    </main>
+  );
+}
