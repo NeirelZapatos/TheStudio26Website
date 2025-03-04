@@ -1,3 +1,4 @@
+// app/(CustomerPages)/class-catalog/components/ProductGrid.tsx
 "use client";
 
 import { useEffect, useState } from "react";
