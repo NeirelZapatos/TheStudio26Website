@@ -36,7 +36,7 @@ export default function CartSummary({ cart, onRemoveItem, onQuantityChange }: Ca
             />
             <div>
               <h3 className="font-medium">{item.name}</h3>
-              <p className="text-sm text-gray-600">${item.price.toFixed(2)}</p>
+              <p className="text-sm text-gray-600">${Number(item.price).toFixed(2)}</p>
               <input
                 type="number"
                 value={item.quantity}
