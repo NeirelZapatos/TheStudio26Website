@@ -1,15 +1,23 @@
-'use client';
+// app/Components/CheckoutForm.tsx
+"use client";
+
 import { loadStripe } from "@stripe/stripe-js";
 
- // Mark this as a Client Component
+interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string;
+}
 
-const CheckoutForm = ({ itemIds }: { itemIds: string[] }) => {
+const CheckoutForm = ({ cartItems }: { cartItems: CartItem[] }) => {
   const handleCheckout = async () => {
-    // Create a Checkout Session with the selected item IDs
-    const response = await fetch('/api/checkout/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ itemIds }), // Pass the item IDs to the API
+    // Create a Checkout Session with the cart items
+    const response = await fetch("/api/checkout/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cartItems }), // Pass the cart items to the API
     });
 
     const { id } = await response.json();
@@ -20,8 +28,11 @@ const CheckoutForm = ({ itemIds }: { itemIds: string[] }) => {
   };
 
   return (
-    <button onClick={handleCheckout}>
-      Checkout
+    <button
+      onClick={handleCheckout}
+      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+    >
+      Proceed to Checkout
     </button>
   );
 };

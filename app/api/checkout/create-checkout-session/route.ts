@@ -1,5 +1,3 @@
-import dbConnect from '@/app/lib/dbConnect';
-import Item from '@/app/models/Item';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -7,21 +5,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(request: Request) {
   try {
-    const { itemIds } = await request.json(); // Array of item ID's to checkout
+    const { cartItems } = await request.json(); // Array of item ID's to checkout
 
-    await dbConnect(); // connect to database
-
-    const items = await Item.find({ _id: { $in: itemIds } });
-
-    if (!items || items.length === 0) {
-      return NextResponse.json({ error: 'No items found' }, { status: 404 });
+    // Validate cart items
+    if (!cartItems || cartItems.length === 0) {
+      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
-
-    const totalSum = items.reduce((total, item) => total + item.price * 100, 0); // Converting to cents
 
     // Create Line items for stripe
     // "Invoice Line Items represent the individual lines within an invoice and only exist within the context of an invoice"
-    const lineItems = items.map((item) => ({
+    const lineItems = cartItems.map((item: any) => ({
       price_data: {
         currency: 'usd',
         product_data: {
@@ -31,7 +24,7 @@ export async function POST(request: Request) {
         },
         unit_amount: Math.round(item.price * 100), // convert unit amount to cents
       },
-      quantity: 1,
+      quantity: item.quantity,
     }));
 
     // Create a checkout session
@@ -39,8 +32,8 @@ export async function POST(request: Request) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${request.headers.get('origin')}/CheckOut/success`, // Redirect URL after successful payment
-      cancel_url: `${request.headers.get('origin')}/CheckOut/cancel`, // Redirect URL if payment is canceled
+      success_url: `${request.headers.get('origin')}/checkout/success`, // Redirect URL after successful payment
+      cancel_url: `${request.headers.get('origin')}/checkout/cancel`, // Redirect URL if payment is canceled
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
@@ -50,6 +43,7 @@ export async function POST(request: Request) {
       }
     })
 
+    console.log("Checkout Session ID:", session.id);
     return NextResponse.json({ id: session.id });
   } catch (err: unknown) {
     if (err instanceof Error) {

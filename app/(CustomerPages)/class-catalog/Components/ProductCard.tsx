@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
+import AddToCartButton from "./AddToCartButton";
 
 interface ProductCardProps {
   _id: string;
@@ -31,6 +34,14 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
           </div>
         </div>
       </Link>
+      <AddToCartButton
+        product={{
+          _id,
+          name,
+          price,
+          image_url,
+        }}
+      />
     </div>
   );
 }
