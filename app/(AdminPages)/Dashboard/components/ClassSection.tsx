@@ -229,30 +229,34 @@ export default function Page() {
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
-              {/* Image Preview  and Upload*/}
-              <div className="space-y-2">
-                <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
-                  <img
-                    src={file ? URL.createObjectURL(file) : imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                </div>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="p-2 border border-gray-300 rounded-md w-full"
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
                 />
-                {file && (
-                  <input
-                    type="text"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
-                    className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
-                    placeholder="Rename file before upload"
-                  />
-                )}
               </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+            </div>
+            <div className="space-y-4">
               {/* Name */}
               <div>
                 <label className="label">
