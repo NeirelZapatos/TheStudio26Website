@@ -25,10 +25,7 @@ const EditCourseForm: React.FC<EditCourseFormProps> = ({
   };
 
   const handleDeleteClick = () => {
-    // Optionally add a confirmation prompt
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      onDelete(course);
-    }
+    onDelete(course);
   };
 
   return (
