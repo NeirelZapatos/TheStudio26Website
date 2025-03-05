@@ -26,9 +26,7 @@ const EditItemForm: React.FC<EditItemFormProps> = ({
   };
 
   const handleDeleteClick = () => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
       onDelete(item);
-    }
   };
 
   return (
