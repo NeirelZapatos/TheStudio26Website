@@ -71,17 +71,10 @@ const ProductList: React.FC = () => {
   };
 
   const handleDeleteCourse = async (course: Course) => {
-    if (!course.stripeProductId) {
-      alert("No Stripe product ID found for this course.");
-      return;
-    }
-
     if (window.confirm("Are you sure you want to delete this course?")) {
       try {
         // Call Next.js DELETE route, sending JSON in the body
-        await axios.delete("/api/stripe-delete", {
-          data: { id: course.stripeProductId },
-        });
+        await axios.delete(`/api/courses/${course._id}`);
 
         // Remove from state
         setCourses((prev) => prev.filter((c) => c._id !== course._id));
@@ -125,6 +118,8 @@ const ProductList: React.FC = () => {
         await axios.delete(`/api/items/${item._id}`);
 
         setItems((prev) => prev.filter((i) => i._id !== item._id));
+        
+        // Clear editing state if needed
         if (editingItem && editingItem._id === item._id) {
           setEditingItem(null);
         }

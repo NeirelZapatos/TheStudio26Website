@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { courseTemplates } from "@/utils/productTemplates";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -16,6 +17,9 @@ type Product = {
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Template search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -42,12 +46,48 @@ export default function Page() {
     "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682"
   );
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
+
   const createClass = async (e: React.FormEvent) => {
     e.preventDefault();
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
     const convertedDuration = duration ? parseInt(duration) : undefined;
 
     try {
+      let uploadedImageUrl = imageUrl;
+
+      if (file) {
+        uploadedImageUrl = await uploadImage();
+      }
+
       const stripeResponse = await axios.post("/api/stripe/create-product", {
         name,
         description,
@@ -56,6 +96,7 @@ export default function Page() {
         recurring,
         price: convertedPrice,
         duration: convertedDuration,
+        image_url: uploadedImageUrl,
       });
       const createdProduct = stripeResponse.data;
       console.log("Stripe API Response:", createdProduct);
@@ -74,6 +115,7 @@ export default function Page() {
         instructor,
         duration: convertedDuration,
         location,
+        image_url: uploadedImageUrl,
       };
 
       await axios.post("/api/courses", productData);
@@ -90,6 +132,9 @@ export default function Page() {
       setInstructor("");
       setDuration("");
       setLocation("4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682");
+      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null);
+      setFileName("");
     } catch (error) {
       setMessage("Error creating product");
       console.error("Error in create Product", error);
@@ -106,6 +151,9 @@ export default function Page() {
       setInstructor(template.instructor);
       setDuration(template.duration);
       setLocation(template.location);
+      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null); // Reset the file state
+      setFileName(""); // Reset the file name state
     }
   };
 
@@ -137,7 +185,7 @@ export default function Page() {
                 className="input input-bordered input-sm w-full mb-2"
               />
 
-              {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              {filteredTemplateList.length > 0 ? (
                 <ul
                   className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
                   style={{
@@ -167,6 +215,34 @@ export default function Page() {
           {/* Form */}
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
+            <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+            </div>
             <div className="space-y-4">
               {/* Product Name */}
               <div>
