@@ -2,988 +2,378 @@
 
 import { useState } from "react";
 
-interface StoneFormProps {
+interface ToolFormProps {
   onClose: () => void;
 }
 
-export default function StoneForm({ onClose }: StoneFormProps) {
-  // General Attributes
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [stoneStockType, setStoneStockType] = useState(""); // e.g., Old stock, new stock, etc.
-  const [stoneWeight, setStoneWeight] = useState(""); // Weight value
-  const [stoneSize, setStoneSize] = useState(""); // e.g., "Height x Width x Length"
-  const [stoneThickness, setStoneThickness] = useState("");
-  const [stoneDiameter, setStoneDiameter] = useState("");
-  const [shapeVariation, setShapeVariation] = useState("");
+export default function ToolForm({ onClose }: ToolFormProps) {
+  // Basic Product Fields
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [quantityInStock, setQuantityInStock] = useState<string>("");
+  const [weight, setWeight] = useState<string>(""); // e.g., grams, ounces, pounds
+  const [size, setSize] = useState<string>("");     // e.g., mm, cm, inches
+  const [category, setCategory] = useState<string>("");
 
-  // Location (Origin & Mining Details)
-  const [geographicalOrigin, setGeographicalOrigin] = useState("");
-  const [mineType, setMineType] = useState("");
-  const [ethicalSourcing, setEthicalSourcing] = useState("");
-  const [locationStatus, setLocationStatus] = useState("");
-  const [stockAvailability, setStockAvailability] = useState("");
+  // Fields for Tools category
+  const [toolType, setToolType] = useState<string>("");
+  const [toolBrand, setToolBrand] = useState<string>("");
+  const [materialComposition, setMaterialComposition] = useState<string>("");
 
-  // Quality Attributes
-  const [clarity, setClarity] = useState("");
-  const [primaryHue, setPrimaryHue] = useState("");
-  const [colorSaturation, setColorSaturation] = useState("");
-  const [luster, setLuster] = useState("");
-  const [transparency, setTransparency] = useState("");
+  // Fields for Supplies category
+  const [supplyType, setSupplyType] = useState<string>("");
+  const [supplyBrand, setSupplyBrand] = useState<string>("");
+  const [supplyMaterial, setSupplyMaterial] = useState<string>("");
 
-  // Stone Treatments & Enhancements
-  const [treatment, setTreatment] = useState("");
+  // Fields for Jewelry Kits category
+  const [kitType, setKitType] = useState<string>("");
+  const [kitContents, setKitContents] = useState<string>("");
 
-  // Stone Certification & Grading
-  const [certificationAvailable, setCertificationAvailable] = useState("");
-  const [gradingAuthority, setGradingAuthority] = useState("");
-  const [originVerification, setOriginVerification] = useState("");
+  // Fields for Silver category
+  const [silverType, setSilverType] = useState<string>("");
 
-  // Shape & Cut
-  const [cutCategory, setCutCategory] = useState("");
-  const [cabochonShape, setCabochonShape] = useState("");
-  const [facetedCut, setFacetedCut] = useState("");
-  const [slabCut, setSlabCut] = useState("");
-  const [beadsType, setBeadsType] = useState("");
-  const [holeType, setHoleType] = useState("");
+  const [message, setMessage] = useState<string>("");
 
-  // Gemstone Type & Variations
-  const [preciousStone, setPreciousStone] = useState("");
-  const [semiPreciousQuartz, setSemiPreciousQuartz] = useState("");
-  const [semiPreciousBeryl, setSemiPreciousBeryl] = useState("");
-  const [semiPreciousFeldspar, setSemiPreciousFeldspar] = useState("");
-  const [otherSemiPrecious, setOtherSemiPrecious] = useState("");
-  const [organicGem, setOrganicGem] = useState("");
-  const [syntheticGem, setSyntheticGem] = useState("");
+  // Options Arrays
+  const categories = ["Tools", "Supplies", "Jewelry Kits", "Silver"];
 
-  const [message, setMessage] = useState("");
-
-  // Options arrays
-  const stoneStockTypes = [
-    "Old stock",
-    "New stock",
-    "Vintage",
-    "Antique",
-    "Estate",
-    "Limited edition",
-    "Rare find",
-    "Collector’s item",
-    "Discontinued",
+  // Options for Tools category
+  const toolTypes = [
+    "Jeweler’s Torches", // Propane, butane, acetylene, oxy-fuel
+    "Hand Tools",        // Pliers, hammers, saws, files, mandrels, ring sizers
+    "Measuring Tools",   // Digital calipers, rulers, gauges, templates
+    "Magnification",     // Loupes, microscopes, visor magnifiers, optical lenses
+    "Metalworking Tools",// Rolling mills, anvils, dapping blocks, punch sets
+    "Other",
   ];
-  const shapeVariationsOptions = [
-    "Asymmetrical",
-    "Calibrated sizes",
-    "Freeform",
-    "Irregular",
+  const materialCompositions = [
+    "Steel",
+    "Brass",
+    "Aluminum",
+    "Tungsten Carbide",
+    "Plastic",
+    "Rubber",
+    "Other",
   ];
 
-  const mineTypesOptions = [
-    "Open-pit",
-    "Underground",
-    "Artisanal",
-    "River/mined",
-    "Marine extraction",
-  ];
-  const ethicalSourcingOptions = [
-    "Conflict-free",
-    "Fair trade",
-    "Ethically sourced",
-    "Recycled",
-  ];
-  const locationStatusOptions = [
-    "Domestic",
-    "Imported",
-    "Out-of-state",
-    "Region-specific",
-  ];
-  const stockAvailabilityOptions = [
-    "In stock",
-    "Out of stock",
-    "Pre-order",
-    "Limited stock",
-    "Made-to-order",
-    "One-of-a-kind",
+  // Options for Supplies category
+  const supplyTypes = [
+    "Bezel Wire",
+    "Sheet Metal",
+    "Casting Supplies",
+    "Polishing & Finishing Supplies",
+    "Adhesives & Resins",
   ];
 
-  const clarityOptions = [
-    "FL",
-    "IF",
-    "VVS1",
-    "VVS2",
-    "VS1",
-    "VS2",
-    "SI1",
-    "SI2",
-    "I1",
-    "I2",
-    "I3",
-    "Cloudy",
-    "Heavily Included",
-    "Near-Opaque",
-  ];
-  const primaryHueOptions = [
-    "White",
-    "Blue",
-    "Green",
-    "Red",
-    "Yellow",
-    "Pink",
-    "Brown",
-    "Black",
-    "Gray",
-    "Colorless",
-  ];
-  const colorSaturationOptions = [
-    "Vivid",
-    "Intense",
-    "Deep",
-    "Medium",
-    "Pastel",
-    "Pale",
-  ];
-  const lusterOptions = [
-    "High Shine",
-    "Vitreous (Glassy)",
-    "Dull",
-    "Satin",
-    "Pearly",
-    "Silky",
-    "Waxy",
-    "Resinous",
-    "Metallic",
-    "Adamantine",
-  ];
-  const transparencyOptions = [
-    "Transparent",
-    "Semi-Transparent",
-    "Translucent",
-    "Semi-Opaque",
-    "Opaque",
+  // Options for Jewelry Kits category
+  const kitTypes = [
+    "Beginner Kits",
+    "Advanced Kits",
+    "Metal Stamping Kits",
+    "Soldering Kits",
+    "Wire Wrapping Kits",
   ];
 
-  const treatmentOptions = [
-    "Natural/Untreated",
-    "Heat-Treated",
-    "Dye-Enhanced",
-    "Resin-Filled",
-    "Irradiated",
-    "Oiled/Wax Treated",
-    "Coated",
-    "Fracture-Filled",
-  ];
-
-  const certificationAvailableOptions = ["Yes", "No"];
-  const gradingAuthorityOptions = ["GIA", "IGI", "AGS", "EGL"];
-  const originVerificationOptions = [
-    "Mine of Origin Report",
-    "Ethical Sourcing Certificate",
-  ];
-
-  const cutCategories = [
-    "Cabochons",
-    "Faceted Stones",
-    "Slabs & Rough Cuts",
-    "Beads & Drilled Stones",
-  ];
-  const cabochonShapes = [
-    "Round",
-    "Oval",
-    "Square",
-    "Pear",
-    "Teardrop",
-    "Freeform",
-    "Marquise",
-    "Rectangle",
-    "Heart",
-    "Trillion",
-    "Hexagon",
-  ];
-  const facetedCuts = [
-    "Round Brilliant",
-    "Oval",
-    "Step Cut",
-    "Princess Cut",
-    "Cushion Cut",
-    "Radiant Cut",
-    "Baguette",
-    "Rose Cut",
-    "Asscher Cut",
-    "Old Mine Cut",
-    "Unique Fancy Cuts",
-  ];
-  const slabCuts = [
-    "Uncut",
-    "Sliced",
-    "Polished",
-    "Raw",
-    "Geode Slabs",
-    "Drusy",
-    "Layered Slabs",
-  ];
-  const beadsTypesOptions = [
-    "Round beads",
-    "Faceted beads",
-    "Teardrop beads",
-    "Tumbled beads",
-    "Nugget beads",
-  ];
-  const holeTypesOptions = [
-    "Center-drilled",
-    "Side-drilled",
-    "Top-drilled",
-    "Undrilled",
-  ];
-
-  const preciousStoneOptions = ["Diamond", "Sapphire", "Ruby", "Emerald"];
-  const semiPreciousQuartzOptions = [
-    "Amethyst",
-    "Citrine",
-    "Rose Quartz",
-    "Smoky Quartz",
-    "Rutilated Quartz",
-  ];
-  const semiPreciousBerylOptions = [
-    "Aquamarine",
-    "Morganite",
-    "Heliodor",
-  ];
-  const semiPreciousFeldsparOptions = [
-    "Labradorite",
-    "Moonstone",
-    "Sunstone",
-  ];
-  const otherSemiPreciousOptions = [
-    "Peridot",
-    "Garnet",
-    "Tourmaline",
-    "Topaz",
-    "Spinel",
-    "Zircon",
-    "Tanzanite",
-  ];
-  const organicGemOptions = ["Amber", "Coral", "Jet", "Pearl"];
-  const syntheticGemOptions = [
-    "Lab-Grown Diamonds",
-    "Moissanite",
-    "Cubic Zirconia",
-    "Synthetic Sapphire",
-    "Synthetic Ruby",
-    "Synthetic Emerald",
-    "Opalite",
+  // Options for Silver category
+  const silverTypes = [
+    "Sterling Silver Components",
+    "Fine Silver Components",
+    "Raw Silver",
+    "Plated Silver Items",
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate required fields
-    if (!productName || !stoneStockType || !stoneWeight || !stoneSize) {
+    if (!name || !price || !quantityInStock || !category) {
       setMessage("Please fill in all required fields.");
       return;
     }
 
-    const stoneData = {
-      productName,
-      productDescription,
-      stoneStockType,
-      stoneWeight: parseFloat(stoneWeight),
-      stoneSize,
-      stoneThickness,
-      stoneDiameter,
-      shapeVariation,
-      geographicalOrigin,
-      mineType,
-      ethicalSourcing,
-      locationStatus,
-      stockAvailability,
-      clarity,
-      primaryHue,
-      colorSaturation,
-      luster,
-      transparency,
-      treatment,
-      certificationAvailable,
-      gradingAuthority,
-      originVerification,
-      cutCategory,
-      cabochonShape,
-      facetedCut,
-      slabCut,
-      beadsType,
-      holeType,
-      preciousStone,
-      semiPreciousQuartz,
-      semiPreciousBeryl,
-      semiPreciousFeldspar,
-      otherSemiPrecious,
-      organicGem,
-      syntheticGem,
+    let additionalData = {};
+    if (category === "Tools") {
+      additionalData = { toolType, toolBrand, materialComposition };
+    } else if (category === "Supplies") {
+      additionalData = { supplyType, supplyBrand, supplyMaterial };
+    } else if (category === "Jewelry Kits") {
+      additionalData = { kitType, kitContents };
+    } else if (category === "Silver") {
+      additionalData = { silverType };
+    }
+
+    const toolData = {
+      name,
+      description,
+      price: parseFloat(price),
+      quantityInStock: parseInt(quantityInStock),
+      weight: weight ? parseFloat(weight) : null,
+      size,
+      category,
+      ...additionalData,
     };
 
-    console.log("Submitted Stone Data:", stoneData);
-    setMessage("Stone item successfully submitted!");
+    console.log("Submitted Tool Data:", toolData);
+    setMessage("Tool item successfully submitted!");
 
-    // Reset all fields
-    setProductName("");
-    setProductDescription("");
-    setStoneStockType("");
-    setStoneWeight("");
-    setStoneSize("");
-    setStoneThickness("");
-    setStoneDiameter("");
-    setShapeVariation("");
-    setGeographicalOrigin("");
-    setMineType("");
-    setEthicalSourcing("");
-    setLocationStatus("");
-    setStockAvailability("");
-    setClarity("");
-    setPrimaryHue("");
-    setColorSaturation("");
-    setLuster("");
-    setTransparency("");
-    setTreatment("");
-    setCertificationAvailable("");
-    setGradingAuthority("");
-    setOriginVerification("");
-    setCutCategory("");
-    setCabochonShape("");
-    setFacetedCut("");
-    setSlabCut("");
-    setBeadsType("");
-    setHoleType("");
-    setPreciousStone("");
-    setSemiPreciousQuartz("");
-    setSemiPreciousBeryl("");
-    setSemiPreciousFeldspar("");
-    setOtherSemiPrecious("");
-    setOrganicGem("");
-    setSyntheticGem("");
+    // Reset form fields
+    setName("");
+    setDescription("");
+    setPrice("");
+    setQuantityInStock("");
+    setWeight("");
+    setSize("");
+    setCategory("");
+    setToolType("");
+    setToolBrand("");
+    setMaterialComposition("");
+    setSupplyType("");
+    setSupplyBrand("");
+    setSupplyMaterial("");
+    setKitType("");
+    setKitContents("");
+    setSilverType("");
   };
 
   return (
-    <div className="bg-white p-6 border rounded shadow-lg overflow-auto max-h-screen">
-      <h3 className="text-2xl font-semibold mb-4 text-center">Stone Specifications</h3>
-      <form onSubmit={handleSubmit}>
-        {/* General Attributes */}
-        <h4 className="text-xl font-semibold mb-2">General Attributes</h4>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Product Name</span>
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Product Description</span>
-          </label>
-          <textarea
-            className="textarea textarea-bordered w-full"
-            value={productDescription}
-            onChange={(e) => setProductDescription(e.target.value)}
-          ></textarea>
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Stone Stock Type</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={stoneStockType}
-            onChange={(e) => setStoneStockType(e.target.value)}
-            required
-          >
-            <option value="">Select Stone Stock Type</option>
-            {stoneStockTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
+    <div className="bg-white p-6 border rounded shadow-lg">
+      <h3 className="text-xl font-semibold mb-4 text-center">Tool Specifications</h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Product Fields */}
+        <div className="grid grid-cols-1 gap-4">
           <div>
-            <label className="label">
-              <span className="label-text font-semibold">Weight</span>
-            </label>
+            <label className="label font-semibold">Product Name</label>
             <input
-              type="number"
-              step="0.01"
+              type="text"
               className="input input-bordered w-full"
-              value={stoneWeight}
-              onChange={(e) => setStoneWeight(e.target.value)}
-              placeholder="Enter weight"
+              value={name}
+              onChange={e => setName(e.target.value)}
               required
             />
           </div>
           <div>
-            <label className="label">
-              <span className="label-text font-semibold">Size (Dimensions)</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={stoneSize}
-              onChange={(e) => setStoneSize(e.target.value)}
-              placeholder="e.g., H x W x L"
-              required
+            <label className="label font-semibold">Description</label>
+            <textarea
+              className="textarea textarea-bordered w-full"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
             />
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Stone Thickness</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={stoneThickness}
-              onChange={(e) => setStoneThickness(e.target.value)}
-              placeholder="Enter thickness"
-            />
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Stone Diameter</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={stoneDiameter}
-              onChange={(e) => setStoneDiameter(e.target.value)}
-              placeholder="Enter diameter (for round stones)"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Shape Variations</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={shapeVariation}
-            onChange={(e) => setShapeVariation(e.target.value)}
-          >
-            <option value="">Select Shape Variation</option>
-            {shapeVariationsOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Location (Origin & Mining Details) */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Location (Origin & Mining Details)</h4>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Geographical Origin</span>
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            value={geographicalOrigin}
-            onChange={(e) => setGeographicalOrigin(e.target.value)}
-            placeholder="Country, region, mine name, locality"
-          />
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Mine Type</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={mineType}
-            onChange={(e) => setMineType(e.target.value)}
-          >
-            <option value="">Select Mine Type</option>
-            {mineTypesOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Ethical Sourcing</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={ethicalSourcing}
-              onChange={(e) => setEthicalSourcing(e.target.value)}
-            >
-              <option value="">Select Ethical Sourcing</option>
-              {ethicalSourcingOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Location Status</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={locationStatus}
-              onChange={(e) => setLocationStatus(e.target.value)}
-            >
-              <option value="">Select Location Status</option>
-              {locationStatusOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Stock Availability</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={stockAvailability}
-            onChange={(e) => setStockAvailability(e.target.value)}
-          >
-            <option value="">Select Stock Availability</option>
-            {stockAvailabilityOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Quality Attributes */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Quality Attributes</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Clarity</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={clarity}
-              onChange={(e) => setClarity(e.target.value)}
-            >
-              <option value="">Select Clarity</option>
-              {clarityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Primary Hue</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={primaryHue}
-              onChange={(e) => setPrimaryHue(e.target.value)}
-            >
-              <option value="">Select Primary Hue</option>
-              {primaryHueOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Color Saturation & Tone</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={colorSaturation}
-              onChange={(e) => setColorSaturation(e.target.value)}
-            >
-              <option value="">Select Color Saturation & Tone</option>
-              {colorSaturationOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Luster</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={luster}
-              onChange={(e) => setLuster(e.target.value)}
-            >
-              <option value="">Select Luster</option>
-              {lusterOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Transparency</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={transparency}
-            onChange={(e) => setTransparency(e.target.value)}
-          >
-            <option value="">Select Transparency</option>
-            {transparencyOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Stone Treatments & Enhancements */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Stone Treatments & Enhancements</h4>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Treatment</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={treatment}
-            onChange={(e) => setTreatment(e.target.value)}
-          >
-            <option value="">Select Treatment</option>
-            {treatmentOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Stone Certification & Grading */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Stone Certification & Grading</h4>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Certification Available</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={certificationAvailable}
-              onChange={(e) => setCertificationAvailable(e.target.value)}
-            >
-              <option value="">Select</option>
-              {certificationAvailableOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Grading Authority</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={gradingAuthority}
-              onChange={(e) => setGradingAuthority(e.target.value)}
-            >
-              <option value="">Select</option>
-              {gradingAuthorityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Origin Verification</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={originVerification}
-              onChange={(e) => setOriginVerification(e.target.value)}
-            >
-              <option value="">Select</option>
-              {originVerificationOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Shape & Cut */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Shape & Cut</h4>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Cut Category</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={cutCategory}
-            onChange={(e) => setCutCategory(e.target.value)}
-          >
-            <option value="">Select Cut Category</option>
-            {cutCategories.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-        {cutCategory === "Cabochons" && (
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Cabochon Shape</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={cabochonShape}
-              onChange={(e) => setCabochonShape(e.target.value)}
-            >
-              <option value="">Select Cabochon Shape</option>
-              {cabochonShapes.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {cutCategory === "Faceted Stones" && (
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Faceted Cut</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={facetedCut}
-              onChange={(e) => setFacetedCut(e.target.value)}
-            >
-              <option value="">Select Faceted Cut</option>
-              {facetedCuts.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {cutCategory === "Slabs & Rough Cuts" && (
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Slab Cut</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={slabCut}
-              onChange={(e) => setSlabCut(e.target.value)}
-            >
-              <option value="">Select Slab Cut</option>
-              {slabCuts.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {cutCategory === "Beads & Drilled Stones" && (
-          <>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">
-                <span className="label-text font-semibold">Beads Type</span>
-              </label>
+              <label className="label font-semibold">Price</label>
+              <input
+                type="number"
+                step="0.01"
+                className="input input-bordered w-full"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label font-semibold">Quantity in Stock</label>
+              <input
+                type="number"
+                className="input input-bordered w-full"
+                value={quantityInStock}
+                onChange={e => setQuantityInStock(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label font-semibold">Weight</label>
+              <input
+                type="number"
+                step="0.01"
+                className="input input-bordered w-full"
+                value={weight}
+                onChange={e => setWeight(e.target.value)}
+                placeholder="e.g., 100 grams or 3.5 ounces"
+              />
+            </div>
+            <div>
+              <label className="label font-semibold">Size / Dimensions</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={size}
+                onChange={e => setSize(e.target.value)}
+                placeholder="e.g., 10x20 mm or 4x8 inches"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="label font-semibold">Category</label>
+            <select
+              className="select select-bordered w-full"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              required
+            >
+              <option value="">Select Category</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Conditional Fields */}
+        {category === "Tools" && (
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="label font-semibold">Tool Type</label>
               <select
                 className="select select-bordered w-full"
-                value={beadsType}
-                onChange={(e) => setBeadsType(e.target.value)}
+                value={toolType}
+                onChange={(e) => setToolType(e.target.value)}
               >
-                <option value="">Select Beads Type</option>
-                {beadsTypesOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                <option value="">Select Tool Type</option>
+                {toolTypes.map((tt) => (
+                  <option key={tt} value={tt}>
+                    {tt}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label">
-                <span className="label-text font-semibold">Hole Type</span>
-              </label>
+              <label className="label font-semibold">Brand</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={toolBrand}
+                onChange={(e) => setToolBrand(e.target.value)}
+                placeholder="Known manufacturer or generic"
+              />
+            </div>
+            <div>
+              <label className="label font-semibold">Material Composition</label>
               <select
                 className="select select-bordered w-full"
-                value={holeType}
-                onChange={(e) => setHoleType(e.target.value)}
+                value={materialComposition}
+                onChange={(e) => setMaterialComposition(e.target.value)}
               >
-                <option value="">Select Hole Type</option>
-                {holeTypesOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                <option value="">Select Material Composition</option>
+                {materialCompositions.map((mc) => (
+                  <option key={mc} value={mc}>
+                    {mc}
                   </option>
                 ))}
               </select>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Gemstone Type & Variations */}
-        <h4 className="text-xl font-semibold mt-6 mb-2">Gemstone Type & Variations</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Precious Stone</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={preciousStone}
-              onChange={(e) => setPreciousStone(e.target.value)}
-            >
-              <option value="">Select Precious Stone</option>
-              {preciousStoneOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+        {category === "Supplies" && (
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="label font-semibold">Supply Type</label>
+              <select
+                className="select select-bordered w-full"
+                value={supplyType}
+                onChange={(e) => setSupplyType(e.target.value)}
+              >
+                <option value="">Select Supply Type</option>
+                {supplyTypes.map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label font-semibold">Brand</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={supplyBrand}
+                onChange={(e) => setSupplyBrand(e.target.value)}
+                placeholder="Enter brand"
+              />
+            </div>
+            <div>
+              <label className="label font-semibold">Material</label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                value={supplyMaterial}
+                onChange={(e) => setSupplyMaterial(e.target.value)}
+                placeholder="Material details"
+              />
+            </div>
           </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Semi-Precious (Quartz)</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={semiPreciousQuartz}
-              onChange={(e) => setSemiPreciousQuartz(e.target.value)}
-            >
-              <option value="">Select Semi-Precious Quartz</option>
-              {semiPreciousQuartzOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+        )}
+
+        {category === "Jewelry Kits" && (
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="label font-semibold">Kit Type</label>
+              <select
+                className="select select-bordered w-full"
+                value={kitType}
+                onChange={(e) => setKitType(e.target.value)}
+              >
+                <option value="">Select Kit Type</option>
+                {kitTypes.map((kt) => (
+                  <option key={kt} value={kt}>
+                    {kt}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label font-semibold">Kit Contents</label>
+              <textarea
+                className="textarea textarea-bordered w-full"
+                value={kitContents}
+                onChange={(e) => setKitContents(e.target.value)}
+                placeholder="List kit contents"
+              />
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Semi-Precious (Beryl)</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={semiPreciousBeryl}
-              onChange={(e) => setSemiPreciousBeryl(e.target.value)}
-            >
-              <option value="">Select Semi-Precious Beryl</option>
-              {semiPreciousBerylOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+        )}
+
+        {category === "Silver" && (
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="label font-semibold">Silver Type</label>
+              <select
+                className="select select-bordered w-full"
+                value={silverType}
+                onChange={(e) => setSilverType(e.target.value)}
+              >
+                <option value="">Select Silver Type</option>
+                {silverTypes.map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Semi-Precious (Feldspar)</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={semiPreciousFeldspar}
-              onChange={(e) => setSemiPreciousFeldspar(e.target.value)}
-            >
-              <option value="">Select Semi-Precious Feldspar</option>
-              {semiPreciousFeldsparOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Other Semi-Precious</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={otherSemiPrecious}
-            onChange={(e) => setOtherSemiPrecious(e.target.value)}
-          >
-            <option value="">Select Other Semi-Precious</option>
-            {otherSemiPreciousOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Organic Gem</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={organicGem}
-              onChange={(e) => setOrganicGem(e.target.value)}
-            >
-              <option value="">Select Organic Gem</option>
-              {organicGemOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text font-semibold">Synthetic Gem</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={syntheticGem}
-              onChange={(e) => setSyntheticGem(e.target.value)}
-            >
-              <option value="">Select Synthetic Gem</option>
-              {syntheticGemOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        )}
 
         {/* Submit Button */}
         <div className="flex justify-center mt-6">
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Submit Stone Item
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+          >
+            Submit Tool Item
           </button>
         </div>
 
         {/* Success / Error Message */}
         {message && (
-          <p className={`text-center mt-4 font-semibold ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+          <p
+            className={`text-center mt-4 font-semibold ${
+              message.includes("successfully") ? "text-green-600" : "text-red-600"
+            }`}
+          >
             {message}
           </p>
         )}
@@ -991,7 +381,10 @@ export default function StoneForm({ onClose }: StoneFormProps) {
 
       {/* Close Button */}
       <div className="flex justify-end mt-4">
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          onClick={onClose}
+        >
           Close
         </button>
       </div>
