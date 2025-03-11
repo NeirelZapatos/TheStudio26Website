@@ -14,12 +14,11 @@ import {
 import ToggleInspectorPanelButton from '../InspectorDrawer/ToggleInspectorPanelButton';
 import ToggleSamplesPanelButton from '../SamplesDrawer/ToggleSamplesPanelButton';
 
-import DownloadJson from './DownloadJson';
+import SaveToDatabase from './SaveTemplate';
 import HtmlPanel from './HtmlPanel';
 import ImportJson from './ImportJson';
 import JsonPanel from './JsonPanel';
 import MainTabsGroup from './MainTabsGroup';
-import ShareButton from './ShareButton';
 
 export default function TemplatePanel() {
   const document = useDocument();
@@ -95,7 +94,7 @@ export default function TemplatePanel() {
             <MainTabsGroup />
           </Stack>
           <Stack direction="row" spacing={2}>
-            <DownloadJson />
+            <SaveToDatabase />
             <ImportJson />
             <ToggleButtonGroup value={selectedScreenSize} exclusive size="small" onChange={handleScreenSizeChange}>
               <ToggleButton value="desktop">
@@ -109,7 +108,6 @@ export default function TemplatePanel() {
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
-            <ShareButton />
           </Stack>
         </Stack>
         <ToggleInspectorPanelButton />
