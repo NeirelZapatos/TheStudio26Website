@@ -42,11 +42,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
         await dbConnect();
         const { id } = params;
 
-        // Log the ID being used for deletion for troubleshooting
-        console.log("Attempting to delete Item with Stripe ID:", id);
-
         // Find and delete the item by its Stripe ID in MongoDB
-        const deletedItem = await Item.findOneAndDelete({ stripeProductId: id });
+        const deletedItem = await Item.findByIdAndDelete(id);
 
         if (!deletedItem) {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
@@ -71,12 +68,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
         }
 
         // Include image_url in the response
-        return NextResponse.json({
-            name: product.name,
-            price: product.price,
-            description: product.description,
-            image_url: product.image_url // Added image_url here
-        });
+        return NextResponse.json(product);
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 });

@@ -1,128 +1,104 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
-import EmailList from "../../Components/EmailList";
-import Image from "next/image";
+import ProductGrid from "./Components/ProductGrid";
+import CourseFilters from "./Components/CourseFilters"
+import { ChevronDown, Filter } from "lucide-react";
 
-const ClassCatalog: React.FC = () => {
-  const [filters, setFilters] = useState({
-    availability: false,
-    priceRange: [0, 1000],
-    experienceLevel: [],
+const SORT_OPTIONS = [
+  { name: "None", value: "none" },
+  { name: "Price: Low to High", value: "price-asc" },
+  { name: "Price: High to Low", value: "price-desc" },
+] as const;
+
+// Define multiple sets of prerequisites to choose from
+const prerequisitesPool = [
+  ["Basic metalsmithing skills", "Must be 18+ years old"],
+  ["No prior experience required", "Familiarity with hand tools"],
+  ["Basic jewelry design knowledge", "Comfortable with small materials"],
+  ["Some experience with shaping metal", "An interest in ring design"],
+];
+
+interface FilterState {
+  sort: string;
+  category: string;
+  classType: string[];
+  price: {
+    isCustom: boolean;
+    range: [number, number];
+  };
+}
+
+export default function StorePage() {
+  const [courseFilter, setCourseFilter] = useState<FilterState>({
+    sort: "none",
+    category: "all",
+    classType: [], // Default class type
+    price: { isCustom: false, range: [0, 500] as [number, number] },
   });
 
-  const toggleAvailability = () => {
-    setFilters({ ...filters, availability: !filters.availability });
-  };
-
-  const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
-    const newRange = [...filters.priceRange];
-    if (type === "min") newRange[0] = Number(event.target.value);
-    if (type === "max") newRange[1] = Number(event.target.value);
-    setFilters({ ...filters, priceRange: newRange });
-  };
-
-  // ! FIX THIS
-  // const toggleExperienceLevel = (level: string) => {
-  //   setFilters((prev) => {
-  //     const newLevels = prev.experienceLevel.includes(level)
-  //       ? prev.experienceLevel.filter((l) => l !== level)
-  //       : [...prev.experienceLevel, level];
-  //     return { ...prev, experienceLevel: newLevels };
-  //   });
-  // };
-
   return (
-    <div>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Class Catalog</h1>
-
-        {/* Filters Section */}
-        <div className="flex flex-col md:flex-row md:gap-6">
-          <div className="w-full md:w-1/4 bg-gray-100 p-4 rounded-lg">
-            <h2 className="font-semibold text-lg mb-4">Filters</h2>
-
-            {/* Availability Filter */}
-            <div className="mb-4">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.availability}
-                  onChange={toggleAvailability}
-                  className="form-checkbox text-red-500"
-                />
-                <span>Available</span>
-              </label>
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="flex items-baseine justify-between border-b border-gray-200 pb-6 pt-24">
+      <div>
+        <h1 className="text-5xl font-bold tracking-tight text-gray-900 mb-4">
+          Class Catalog
+        </h1>
+        <p className="text-lg text-gray-700 max-w-2xl">
+          Below is a comprehensive list of the classes available at our studio. 
+          Should you find a class of interest that is not currently scheduled, we encourage you to contact the studio directly. 
+          We will make every effort to accommodate your request; 
+          however, please note that most classes require a minimum of three participants to proceed.
+        </p>
+      </div>
+        {/* Dropdown menu to sort by asc/desc */}
+        <div className="flex items-center">
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn m-1 btn-ghost font-medium"
+            >
+              Sort
+              <ChevronDown className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></ChevronDown>
             </div>
-
-            {/* Price Range Filter */}
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">Price Range</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  value={filters.priceRange[0]}
-                  onChange={(e) => handlePriceChange(e, "min")}
-                  className="w-1/2 p-2 border rounded-lg"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  value={filters.priceRange[1]}
-                  onChange={(e) => handlePriceChange(e, "max")}
-                  className="w-1/2 p-2 border rounded-lg"
-                  placeholder="Max"
-                />
-              </div>
-            </div>
-
-            {/* Experience Level Filter */}
-            <div>
-              <label className="block mb-2 font-semibold">Experience Level</label>
-              <div className="flex flex-col space-y-2">
-
-                { /* // ! FIX THIS */ }
-                {/* {["Beginner", "Intermediate", "Advanced"].map((level) => (
-                  <label key={level} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={filters.experienceLevel.includes(level)}
-                      onChange={() => toggleExperienceLevel(level)}
-                      className="form-checkbox text-red-500"
-                    />
-                    <span>{level}</span>
-                  </label>
-                ))} */}
-
-
-              </div>
-            </div>
-          </div>
-
-          {/* Class Display Section */}
-          <div className="w-full md:w-3/4">
-            <h2 className="text-xl font-semibold mb-4">Classes</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Example Class Card */}
-              <div className="border p-4 rounded-lg shadow">
-                <Image
-                  src="https://picsum.photos/300"   //for reference
-                  alt="Class"
-                  width={300}
-                  height={300}
-                  className="w-full h-40 object-cover mb-4 rounded"
-                />
-                <h3 className="text-lg font-bold">Sample Class Name</h3>
-                <p className="text-sm text-gray-500">Beginner</p>
-                <p className="mt-2 text-red-500 font-semibold">$100</p>
-              </div>
-              {/*additional class cards */}
-            </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <li key={option.name}>
+                  <button
+                    className={`btn btn-ghost font-medium text-left w-full block px-4 py-2 ${courseFilter.sort === option.value
+                        ? "bg-gray-100 text-gray-800" // Highlight selected option
+                        : "text-gray-500 hover:bg-gray-100" // Grey out other options
+                      }`}
+                    onClick={() => {
+                      setCourseFilter((prev) => ({
+                        ...prev,
+                        sort: option.value,
+                      }));
+                    }}
+                  >
+                    {option.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button className="-m-2 m1-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden">
+              <Filter className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-export default ClassCatalog;
+      <section className="pb-24 pt-6">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+          {/* Filters */}
+          <CourseFilters courseFilter={courseFilter} setCourseFilter={setCourseFilter} />
+          <ProductGrid filter={courseFilter} />
+        </div>
+      </section>
+    </main>
+  );
+}

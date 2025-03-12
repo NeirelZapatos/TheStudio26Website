@@ -9,14 +9,15 @@ import InvoicesSection from "./components/InvoicesSection";
 import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
-import CustomerManagementSection from "./components/CustomerManagementSection";
+import CustomerManagementSection from "./components/CustomerManagement/CustomerManagementSection";
 
 import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
-import FinancialAnalytics from "./components/FinancialAnalytics";
+import FinancialAnalytics from "./components/FinancialAnalytics/FinancialAnalytics";
 import ProductList from "./components/ProductList";
-import ManageOrders from './components/ManageOrders/Components/ManageOrders';
+import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
+import ClassCatalogManager from "./components/ClassCatalogManager";
 
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -36,7 +37,7 @@ function DashboardPage() {
           setShowCalendar={setShowCalendar}
           showProducts={showProducts}
           setShowProducts={setShowProducts}
-        />  
+        />
       </div>
       <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
         <Header />
@@ -46,13 +47,16 @@ function DashboardPage() {
         {activeSection === "pos" && <PointOfSaleSection />}
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
-        {activeSection == "item" && <ItemSection /> }
-        {activeSection == "class" && <ClassSection /> }
-        {activeSection === "customerManagement" && <CustomerManagementSection />}
+        {activeSection == "item" && <ItemSection />}
+        {activeSection == "class" && <ClassSection />}
+        {activeSection === "customerManagement" && (
+          <CustomerManagementSection />
+        )}
         {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {activeSection === "productList" && <ProductList />}
         {activeSection === "manageOrders" && <ManageOrders />}
+        {activeSection === "classCatalogManager" && <ClassCatalogManager />}
       </main>
     </div>
   );

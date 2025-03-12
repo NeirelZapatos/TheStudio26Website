@@ -36,7 +36,7 @@ export default function StorePage() {
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="flex items-baseine justify-between border-b border-gray-200 pb-6 pt-24">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-5xl font-bold tracking-tight text-gray-900">
           Products
         </h1>
         {/* Dropdown menu to sort by asc/desc */}

@@ -1,13 +1,14 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import { ICustomer } from "./Customer";
 import { IItem } from "./Item";
+import { ICourse } from "./Course";
 
 interface IParsedShippingAddress {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
 }
 
 interface IShippingDetails {
@@ -36,19 +37,22 @@ interface IShippingDetails {
 
 export interface IOrder extends Document {
     _id: Types.ObjectId;
-    customer_id: Types.ObjectId;
-    product_items: Types.ObjectId[];
-    order_date: Date;
-    total_amount: number;
-    shipping_method: string;
-    payment_method: string;
-    order_status: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled';
-    shipping_address: string;
-    billing_address: string;
+    customer_id?: Types.ObjectId;
+    product_items?: Types.ObjectId[];
+    course_items?: Types.ObjectId[]; // Reference to Course documents
+    order_date: string;
+    total_amount?: number;
+    shipping_method?: string;
+    payment_method?: string;
+    order_status?: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled';
+    shipping_address?: string;
+    billing_address?: string;
     customer?: ICustomer;
+    courses?: ICourse;
     products?: { product: IItem; quantity: number }[];
     parsedShippingAddress: IParsedShippingAddress;
-    shippingDetails?: IShippingDetails; // Add shipping details
+    shippingDetails?: IShippingDetails;
+    
 }
 
 const orderSchema: Schema = new mongoose.Schema({
@@ -127,7 +131,6 @@ const orderSchema: Schema = new mongoose.Schema({
         shippingCost: { type: Number, default: 0 },
         subtotal: { type: Number, default: 0 },
         trackingNumber: { type: String, default: '' } 
-
     }
 });
 

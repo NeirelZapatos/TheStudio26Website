@@ -1,14 +1,17 @@
-import mongoose, { Document, Schema, Types } from "mongoose"
+import mongoose, { Document, Schema, Types } from "mongoose";
 
-export interface ICustomer extends Document {
+export interface ICustomer {
+    _id?: Types.ObjectId; // Optional because it might not exist for new customers
+    customer_id?: Types.ObjectId;
     first_name: string;
     last_name: string;
     email: string;
-    phone_number: number;
-    shipping_address: string;
-    billing_address: string;
-    orders: Types.ObjectId[]; // Array of Order ObjectIds related to this customer
-}
+    phone_number?: string;
+    shipping_address?: string;
+    billing_address?: string;
+    orders?: Types.ObjectId[];
+    courses?: Types.ObjectId[];
+  }
 
 const customerSchema:Schema = new mongoose.Schema({
     first_name: {

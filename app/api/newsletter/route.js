@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-
-// Hardcoded list of subscribers (replace with database later)
-const subscribers = [
-  'alexanderrbass@pm.me',
-  'wovag83902@intady.com',
-];
+import dbConnect from '@/app/lib/dbConnect';
+import Subscriber from '@/app/models/Subscriber';
 
 // Nodemailer transporter configuration
 const transporter = nodemailer.createTransport({
@@ -18,6 +14,8 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(request) {
   try {
+    await dbConnect();
+
     const { subject, content } = await request.json();
 
     if (!subject || !content) {
@@ -27,18 +25,29 @@ export async function POST(request) {
       );
     }
 
-    // Send email to each subscriber
-    for (const email of subscribers) {
+    const subscribers = await Subscriber.find({ active: true });
+    for (const subscriber of subscribers) {
+      const unsubscribeLink = `${process.env.BASE_URL}/unsubscribe/${subscriber.unsubscribeToken}`;
+
+      const emailContent = `
+        ${content}
+        <p style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; font-size: 12px; color: #666;">
+          You received this email because you're subscribed to our monthly newsletter.
+          <br>
+          <a href="${unsubscribeLink}">Unsubscribe from future emails</a>
+        </p>
+      `;
+
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
-        to: email,
+        to: subscriber.email,
         subject: subject,
-        html: content,
+        html: emailContent,
       });
     }
-
+    
     return NextResponse.json(
-      { message: 'Newsletter sent successfully!' },
+      { message: 'Newsletter sent successfully to ' + subscribers.length + ' subscribers!' },
       { status: 200 }
     );
   } catch (error) {

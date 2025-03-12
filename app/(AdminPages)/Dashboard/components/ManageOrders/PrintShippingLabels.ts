@@ -1,145 +1,148 @@
-import { IOrder } from '@/app/models/Order';
-import axios from 'axios';
+import { IOrder } from "@/app/models/Order";
+import axios from "axios";
 
-interface ShippingLabelRequest {
-    order: {
-        orderId: string;
-        orderTotal: number;
-        subtotal: number; // Added
-        shippingAmount: number; // Added
-        products: Array<{
-            description: string;
-            quantity: number;
-            price: number; // Added to include product price
-        }>;
-        shipping_address: {
-            street1: string;
-            city: string;
-            state: string;
-            postalCode: string;
-            country: string;
-        };
-        customer: {
-            first_name: string;
-            last_name: string;
-        };
-    };
-    fromAddress: any;
-    weight: any;
-    dimensions: any;
+interface ShippoLabelResponse {
+  label_url?: string;
+  tracking_number?: string;
+  tracking_url_provider?: string;
+  rate?: {
+    currency: string;
+    amount: number;
+  };
+  error?: string;
 }
 
+interface ShippoLabelRequest {
+  order_id: string;
+  address_from: {
+    name: string;
+    street1: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+    phone?: string;
+    email?: string;
+  };
+  address_to: {
+    name: string;
+    street1: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+    phone?: string;
+    email?: string;
+  };
+  parcel: {
+    length: number;
+    width: number;
+    height: number;
+    distance_unit: 'in' | 'cm';
+    weight: number;
+    mass_unit: 'lb' | 'kg';
+  };
+  shipment: {
+    carrier_account: string;
+    servicelevel_token: string;
+    label_file_type: 'pdf' | 'png';
+  };
+}
+
+// Validate address format - more flexible address parser 
 const validateAddress = (addressString: string) => {
-    const parts = addressString.split(',').map(part => part.trim());
-    if (parts.length !== 5) {
-        throw new Error('Invalid address format. Expected: "Street, City, State, ZIP, Country"');
-    }
-    return {
-        street1: parts[0],
-        city: parts[1],
-        state: parts[2],
-        postalCode: parts[3],
-        country: parts[4]
-    };
+  const parts = addressString.split(',').map(part => part.trim());
+  
+  // Ensure we have at least street, city, state, zip
+  if (parts.length < 4) {
+    throw new Error('Invalid address format. Expected at least: "Street, City, State, ZIP"');
+  }
+  
+  return {
+    street1: parts[0],
+    city: parts[1],
+    state: parts[2],
+    zip: parts[3],
+    country: parts.length >= 5 ? parts[4] : 'US' // Default to US if country not provided
+  };
 };
+export const printShippingLabels = async (
+  selectedOrders: string[],
+  orders: IOrder[],
+  packageDetails: {  // Remove the ? to make this required
+    length: number;
+    width: number;
+    height: number;
+    weight: number;
+  }
+) => {
+  // Validate package details first
+  if (!packageDetails || 
+      packageDetails.length <= 0 || 
+      packageDetails.width <= 0 || 
+      packageDetails.height <= 0 || 
+      packageDetails.weight <= 0) {
+    throw new Error('All package dimensions (length, width, height, weight) must be provided and greater than zero');
+  }
 
-export const printShippingLabels = async (selectedOrders: string[], orders: IOrder[]) => {
-    try {
-        const labels = await Promise.all(selectedOrders.map(async (orderId) => {
-            const order = orders.find(o => o._id.toString() === orderId);
+  try {
+    const labels = await Promise.all(selectedOrders.map(async (orderId) => {
+      const order = orders.find(o => o._id.toString() === orderId);
+      if (!order) throw new Error(`Order ${orderId} not found`);
+      
+      // Handle both customer and customer_id patterns
+      const customerData = order.customer || order.customer_id;
+      if (!customerData || !order.shipping_address) {
+        throw new Error(`Order ${orderId} missing customer or address data`);
+      }
 
-            if (!order) throw new Error(`Order ${orderId} not found`);
-            if (!order.customer || !order.shipping_address) {
-                throw new Error(`Order ${orderId} missing customer or address data`);
-            }
+      try {
+        const parsedAddress = validateAddress(order.shipping_address);
 
-            try {
-                const parsedAddress = validateAddress(order.shipping_address);
+        // Simplified API call that matches the backend expectations
+        const response = await axios.post<ShippoLabelResponse>(
+          '/api/shipping',
+          {
+            order_ids: [order._id.toString()],  // Always send as array to match backend
+            package_details: packageDetails  // Use the entire object directly
+          }
+        );
 
-                const products = order.products?.map(product => ({
-                    description: product.product.description || 'No description',
-                    quantity: product.quantity,
-                    price: product.product.price // Include product price
-                })) || [];
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-                const subtotal = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-                const shippingAmount = order.total_amount - subtotal;
+        if (!response.data.label_url) {
+          throw new Error('No label URL returned from Shippo');
+        }
 
-                const requestPayload: ShippingLabelRequest = {
-                    order: {
-                        orderId: order._id.toString(),
-                        orderTotal: order.total_amount,
-                        subtotal: subtotal, // Added
-                        shippingAmount: shippingAmount, // Added
-                        products,
-                        shipping_address: parsedAddress,
-                        customer: order.customer
-                    },
-                    fromAddress: {
-                        name: 'Jimmy Dean', // Updated sender name
-                        street1: '456 Warehouse Rd',
-                        city: 'New York',
-                        state: 'NY',
-                        postalCode: '10001',
-                        country: 'US'
-                    },
-                    weight: { value: 16, units: 'ounces' },
-                    dimensions: { units: 'inches', length: 10, width: 5, height: 5 }
-                };
+        return response.data;
 
-                const response = await axios.post('/api/shipstation/create-label', requestPayload);
-
-                if (response.data.debug) {
-                    const debug = response.data.debug;
-                    window.alert(`Credential Debug Info:\n
-                        Auth Header: ${debug.authHeader}\n
-                        API Key Present: ${debug.environment?.keyExists}\n
-                        API Secret Present: ${debug.environment?.secretExists}\n
-                        Environment: ${debug.environment?.NODE_ENV}
-                    `);
-                }
-
-                if (!response.data.labelUrl) {
-                    throw new Error('No label data returned from backend');
-                }
-
-                return response.data;
-
-            } catch (error: any) {
-                const debug = error.response?.data?.debug;
-                if (debug) {
-                    window.alert(`Credential Error Debug:\n
-                        Auth Header: ${debug.authHeader}\n
-                        API Key Present: ${debug.keyExists}\n
-                        API Secret Present: ${debug.secretExists}\n
-                        Environment: ${debug.environment}\n
-                        Error: ${error.response?.data?.error || error.message}
-                    `);
-                }
-
-                const message = error.response?.data?.error || error.message;
-                window.alert(`Order ${orderId} Failed: ${message}`);
-                throw new Error(message);
-            }
-        }));
-
-        // Handle label downloads
-        labels.forEach((label, index) => {
-            if (label?.labelUrl) {
-                const link = document.createElement('a');
-                link.href = `data:application/pdf;base64,${label.labelUrl}`;
-                link.download = `label_${selectedOrders[index]}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
-
-        return labels;
-
-    } catch (error: any) {
-        const message = error.message || 'Unknown error';
-        window.alert(`Shipping Error: ${message}`);
+      } catch (error: any) {
+        const message = error.response?.data?.error || error.message;
+        window.alert(`Order ${orderId} Failed: ${message}`);
         throw new Error(message);
-    }
+      }
+    }));
+
+// Handle label downloads
+labels.forEach((label, index) => {
+  if (label?.label_url) {
+    const link = document.createElement('a');
+    link.href = label.label_url;
+    link.download = `label_${selectedOrders[index]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+});
+
+    return labels;
+
+  } catch (error: any) {
+    const message = error.message || 'Unknown error';
+    window.alert(`Shipping Error: ${message}`);
+    throw new Error(message);
+  }
 };
+
