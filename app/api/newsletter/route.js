@@ -31,7 +31,9 @@ export async function POST(request) {
 
       const emailContent = `
         ${content}
-        <p style="margin-top: 20px;">
+        <p style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; font-size: 12px; color: #666;">
+          You received this email because you're subscribed to our monthly newsletter.
+          <br>
           <a href="${unsubscribeLink}">Unsubscribe from future emails</a>
         </p>
       `;

@@ -24,9 +24,23 @@ export default function Page() {
     template.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Helper functions to format current date and time (optional)
-  const getCurrentDate = () => new Date().toISOString().split("T")[0];
-  const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
+  // Class Categories
+  const classCategories = [
+    "Beginning Jewelry Classes",
+    "Open Labs",
+    "Ring Classes",
+    "Earring Classes",
+    "Bracelet Classes",
+    "Pendant Classes",
+    "Specialty Class",
+    "Other",
+  ];
+  const [classCategory, setClassCategory] = useState<string>("");
+  const [otherCategory, setOtherCategory] = useState<string>("");
+
+  // Prerequisite Fields
+  const [hasPrerequisite, setHasPrerequisite] = useState<boolean>(false);
+  const [prerequisiteClass, setPrerequisiteClass] = useState<string>("");
 
   // Product form fields
   const [name, setName] = useState<string>("");
@@ -47,7 +61,12 @@ export default function Page() {
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
     const convertedDuration = duration ? parseInt(duration) : undefined;
 
+    // If "Other" is selected, use the user-input text. Otherwise, use the chosen category.
+    const finalCategory =
+      classCategory === "Other" ? otherCategory : classCategory;
+
     try {
+      // 1) Create product in Stripe
       const stripeResponse = await axios.post("/api/stripe/create-product", {
         name,
         description,
@@ -60,6 +79,7 @@ export default function Page() {
       const createdProduct = stripeResponse.data;
       console.log("Stripe API Response:", createdProduct);
 
+      // 2) Save to MongoDB
       const productData: any = {
         id: createdProduct.product.id,
         name,
@@ -74,6 +94,10 @@ export default function Page() {
         instructor,
         duration: convertedDuration,
         location,
+        classCategory: finalCategory,
+        // Prerequisite fields
+        prerequisite: hasPrerequisite,
+        prerequisiteClass: hasPrerequisite ? prerequisiteClass : "",
       };
 
       await axios.post("/api/courses", productData);
@@ -90,6 +114,10 @@ export default function Page() {
       setInstructor("");
       setDuration("");
       setLocation("4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682");
+      setClassCategory("");
+      setOtherCategory("");
+      setHasPrerequisite(false);
+      setPrerequisiteClass("");
     } catch (error) {
       setMessage("Error creating product");
       console.error("Error in create Product", error);
@@ -113,7 +141,9 @@ export default function Page() {
     <div className="bg-gray-100 min-h-screen py-8">
       <div className="container mx-auto px-4">
         <div className="bg-white p-6 rounded shadow">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Create a Class</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            Create a Class
+          </h2>
 
           {/* Template Search Toggle */}
           <div className="flex justify-center mb-6">
@@ -168,6 +198,67 @@ export default function Page() {
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
+              {/* Class Category */}
+              <div>
+                <label className="label font-semibold">Class Category</label>
+                <select
+                  value={classCategory}
+                  onChange={(e) => setClassCategory(e.target.value)}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="">Select a Category</option>
+                  {classCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* If "Other" is selected, show text input */}
+              {classCategory === "Other" && (
+                <div>
+                  <label className="label font-semibold">Other Category</label>
+                  <input
+                    type="text"
+                    value={otherCategory}
+                    onChange={(e) => setOtherCategory(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    placeholder="Please specify"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Prerequisite (Yes/No) */}
+              <div>
+                <label className="label font-semibold">Prerequisite</label>
+                <select
+                  value={hasPrerequisite ? "Yes" : "No"}
+                  onChange={(e) => setHasPrerequisite(e.target.value === "Yes")}
+                  className="select select-bordered select-sm w-full"
+                >
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+
+              {/* If "Yes", show input for prerequisite class */}
+              {hasPrerequisite && (
+                <div>
+                  <label className="label font-semibold">Prerequisite Class</label>
+                  <input
+                    type="text"
+                    value={prerequisiteClass}
+                    onChange={(e) => setPrerequisiteClass(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    placeholder="Enter the prerequisite class"
+                    required
+                  />
+                </div>
+              )}
+
               {/* Product Name */}
               <div>
                 <label className="label font-semibold">Product Name</label>
@@ -287,7 +378,8 @@ export default function Page() {
                   value={price}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (/^\d*$/.test(val)) {
+                    // allow decimals
+                    if (/^\d*\.?\d*$/.test(val)) {
                       setPrice(val);
                     }
                   }}
