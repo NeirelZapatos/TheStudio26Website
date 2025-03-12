@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { courseTemplates } from "@/utils/productTemplates";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -16,6 +17,9 @@ type Product = {
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Template search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -24,9 +28,23 @@ export default function Page() {
     template.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Helper functions to format current date and time (optional)
-  const getCurrentDate = () => new Date().toISOString().split("T")[0];
-  const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
+  // Class Categories
+  const classCategories = [
+    "Beginning Jewelry Classes",
+    "Open Labs",
+    "Ring Classes",
+    "Earring Classes",
+    "Bracelet Classes",
+    "Pendant Classes",
+    "Specialty Class",
+    "Other",
+  ];
+  const [classCategory, setClassCategory] = useState<string>("");
+  const [otherCategory, setOtherCategory] = useState<string>("");
+
+  // Prerequisite Fields
+  const [hasPrerequisite, setHasPrerequisite] = useState<boolean>(false);
+  const [prerequisiteClass, setPrerequisiteClass] = useState<string>("");
 
   // Product form fields
   const [name, setName] = useState<string>("");
@@ -42,38 +60,69 @@ export default function Page() {
     "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682"
   );
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
+
   const createClass = async (e: React.FormEvent) => {
     e.preventDefault();
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
     const convertedDuration = duration ? parseInt(duration) : undefined;
 
+    // If "Other" is selected, use the user-input text. Otherwise, use the chosen category.
+    const finalCategory =
+      classCategory === "Other" ? otherCategory : classCategory;
+
     try {
-      const stripeResponse = await axios.post("/api/stripe/create-product", {
-        name,
-        description,
-        itemType,
-        purchaseType: "Course",
-        recurring,
-        price: convertedPrice,
-        duration: convertedDuration,
-      });
-      const createdProduct = stripeResponse.data;
-      console.log("Stripe API Response:", createdProduct);
+      let uploadedImageUrl = imageUrl;
+
+      if (file) {
+        uploadedImageUrl = await uploadImage();
+      }
 
       const productData: any = {
-        id: createdProduct.product.id,
         name,
         description,
         itemType,
         purchaseType: "Course",
         recurring,
         price: convertedPrice,
-        stripeProductId: createdProduct.product.id,
         date,
         time,
         instructor,
         duration: convertedDuration,
         location,
+        image_url: uploadedImageUrl,
+        classCategory: finalCategory,
+        // Prerequisite fields
+        prerequisite: hasPrerequisite,
+        prerequisiteClass: hasPrerequisite ? prerequisiteClass : "",
       };
 
       await axios.post("/api/courses", productData);
@@ -90,6 +139,13 @@ export default function Page() {
       setInstructor("");
       setDuration("");
       setLocation("4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682");
+      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null);
+      setFileName("");
+      setClassCategory("");
+      setOtherCategory("");
+      setHasPrerequisite(false);
+      setPrerequisiteClass("");
     } catch (error) {
       setMessage("Error creating product");
       console.error("Error in create Product", error);
@@ -106,6 +162,9 @@ export default function Page() {
       setInstructor(template.instructor);
       setDuration(template.duration);
       setLocation(template.location);
+      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null); // Reset the file state
+      setFileName(""); // Reset the file name state
     }
   };
 
@@ -113,7 +172,9 @@ export default function Page() {
     <div className="bg-gray-100 min-h-screen py-8">
       <div className="container mx-auto px-4">
         <div className="bg-white p-6 rounded shadow">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Create a Class</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            Create a Class
+          </h2>
 
           {/* Template Search Toggle */}
           <div className="flex justify-center mb-6">
@@ -137,7 +198,7 @@ export default function Page() {
                 className="input input-bordered input-sm w-full mb-2"
               />
 
-              {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              {filteredTemplateList.length > 0 ? (
                 <ul
                   className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
                   style={{
@@ -168,9 +229,38 @@ export default function Page() {
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+<div className="space-y-4">
               {/* Product Name */}
               <div>
-                <label className="label font-semibold">Product Name</label>
+                <label className="label">
+                  <span className="label-text font-semibold">Product Name</span>
+                </label>
                 <input
                   type="text"
                   value={name}
@@ -179,35 +269,8 @@ export default function Page() {
                   required
                 />
               </div>
-
-              {/* Description */}
-              <div>
-                <label className="label font-semibold">Description</label>
-                <textarea
-                  value={description}
-                  rows={6}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ overflowWrap: "break-word", whiteSpace: "pre-wrap" }}
-                  className="textarea textarea-bordered textarea-sm w-full"
-                  required
-                />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="label font-semibold">Location</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                />
-              </div>
             </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="space-y-4">
+            
               {/* Recurring / One Time */}
               <div>
                 <label className="label font-semibold">Recurring / One-Time</label>
@@ -221,7 +284,6 @@ export default function Page() {
                   <option value="Recurring">Recurring</option>
                 </select>
               </div>
-
               {/* Date & Time */}
               <div className="flex space-x-4">
                 <div className="w-full">
@@ -261,7 +323,10 @@ export default function Page() {
                   <option value="Instructor 3">Instructor 3</option>
                 </select>
               </div>
+            </div>
 
+            {/* RIGHT COLUMN */}
+            <div className="space-y-4">
               {/* Duration */}
               <div>
                 <label className="label font-semibold">Duration (minutes)</label>
@@ -287,7 +352,8 @@ export default function Page() {
                   value={price}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (/^\d*$/.test(val)) {
+                    // allow decimals
+                    if (/^\d*\.?\d*$/.test(val)) {
                       setPrice(val);
                     }
                   }}
@@ -300,8 +366,106 @@ export default function Page() {
                   min="0"
                 />
               </div>
+              {/* Class Category */}
+              <div>
+                <label className="label font-semibold">Class Category</label>
+                <select
+                  value={classCategory}
+                  onChange={(e) => setClassCategory(e.target.value)}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="">Select a Category</option>
+                  {classCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* If "Other" is selected, show text input */}
+              {classCategory === "Other" && (
+                <div>
+                  <label className="label font-semibold">Other Category</label>
+                  <input
+                    type="text"
+                    value={otherCategory}
+                    onChange={(e) => setOtherCategory(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    placeholder="Please specify"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Prerequisite (Yes/No) */}
+              <div>
+                <label className="label font-semibold">Prerequisite</label>
+                <select
+                  value={hasPrerequisite ? "Yes" : "No"}
+                  onChange={(e) => setHasPrerequisite(e.target.value === "Yes")}
+                  className="select select-bordered select-sm w-full"
+                >
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+
+              {/* If "Yes", show input for prerequisite class */}
+              {hasPrerequisite && (
+                <div>
+                  <label className="label font-semibold">Prerequisite Class</label>
+                  <input
+                    type="text"
+                    value={prerequisiteClass}
+                    onChange={(e) => setPrerequisiteClass(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    placeholder="Enter the prerequisite class"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Product Name */}
+              <div>
+                <label className="label font-semibold">Product Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input input-bordered input-sm w-full"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="label font-semibold">Description</label>
+                <textarea
+                  value={description}
+                  rows={6}
+                  onChange={(e) => setDescription(e.target.value)}
+                  style={{ overflowWrap: "break-word", whiteSpace: "pre-wrap" }}
+                  className="textarea textarea-bordered textarea-sm w-full"
+                  required
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="label font-semibold">Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="input input-bordered input-sm w-full"
+                  required
+                />
+              </div>
             </div>
 
+            
             {/* Submit Button */}
             <div className="col-span-1 md:col-span-2">
               <button

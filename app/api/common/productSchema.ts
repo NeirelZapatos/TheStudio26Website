@@ -13,10 +13,29 @@ const baseProductSchema = z.object({
     quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
     purchaseType: z.enum(["Item", "Course"]),
     stripeProductId: z.string().optional(),
+
+    // Jewlery Fields
+    jewlery_type: z.string().optional(),
+    metal_type: z.string().optional(),
+    metal_finish: z.string().optional(),
+    plating: z.string().optional(),
+    ring_size: z.number().min(0, { message: "Size must be greater than 0"}).optional(),
+    gauge: z.number().min(0, { message: "Gauge must be greater than 0"}).optional(),
+    carat_weight: z.number().min(0, { message: "Carat Size must be greater than 0"}).optional(),
+    setting_type: z.string().optional(),
+    stone_arrangement: z.string().optional(),
+    custimization_options: z.string().optional()
 });
 
 // Schema for items
-export const itemSchema = baseProductSchema.extend({});
+export const itemSchema = baseProductSchema.extend({
+    quantityInStock: z.string().min(0, { message: "Quantity must be a positive number" }),
+    // category: z.string().min(1, { message: "Category is required" }),
+    // material: z.string().min(1, { message: "Material is required" }),
+    // color: z.string().min(1, { message: "Color is required" }),
+    // size: z.string().min(1, { message: "Size is required" }),
+    // image_url: z.string().min(1, { message: "Image URL is required" }),
+});
 
 // Schema for courses (if you need it)
 export const courseSchema = baseProductSchema.extend({

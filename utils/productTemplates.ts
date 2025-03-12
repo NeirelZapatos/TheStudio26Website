@@ -10,6 +10,7 @@ export const courseTemplates = [
       instructor: "Instructor 1",
       duration: "240",
       location: "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682",
+      image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
     },
     {
       name: "Silver Dome Ring Band",
@@ -22,6 +23,7 @@ export const courseTemplates = [
       instructor: "Instructor 3",
       duration: "300",
       location: "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682",
+      image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
     },
     {
       name: "Silver Dome Ring Band",
@@ -34,6 +36,7 @@ export const courseTemplates = [
       instructor: "Instructor 3",
       duration: "300",
       location: "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682",
+      image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
     },
     {
       name: "Silver Dome Ring Band",
@@ -46,6 +49,7 @@ export const courseTemplates = [
       instructor: "Instructor 3",
       duration: "300",
       location: "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682",
+      image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
     },
     {
       name: "Silver Dome Ring Band",
@@ -58,6 +62,7 @@ export const courseTemplates = [
       instructor: "Instructor 3",
       duration: "300",
       location: "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682",
+      image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
     }
   ];
 
@@ -68,8 +73,10 @@ export const itemTemplates = [
                   "Many people choose dome-shaped wedding bands for their comfort, as the rounded surface reduces the likelihood of sharp edges " + 
                   "or corners digging into the skin. Pre-requisite: Beginning Jewelry Making",
     purchaseType: "Item",
+    quantityInStock: "0",
     price: "2000",
     itemType: "Ring",
+    image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
   },
   {
     name: "Silver Dome Ring Band 2",
@@ -77,8 +84,10 @@ export const itemTemplates = [
                   "Many people choose dome-shaped wedding bands for their comfort, as the rounded surface reduces the likelihood of sharp edges " + 
                   "or corners digging into the skin. Pre-requisite: Beginning Jewelry Making",
     purchaseType: "Item",
+    quantityInStock: "0",
     price: "2000",
     itemType: "Ring",
+    image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
   },
   {
     name: "Silver Dome Ring Band 3",
@@ -86,7 +95,9 @@ export const itemTemplates = [
                   "Many people choose dome-shaped wedding bands for their comfort, as the rounded surface reduces the likelihood of sharp edges " + 
                   "or corners digging into the skin. Pre-requisite: Beginning Jewelry Making",
     purchaseType: "Item",
+    quantityInStock: "0",
     price: "2000",
     itemType: "Ring",
+    image_url: "https://tests26bucket.s3.us-east-2.amazonaws.com/dog.png"
   },
 ]

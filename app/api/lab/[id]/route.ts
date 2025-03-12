@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { courseSchema } from "@/app/api/common/productSchema";
+// import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
-import Course from "@/app/models/Course";
+import Lab from "@/app/models/Lab";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     try {
@@ -10,14 +10,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         const body = await request.json();
         // console.log("Received request body:", body); // Log the request body for troubleshooting
         
-        const validation = courseSchema.safeParse(body);
+        // const validation = labSchema.safeParse(body);
 
-        if (!validation.success) {
-            console.log("Validation failed:", validation.error.errors);
-            return NextResponse.json(validation.error.errors, { status: 400 })
-        }
+        // if (!validation.success) {
+        //     console.log("Validation failed:", validation.error.errors);
+        //     return NextResponse.json(validation.error.errors, { status: 400 })
+        // }
 
-        const existingProduct = await Course.findById(params.id);
+        const existingProduct = await Lab.findById(params.id);
         if(!existingProduct) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 })
         }
@@ -41,18 +41,21 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     try {
         await dbConnect();
         const { id } = params;
-        
-        // Find and delete the course by its Stripe ID in MongoDB
-        const deletedCourse = await Course.findByIdAndDelete(id);
 
-        if (!deletedCourse) {
-            return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+        // Log the ID being used for deletion for troubleshooting
+        console.log("Attempting to delete lab with Stripe ID:", id);
+
+        // Find and delete the lab by its Stripe ID in MongoDB
+        const deletedlab = await Lab.findOneAndDelete({ stripeProductId: id });
+
+        if (!deletedlab) {
+            return NextResponse.json({ error: 'lab not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ message: 'Course deleted from MongoDB', product: deletedCourse });
+        return NextResponse.json({ message: 'lab deleted from MongoDB', product: deletedlab });
     } catch (error) {
-        console.error('Error deleting course from MongoDB:', error);
-        return NextResponse.json({ error: 'Failed to delete course from MongoDB' }, { status: 500 });
+        console.error('Error deleting lab from MongoDB:', error);
+        return NextResponse.json({ error: 'Failed to delete lab from MongoDB' }, { status: 500 });
     }
 }
 
@@ -62,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
         await dbConnect();
 
 
-        const product = await Course.findById(params.id);
+        const product = await Lab.findById(params.id);
 
         if (!product) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });

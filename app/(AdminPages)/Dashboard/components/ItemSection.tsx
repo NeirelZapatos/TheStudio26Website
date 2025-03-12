@@ -3,12 +3,22 @@
 import { useState } from "react";
 import axios from "axios";
 import { itemTemplates } from "@/utils/productTemplates";
+import Image from "next/image";
+import JewelryForm from "../components/ItemForms/JewelryForm";
+import ToolForm from "../components/ItemForms/ToolForm";
+import StoneForm from "../components/ItemForms/StoneForm";
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Template Search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
+  const [showJewelryForm, setShowJewelryForm] = useState<boolean>(false);
+  const [showToolForm, setShowToolForm] = useState<boolean>(false);
+  const [showStoneForm, setShowStoneForm] = useState<boolean>(false);
   const [searchText, setSearchText] = useState("");
   const filteredTemplateList = itemTemplates.filter((template) =>
     template.name.toLowerCase().includes(searchText.toLowerCase())
@@ -28,11 +38,37 @@ export default function Page() {
     "12", "12.5", "13", "13.5", "14", "Other", "N/A",
   ];
 
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
   const createItem = async (e: React.FormEvent) => {
     e.preventDefault();
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
 
     try {
+      let uploadedImageUrl = imageUrl;
+
+      if (file) {
+        uploadedImageUrl = await uploadImage();
+      }
       const productData: any = {
         name,
         description,
@@ -40,10 +76,11 @@ export default function Page() {
         purchaseType: "Item",
         price: convertedPrice,
         quantityInStock,
+        image_url: uploadedImageUrl,
       };
 
       await axios.post("/api/items", productData);
-      setMessage("Product saved to MongoDB");
+      setMessage("Product saved");
 
       // Reset form fields
       setName("");
@@ -52,6 +89,9 @@ export default function Page() {
       setPrice("");
       setQuantityInStock("");
       setRingSize("");
+      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null);
+      setFileName("");
     } catch (error) {
       setMessage("Error creating product");
       console.error(error);
@@ -64,7 +104,11 @@ export default function Page() {
       setName(template.name);
       setDescription(template.description);
       setItemType(template.itemType);
+      setQuantityInStock(template.quantityInStock);
       setPrice(template.price);
+      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null); // Reset the file state
+      setFileName(""); // Reset the file name state
     }
   };
 
@@ -97,8 +141,7 @@ export default function Page() {
                 onChange={(e) => setSearchText(e.target.value)}
                 className="input input-bordered input-sm w-full mb-2"
               />
-
-              {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              {filteredTemplateList.length > 0 ? (
                 <ul
                   className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
                   style={{
@@ -125,121 +168,35 @@ export default function Page() {
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={createItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* LEFT COLUMN */}
-            <div className="space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Product Name</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                />
-              </div>
+          {/* Render Forms */}
+          {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}
+          {showToolForm && <ToolForm onClose={() => setShowToolForm(false)} />}
+          {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
 
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Item Type</span>
-                </label>
-                <input
-                  type="text"
-                  value={itemType}
-                  onChange={(e) => setItemType(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  placeholder="e.g. Jewelry, Tool, etc."
-                  required
-                />
-              </div>
-
-              {itemType.toLowerCase() === "jewelry" && (
-                <div>
-                  <label className="label">
-                    <span className="label-text font-semibold">Ring Size</span>
-                  </label>
-                  <select
-                    value={ringSize}
-                    onChange={(e) => setRingSize(e.target.value)}
-                    className="select select-bordered select-sm w-full"
-                    required
-                  >
-                    <option value="">Select Ring Size</option>
-                    {ringSizes.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Amount in Stock</span>
-                </label>
-                <input
-                  type="number"
-                  value={quantityInStock}
-                  onChange={(e) => setQuantityInStock(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Price</span>
-                </label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      setPrice(val);
-                    }
-                  }}
-                  onWheel={(e) => e.preventDefault()}
-                  placeholder="Price"
-                  step="0.01"
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Description</span>
-                </label>
-                <textarea
-                  value={description}
-                  rows={5}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="textarea textarea-bordered textarea-sm w-full"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Submit Button (spans both columns) */}
-            <div className="col-span-1 md:col-span-2">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-              >
-                Add to Inventory
-              </button>
-            </div>
-          </form>
+          {/* Buttons Row */}
+          <div className="flex justify-center mb-4 space-x-4">
+            <button
+              type="button"
+              className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+              onClick={() => setShowJewelryForm(true)}
+            >
+              Add Jewelry Details
+            </button>
+            <button
+              type="button"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => setShowToolForm(true)}
+            >
+              Add Tool Details
+            </button>
+            <button
+              type="button"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={() => setShowStoneForm(true)}
+            >
+              Add Stone Details
+            </button>
+          </div>
 
           {/* Success / Error Message */}
           {message && (

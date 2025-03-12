@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose"
 
-export interface ICourse extends Document {
+export interface ILab extends Document {
     _id: Types.ObjectId;
     name: string;
     price: number;
@@ -15,7 +15,7 @@ export interface ICourse extends Document {
 }
 
 
-const courseSchema: Schema = new mongoose.Schema({
+const labSchema:Schema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -33,15 +33,11 @@ const courseSchema: Schema = new mongoose.Schema({
     // },
     date: {
         type: String,
-        required: function (this: { purchaseType: string }) {
-            return this.purchaseType === "Course";
-        },
+        required: true
     },
-    time: {
-        type: String,
-        required: function (this: { purchaseType: string }) {
-            return this.purchaseType === 'Course';
-        }
+    time: { 
+        type: String, 
+        required: true
     },
     duration: {
         type: Number,
@@ -58,9 +54,13 @@ const courseSchema: Schema = new mongoose.Schema({
     max_capacity: {
         type: Number,
     },
-    stripeProductId: { type: String, default: null, unique: false }, // Allow nulls / Change Later
+    stripeProductId: {
+        type: String,
+        required: true,
+        unique: true,
+    },
 });
 
-const Course = mongoose.models.Course || mongoose.model<ICourse>('Course', courseSchema);
+const Lab = mongoose.models.Lab || mongoose.model<ILab>('Lab', labSchema);
 
-export default Course;
+export default Lab;
