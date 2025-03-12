@@ -13,6 +13,18 @@ const baseProductSchema = z.object({
     quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
     purchaseType: z.enum(["Item", "Course"]),
     stripeProductId: z.string().optional(),
+
+    // Jewlery Fields
+    jewlery_type: z.string().optional(),
+    metal_type: z.string().optional(),
+    metal_finish: z.string().optional(),
+    plating: z.string().optional(),
+    ring_size: z.number().min(0, { message: "Size must be greater than 0"}).optional(),
+    gauge: z.number().min(0, { message: "Gauge must be greater than 0"}).optional(),
+    carat_weight: z.number().min(0, { message: "Carat Size must be greater than 0"}).optional(),
+    setting_type: z.string().optional(),
+    stone_arrangement: z.string().optional(),
+    custimization_options: z.string().optional()
 });
 
 // Schema for items

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse} from "next/server";
-import { courseSchema } from "@/app/api/common/productSchema";
+// import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
-import Course from "@/app/models/Course";
+import Lab from "@/app/models/Lab";
 
 export async function POST(request: NextRequest) {
     try {
@@ -10,23 +10,23 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         // Log the received body to verify its contents
-        console.log("Received in /api/products:", body);
+        console.log("Received in /api/lab:", body);
 
-        const validation = courseSchema.safeParse(body);
+        // const validation = labSchema.safeParse(body);
 
-        if (!validation.success) {
-            console.error("Validation Error: " + JSON.stringify(validation.error.errors, null, 2));
-            return NextResponse.json(validation.error.errors, { status: 400 })
-        }
+        // if (!validation.success) {
+        //     console.error("Validation Error: " + JSON.stringify(validation.error.errors, null, 2));
+        //     return NextResponse.json(validation.error.errors, { status: 400 })
+        // }
 
-        // const checkProduct = await Course.findOne({ name: body.name });
+        // const checkProduct = await Lab.findOne({ name: body.name });
 
         // if (checkProduct) {
         //     console.error("Duplicate product error: Product already exists");
         //     return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
         // }
 
-        const newProduct = new Course(body);
+        const newProduct = new Lab(body);
         await newProduct.save();
 
         console.log("New product saved to MongoDB:", newProduct);
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
         await dbConnect();
 
         // Retrieve all Courses from the database
-        const courses = await Course.find({});
-        return NextResponse.json(courses);
+        const lab = await Lab.find({});
+        return NextResponse.json(lab);
 
     } catch (err: unknown) {
         // Handle any errors that occur during the GET operation
