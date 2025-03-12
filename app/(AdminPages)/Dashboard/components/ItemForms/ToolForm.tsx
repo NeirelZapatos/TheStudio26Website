@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface ToolFormProps {
   onClose: () => void;
@@ -34,6 +35,12 @@ export default function ToolForm({ onClose }: ToolFormProps) {
   const [silverType, setSilverType] = useState<string>("");
 
   const [message, setMessage] = useState<string>("");
+
+  // Image Upload State
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+
 
   // Options Arrays
   const categories = ["Tools", "Supplies", "Jewelry Kits", "Silver"];
@@ -83,7 +90,15 @@ export default function ToolForm({ onClose }: ToolFormProps) {
     "Plated Silver Items",
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || !quantityInStock || !category) {
       setMessage("Please fill in all required fields.");
@@ -99,6 +114,18 @@ export default function ToolForm({ onClose }: ToolFormProps) {
       additionalData = { kitType, kitContents };
     } else if (category === "Silver") {
       additionalData = { silverType };
+    }
+
+    let uploadedImageUrl = imageUrl;
+
+    if (file) {
+      try {
+        uploadedImageUrl = await uploadImage();
+      } catch (error) {
+        setMessage("Failed to upload image.");
+        console.error(error);
+        return;
+      }
     }
 
     const toolData = {
@@ -134,10 +161,59 @@ export default function ToolForm({ onClose }: ToolFormProps) {
     setSilverType("");
   };
 
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
+
+
   return (
     <div className="bg-white p-6 border rounded shadow-lg">
       <h3 className="text-xl font-semibold mb-4 text-center">Tool Specifications</h3>
       <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Image Upload Section */}
+        <div className="mb-6 flex flex-col items-center space-y-4">
+          <label className="label">
+            <span className="label-text font-semibold">Product Image</span>
+          </label>
+          <div className="w-48 h-48 relative">
+            <Image
+              src={imageUrl}
+              alt="Product Image"
+              layout="fill"
+              objectFit="cover"
+              className="rounded"
+            />
+          </div>
+          <div>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="file-input file-input-bordered file-input-sm"
+            />
+          </div>
+        </div>
+
+
+
         {/* Basic Product Fields */}
         <div className="grid grid-cols-1 gap-4">
           <div>
@@ -370,9 +446,8 @@ export default function ToolForm({ onClose }: ToolFormProps) {
         {/* Success / Error Message */}
         {message && (
           <p
-            className={`text-center mt-4 font-semibold ${
-              message.includes("successfully") ? "text-green-600" : "text-red-600"
-            }`}
+            className={`text-center mt-4 font-semibold ${message.includes("successfully") ? "text-green-600" : "text-red-600"
+              }`}
           >
             {message}
           </p>

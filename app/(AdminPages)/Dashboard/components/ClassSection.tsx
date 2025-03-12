@@ -106,29 +106,13 @@ export default function Page() {
         uploadedImageUrl = await uploadImage();
       }
 
-      const stripeResponse = await axios.post("/api/stripe/create-product", {
-        name,
-        description,
-        itemType,
-        purchaseType: "Course",
-        recurring,
-        price: convertedPrice,
-        duration: convertedDuration,
-        image_url: uploadedImageUrl,
-      });
-      const createdProduct = stripeResponse.data;
-      console.log("Stripe API Response:", createdProduct);
-
-      // 2) Save to MongoDB
       const productData: any = {
-        id: createdProduct.product.id,
         name,
         description,
         itemType,
         purchaseType: "Course",
         recurring,
         price: convertedPrice,
-        stripeProductId: createdProduct.product.id,
         date,
         time,
         instructor,
@@ -245,62 +229,138 @@ export default function Page() {
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
-              {/* Image Preview */}
-              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
-                <img
-                  src={file ? URL.createObjectURL(file) : imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-md"
+              {/* Image Preview  and Upload*/}
+              <div className="space-y-2">
+                <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                  <img
+                    src={file ? URL.createObjectURL(file) : imageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="p-2 border border-gray-300 rounded-md w-full"
+                />
+                {file && (
+                  <input
+                    type="text"
+                    value={fileName}
+                    onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                    className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                    placeholder="Rename file before upload"
+                  />
+                )}
+              </div>
+              {/* Name */}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Product Name</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input input-bordered input-sm w-full"
+                  required
+                />
+              </div>
+              {/* Recurring / One Time */}
+              <div>
+                <label className="label font-semibold">Recurring / One-Time</label>
+                <select
+                  value={recurring ? "Recurring" : "One-Time"}
+                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="One-Time">One-Time</option>
+                  <option value="Recurring">Recurring</option>
+                </select>
+              </div>
+              {/* Date & Time */}
+              <div className="flex space-x-4">
+                <div className="w-full">
+                  <label className="label font-semibold">Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    required
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="label font-semibold">Time</label>
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Instructor */}
+              <div>
+                <label className="label font-semibold">Instructor</label>
+                <select
+                  value={instructor}
+                  onChange={(e) => setInstructor(e.target.value)}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="">Select an Instructor</option>
+                  <option value="Instructor 1">Instructor 1</option>
+                  <option value="Instructor 2">Instructor 2</option>
+                  <option value="Instructor 3">Instructor 3</option>
+                </select>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="space-y-4">
+              {/* Duration */}
+              <div>
+                <label className="label font-semibold">Duration (minutes)</label>
+                <input
+                  type="number"
+                  value={duration}
+                  min={0}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d*$/.test(val)) {
+                      setDuration(val);
+                    }
+                  }}
+                  className="input input-bordered input-sm w-full"
                 />
               </div>
 
-              {/* File Input */}
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="p-2 border border-gray-300 rounded-md w-full"
-              />
-
-              {/* File Name Input */}
-              {file && (
+              {/* Price */}
+              <div>
+                <label className="label font-semibold">Price</label>
                 <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
-                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
-                  placeholder="Rename file before upload"
-                />
-              )}
-            </div>
-            <div className="space-y-4">
-              {/* Image Preview */}
-              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
-                <img
-                  src={file ? URL.createObjectURL(file) : imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-md"
+                  type="number"
+                  value={price}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // allow decimals
+                    if (/^\d*\.?\d*$/.test(val)) {
+                      setPrice(val);
+                    }
+                  }}
+                  onWheel={(e) => e.preventDefault()}
+                  placeholder="Price"
+                  step="0.01"
+                  style={{ appearance: "none" }}
+                  className="input input-bordered input-sm w-full"
+                  required
+                  min="0"
                 />
               </div>
-
-              {/* File Input */}
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="p-2 border border-gray-300 rounded-md w-full"
-              />
-
-              {/* File Name Input */}
-              {file && (
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
-                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
-                  placeholder="Rename file before upload"
-                />
-              )}
-            </div>
-            <div className="space-y-4">
               {/* Class Category */}
               <div>
                 <label className="label font-semibold">Class Category</label>
@@ -400,103 +460,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="space-y-4">
-              {/* Recurring / One Time */}
-              <div>
-                <label className="label font-semibold">Recurring / One-Time</label>
-                <select
-                  value={recurring ? "Recurring" : "One-Time"}
-                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
-                  className="select select-bordered select-sm w-full"
-                  required
-                >
-                  <option value="One-Time">One-Time</option>
-                  <option value="Recurring">Recurring</option>
-                </select>
-              </div>
-
-              {/* Date & Time */}
-              <div className="flex space-x-4">
-                <div className="w-full">
-                  <label className="label font-semibold">Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="input input-bordered input-sm w-full"
-                    required
-                  />
-                </div>
-                <div className="w-full">
-                  <label className="label font-semibold">Time</label>
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="input input-bordered input-sm w-full"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Instructor */}
-              <div>
-                <label className="label font-semibold">Instructor</label>
-                <select
-                  value={instructor}
-                  onChange={(e) => setInstructor(e.target.value)}
-                  className="select select-bordered select-sm w-full"
-                  required
-                >
-                  <option value="">Select an Instructor</option>
-                  <option value="Instructor 1">Instructor 1</option>
-                  <option value="Instructor 2">Instructor 2</option>
-                  <option value="Instructor 3">Instructor 3</option>
-                </select>
-              </div>
-
-              {/* Duration */}
-              <div>
-                <label className="label font-semibold">Duration (minutes)</label>
-                <input
-                  type="number"
-                  value={duration}
-                  min={0}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*$/.test(val)) {
-                      setDuration(val);
-                    }
-                  }}
-                  className="input input-bordered input-sm w-full"
-                />
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="label font-semibold">Price</label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    // allow decimals
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      setPrice(val);
-                    }
-                  }}
-                  onWheel={(e) => e.preventDefault()}
-                  placeholder="Price"
-                  step="0.01"
-                  style={{ appearance: "none" }}
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-            </div>
-
+            
             {/* Submit Button */}
             <div className="col-span-1 md:col-span-2">
               <button

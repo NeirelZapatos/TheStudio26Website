@@ -60,7 +60,6 @@ const courseSchema:Schema = new mongoose.Schema({
     },
     stripeProductId: {
         type: String,
-        required: true,
         unique: true,
     },
 });
