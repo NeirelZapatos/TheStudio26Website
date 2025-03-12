@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface StoneFormProps {
   onClose: () => void;
@@ -57,6 +58,11 @@ export default function StoneForm({ onClose }: StoneFormProps) {
   const [syntheticGem, setSyntheticGem] = useState("");
 
   const [message, setMessage] = useState("");
+
+  // Image Upload State
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Options arrays
   const stoneStockTypes = [
@@ -272,12 +278,53 @@ export default function StoneForm({ onClose }: StoneFormProps) {
     "Opalite",
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Validate required fields
     if (!productName || !stoneStockType || !stoneWeight || !stoneSize) {
       setMessage("Please fill in all required fields.");
       return;
+    }
+
+    let uploadedImageUrl = imageUrl;
+
+    if (file) {
+      try {
+        uploadedImageUrl = await uploadImage();
+      } catch (error) {
+        setMessage("Failed to upload image.");
+        console.error(error);
+        return;
+      }
     }
 
     const stoneData = {
@@ -363,6 +410,30 @@ export default function StoneForm({ onClose }: StoneFormProps) {
     <div className="bg-white p-6 border rounded shadow-lg overflow-auto max-h-screen">
       <h3 className="text-2xl font-semibold mb-4 text-center">Stone Specifications</h3>
       <form onSubmit={handleSubmit}>
+
+        {/* Image Upload Section */}
+        <div className="mb-6 flex flex-col items-center space-y-4">
+          <label className="label">
+            <span className="label-text font-semibold">Product Image</span>
+          </label>
+          <div className="w-48 h-48 relative">
+            <Image
+              src={imageUrl}
+              alt="Product Image"
+              layout="fill"
+              objectFit="cover"
+              className="rounded"
+            />
+          </div>
+          <div>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="file-input file-input-bordered file-input-sm"
+            />
+          </div>
+        </div>
+
         {/* General Attributes */}
         <h4 className="text-xl font-semibold mb-2">General Attributes</h4>
         <div>

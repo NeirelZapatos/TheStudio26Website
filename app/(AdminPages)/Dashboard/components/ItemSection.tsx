@@ -38,14 +38,6 @@ export default function Page() {
     "12", "12.5", "13", "13.5", "14", "Other", "N/A",
   ];
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const selectedFile = event.target.files[0];
-      setFile(selectedFile);
-      setFileName(selectedFile.name.replace(/\s+/g, "-"));
-    }
-  };
-
   const uploadImage = async () => {
     if (!file || !fileName.trim()) return;
 
@@ -139,11 +131,6 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Render Forms */}
-          {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}
-          {showToolForm && <ToolForm onClose={() => setShowToolForm(false)} />}
-          {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
-
           {/* Template Search Panel */}
           {showTemplateSearch && (
             <div className="mb-6 p-4 border rounded bg-white shadow-sm">
@@ -181,148 +168,35 @@ export default function Page() {
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={createItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* LEFT COLUMN - Image Upload Section */}
-            <div className="space-y-4">
-              {/* Image Preview */}
-              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
-                <img
-                  src={file ? URL.createObjectURL(file) : imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-md"
-                />
-              </div>
+          {/* Render Forms */}
+          {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}
+          {showToolForm && <ToolForm onClose={() => setShowToolForm(false)} />}
+          {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
 
-              {/* File Input */}
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="p-2 border border-gray-300 rounded-md w-full"
-              />
-
-              {/* File Name Input */}
-              {file && (
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
-                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
-                  placeholder="Rename file before upload"
-                />
-              )}
-            </div>
-
-            {/* RIGHT COLUMN - All Other Form Fields */}
-            <div className="space-y-4">
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Product Name</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Item Type</span>
-                </label>
-                <input
-                  type="text"
-                  value={itemType}
-                  onChange={(e) => setItemType(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  placeholder="e.g. Jewelry, Tool, etc."
-                  required
-                />
-              </div>
-
-              {itemType.toLowerCase() === "jewelry" && (
-                <div>
-                  <label className="label">
-                    <span className="label-text font-semibold">Ring Size</span>
-                  </label>
-                  <select
-                    value={ringSize}
-                    onChange={(e) => setRingSize(e.target.value)}
-                    className="select select-bordered select-sm w-full"
-                    required
-                  >
-                    <option value="">Select Ring Size</option>
-                    {ringSizes.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Amount in Stock</span>
-                </label>
-                <input
-                  type="number"
-                  value={quantityInStock}
-                  onChange={(e) => setQuantityInStock(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Price</span>
-                </label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      setPrice(val);
-                    }
-                  }}
-                  onWheel={(e) => e.preventDefault()}
-                  placeholder="Price"
-                  step="0.01"
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Description</span>
-                </label>
-                <textarea
-                  value={description}
-                  rows={5}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="textarea textarea-bordered textarea-sm w-full"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Submit Button (spans both columns) */}
-            <div className="col-span-1 md:col-span-2">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-              >
-                Add to Inventory
-              </button>
-            </div>
-          </form>
+          {/* Buttons Row */}
+          <div className="flex justify-center mb-4 space-x-4">
+            <button
+              type="button"
+              className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+              onClick={() => setShowJewelryForm(true)}
+            >
+              Add Jewelry Details
+            </button>
+            <button
+              type="button"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => setShowToolForm(true)}
+            >
+              Add Tool Details
+            </button>
+            <button
+              type="button"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={() => setShowStoneForm(true)}
+            >
+              Add Stone Details
+            </button>
+          </div>
 
           {/* Success / Error Message */}
           {message && (
