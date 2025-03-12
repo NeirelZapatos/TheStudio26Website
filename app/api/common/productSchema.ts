@@ -10,12 +10,13 @@ const baseProductSchema = z.object({
     color: z.string().min(1, { message: "Color is required" }),
     size: z.string().min(1, { message: "Size is required" }),
     image_url: z.string().min(1, { message: "Image URL is required" }),
+    images: z.array(z.string()).min(1, { message: "At least one image is required" }),
     quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
     purchaseType: z.enum(["Item", "Course"]),
     stripeProductId: z.string().optional(),
 
-    // Jewlery Fields
-    jewlery_type: z.string().optional(),
+    // Jewelery Fields
+    jewelry_type: z.string().optional(),
     metal_type: z.string().optional(),
     metal_finish: z.string().optional(),
     plating: z.string().optional(),
@@ -24,7 +25,7 @@ const baseProductSchema = z.object({
     carat_weight: z.number().min(0, { message: "Carat Size must be greater than 0"}).optional(),
     setting_type: z.string().optional(),
     stone_arrangement: z.string().optional(),
-    custimization_options: z.string().optional()
+    customization_options: z.string().optional()
 });
 
 // Schema for items

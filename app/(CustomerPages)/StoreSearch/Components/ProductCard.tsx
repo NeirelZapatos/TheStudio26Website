@@ -8,11 +8,12 @@ interface ProductCardProps {
   price: number;
   category: string;
   image_url: string;
+  compact?: boolean;
 }
 
-function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
+function ProductCard({ name, price, image_url, _id, compact }: ProductCardProps) {
   return (
-    <div className="group relative h-full">
+    <div className={`group relative h-full ${compact ? "h-48" : "h-64"}`}>
       <Link
         href={`/StoreSearch/products/${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
@@ -20,8 +21,9 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
         <div className="relative aspect-square">
           <Image
             src={image_url}
-            width={300}
-            height={300}
+            width={compact ? 200 : 300} // Adjust image size based on compact prop
+            height={compact ? 200 : 300}
+
             alt="Product Image"
             className="rounded-md h-full w-full object-cover group-hover:opacity-75 duration-200"
           />

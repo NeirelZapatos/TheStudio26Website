@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
-import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
-
+import SuggestedProducts from "../../Components/SuggestedProducts";
+import ProductSpecs from "../../Components/ProductSpecifications";
+import ProductGallery from "../../Components/ProductGallery";
 
 interface Product {
   _id: string;
@@ -17,10 +18,22 @@ interface Product {
   size: string;
   material: string;
   image_url: string;
+  images: string[];
   description: string;
   quantity_in_stock: number;
   purchaseType: "Item" | "Course";
   stripeProductId?: string;
+  jewelry_type: string;
+  metal_type: string;
+  metal_finish: string;
+  metal_purity: string;
+  plating: string;
+  ring_size: number;
+  gauge: number;
+  carat_weight: number;
+  setting_type: string;
+  stone_arrangement: string;
+  customization_options: string;
 }
 
 export default function ProductPage() {
@@ -81,23 +94,10 @@ export default function ProductPage() {
     maxQuantity > 0 ? Array.from({ length: maxQuantity }, (_, i) => i + 1) : [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
         {/* Image gallery */}
-        <div className="flex flex-col">
-          <div className="aspect-square rounded-lg overflow-hidden">
-            <Zoom>
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              width={600}
-              height={600}
-              className="w-full h-full object-cover"
-              priority
-            />
-            </Zoom>
-          </div>
-        </div>
+        <ProductGallery images={product.images || []} />
 
         {/* Product info */}
         <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
@@ -117,82 +117,45 @@ export default function ProductPage() {
             <p className="text-base text-gray-500">{product.description}</p>
           </div>
 
-          {/* <div className="mt-6">
-            <div className="flex items-center">
-              <h3 className="text-sm font-medium text-gray-900">Category:</h3>
-              <p className="ml-2 text-sm text-gray-500">{product.category}</p>
-            </div>
-            <div className="flex items-center mt-2">
-              <h3 className="text-sm font-medium text-gray-900">Color:</h3>
-              <p className="ml-2 text-sm text-gray-500">{product.color}</p>
-            </div>
-            <div className="flex items-center mt-2">
-              <h3 className="text-sm font-medium text-gray-900">Material:</h3>
-              <p className="ml-2 text-sm text-gray-500">{product.material}</p>
-            </div>
-            <div className="flex items-center mt-2">
-              <h3 className="text-sm font-medium text-gray-900">Size:</h3>
-              <p className="ml-2 text-sm text-gray-500">{product.size}</p>
-            </div>
-          </div> */}
-
           <div className="mt-8">
-            <div className="flex items-center space-x-4">
-              {product.quantity_in_stock > 0 && (
-                <div className="flex items-center">
-                  <label htmlFor="quantity" className="sr-only">
-                    Quantity
-                  </label>
-                  <select
-                    id="quantity"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="select select-bordered w-20"
-                  >
-                    {quantityOptions.map((num) => (
-                      <option key={num} value={num}>
-                        {num}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <button className="btn flex-1">
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
-              </button>
-            </div>
-
-            {/* <div className="collapse collapse-plus">
-              <input type="checkbox" name="product-details" />
-              <div className="collapse-title font-bold">Product Info</div>
-              <div className="collapse-content">
-                <p>lorem ipsum</p>
+            {product.quantity_in_stock > 0 && (
+              <p>Quantity
+              <div className="flex items-center">
+                <label htmlFor="quantity" className="sr-only">
+                  Quantity
+                </label>
+                <select
+                  id="quantity"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  className="select select-bordered w-20"
+                >
+                  {quantityOptions.map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
-
-            <div className="collapse collapse-plus">
-              <input type="checkbox" name="return-policy" />
-              <div className="collapse-title font-bold">Return and Refund Policy</div>
-              <div className="collapse-content">
-                <p>no returns!!!! no refunds!!!!</p>
-              </div>
-            </div> */}
-
-            {product.quantity_in_stock < 100 &&
-              product.quantity_in_stock > 0 && (
-                <p className="mt-4 text-sm text-red-500">
-                  Only {product.quantity_in_stock} left in stock!
-                </p>
-              )}
-
-            {product.quantity_in_stock === 0 && (
-              <p className="mt-4 text-sm text-red-500">Out of stock</p>
+              </p>
             )}
+            <div className="flex items-center space-x-4 py-5">
+              {product.quantity_in_stock > 0 ? (
+                <button className="btn flex-1">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </button>
+              ) : (
+                <button className="btn flex-1" disabled>
+                  Out of Stock
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
+      <ProductSpecs product={product} />
+      <SuggestedProducts />
     </div>
   );
 }
