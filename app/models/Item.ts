@@ -1,3 +1,4 @@
+import { Weight } from "lucide-react";
 import mongoose, { Document, Schema } from "mongoose"
 
 export interface IItem extends Document {
@@ -84,7 +85,27 @@ const itemSchema:Schema = new mongoose.Schema({
     },
     customization_options: {
         type: String
-    }
+    },
+
+    // Tool Fields
+    tool_type: {
+        type: String
+    },
+    brand: {
+        type: String
+    },
+    // field already exists
+    // size: {
+    //     type: String
+    // },
+    weight: {
+        type: Number
+    },
+    material_composition: {
+        type: String
+    },
+
+    
 });
 
 const Item = mongoose.models.Item || mongoose.model<IItem>('Item', itemSchema);
