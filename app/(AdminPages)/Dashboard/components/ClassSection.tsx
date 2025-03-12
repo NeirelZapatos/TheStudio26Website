@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { courseTemplates } from "@/utils/productTemplates";
 import Image from "next/image";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -17,6 +18,9 @@ type Product = {
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
@@ -59,6 +63,36 @@ export default function Page() {
   const [location, setLocation] = useState<string>(
     "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682"
   );
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -228,6 +262,62 @@ export default function Page() {
           {/* Form */}
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
+            <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+            </div>
+            <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+            </div>
             <div className="space-y-4">
               {/* Image Preview  and Upload*/}
               <div className="space-y-2">
