@@ -68,12 +68,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
         }
 
         // Include image_url in the response
-        return NextResponse.json({
-            name: product.name,
-            price: product.price,
-            description: product.description,
-            image_url: product.image_url // Added image_url here
-        });
+        return NextResponse.json(product);
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 });

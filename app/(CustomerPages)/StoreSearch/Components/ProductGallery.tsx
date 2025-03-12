@@ -12,26 +12,6 @@ const ProductGallery = ({ images }: ProductGalleryProps) => {
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* Main image */}
-      <div className="w-full md:w-4/5 h-96 relative rounded-lg overflow-hidden border border-gray-200">
-        {mainImage ? (
-          <Zoom>
-            <Image
-              src={mainImage}
-              alt="Product"
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 80vw"
-              priority
-            />
-          </Zoom>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <p className="text-gray-400">No image available</p>
-          </div>
-        )}
-      </div>
-
       {/* Thumbnails */}
       <div className="flex md:flex-col flex-row gap-2 w-full md:w-1/5 overflow-x-auto md:overflow-y-auto md:max-h-96">
         {images.map((img, index) => (
@@ -51,6 +31,25 @@ const ProductGallery = ({ images }: ProductGalleryProps) => {
             />
           </button>
         ))}
+      </div>
+      
+      {/* Main image */}
+      <div className="w-full aspect-square relative rounded-lg overflow-hidden border border-gray-200">
+        {mainImage ? (
+          <Zoom>
+            <Image
+              src={mainImage}
+              alt="Product"
+              fill
+              className="w-full h-full object-cover"
+              priority
+            />
+          </Zoom>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <p className="text-gray-400">No image available</p>
+          </div>
+        )}
       </div>
     </div>
   );

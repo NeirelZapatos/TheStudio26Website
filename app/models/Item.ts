@@ -8,6 +8,7 @@ export interface IItem extends Document {
     category: string;
     material: string;
     image_url: string;
+    images: string[];
     size: string;
     color: string;
     quantityInStock: string;
@@ -38,6 +39,9 @@ const itemSchema:Schema = new mongoose.Schema({
     },
     image_url: {
         type: String,
+    },
+    images: {
+        type: [String],
     },
     size: {
         type: String,
