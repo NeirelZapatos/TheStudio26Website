@@ -270,19 +270,7 @@ export default function Page() {
                   required
                 />
               </div>
-              {/* Recurring / One Time */}
-              <div>
-                <label className="label font-semibold">Recurring / One-Time</label>
-                <select
-                  value={recurring ? "Recurring" : "One-Time"}
-                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
-                  className="select select-bordered select-sm w-full"
-                  required
-                >
-                  <option value="One-Time">One-Time</option>
-                  <option value="Recurring">Recurring</option>
-                </select>
-              </div>
+
               {/* Date & Time */}
               <div className="flex space-x-4">
                 <div className="w-full">
@@ -326,145 +314,146 @@ export default function Page() {
 
             {/* RIGHT COLUMN */}
             <div className="space-y-4">
-              {/* Duration */}
+              {/* Recurring / One Time */}
               <div>
-                <label className="label font-semibold">Duration (minutes)</label>
-                <input
-                  type="number"
-                  value={duration}
-                  min={0}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*$/.test(val)) {
-                      setDuration(val);
-                    }
-                  }}
-                  className="input input-bordered input-sm w-full"
-                />
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="label font-semibold">Price</label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    // allow decimals
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      setPrice(val);
-                    }
-                  }}
-                  onWheel={(e) => e.preventDefault()}
-                  placeholder="Price"
-                  step="0.01"
-                  style={{ appearance: "none" }}
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-              {/* Class Category */}
-              <div>
-                <label className="label font-semibold">Class Category</label>
+                <label className="label font-semibold">Recurring / One-Time</label>
                 <select
-                  value={classCategory}
-                  onChange={(e) => setClassCategory(e.target.value)}
+                  value={recurring ? "Recurring" : "One-Time"}
+                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
                   className="select select-bordered select-sm w-full"
                   required
                 >
-                  <option value="">Select a Category</option>
-                  {classCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
+                  <option value="One-Time">One-Time</option>
+                  <option value="Recurring">Recurring</option>
                 </select>
               </div>
-
-              {/* If "Other" is selected, show text input */}
-              {classCategory === "Other" && (
+              <div className="space-y-4">
+                {/* Duration */}
                 <div>
-                  <label className="label font-semibold">Other Category</label>
+                  <label className="label font-semibold">Duration (minutes)</label>
                   <input
-                    type="text"
-                    value={otherCategory}
-                    onChange={(e) => setOtherCategory(e.target.value)}
+                    type="number"
+                    value={duration}
+                    min={0}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setDuration(val);
+                      }
+                    }}
                     className="input input-bordered input-sm w-full"
-                    placeholder="Please specify"
+                  />
+                </div>
+
+                {/* Price */}
+                <div>
+                  <label className="label font-semibold">Price</label>
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // allow decimals
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setPrice(val);
+                      }
+                    }}
+                    onWheel={(e) => e.preventDefault()}
+                    placeholder="Price"
+                    step="0.01"
+                    style={{ appearance: "none" }}
+                    className="input input-bordered input-sm w-full"
+                    required
+                    min="0"
+                  />
+                </div>
+                {/* Class Category */}
+                <div>
+                  <label className="label font-semibold">Class Category</label>
+                  <select
+                    value={classCategory}
+                    onChange={(e) => setClassCategory(e.target.value)}
+                    className="select select-bordered select-sm w-full"
+                    required
+                  >
+                    <option value="">Select a Category</option>
+                    {classCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* If "Other" is selected, show text input */}
+                {classCategory === "Other" && (
+                  <div>
+                    <label className="label font-semibold">Other Category</label>
+                    <input
+                      type="text"
+                      value={otherCategory}
+                      onChange={(e) => setOtherCategory(e.target.value)}
+                      className="input input-bordered input-sm w-full"
+                      placeholder="Please specify"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Prerequisite (Yes/No) */}
+                <div>
+                  <label className="label font-semibold">Prerequisite</label>
+                  <select
+                    value={hasPrerequisite ? "Yes" : "No"}
+                    onChange={(e) => setHasPrerequisite(e.target.value === "Yes")}
+                    className="select select-bordered select-sm w-full"
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {/* If "Yes", show input for prerequisite class */}
+                {hasPrerequisite && (
+                  <div>
+                    <label className="label font-semibold">Prerequisite Class</label>
+                    <input
+                      type="text"
+                      value={prerequisiteClass}
+                      onChange={(e) => setPrerequisiteClass(e.target.value)}
+                      className="input input-bordered input-sm w-full"
+                      placeholder="Enter the prerequisite class"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Description */}
+                <div>
+                  <label className="label font-semibold">Description</label>
+                  <textarea
+                    value={description}
+                    rows={6}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={{ overflowWrap: "break-word", whiteSpace: "pre-wrap" }}
+                    className="textarea textarea-bordered textarea-sm w-full"
                     required
                   />
                 </div>
-              )}
 
-              {/* Prerequisite (Yes/No) */}
-              <div>
-                <label className="label font-semibold">Prerequisite</label>
-                <select
-                  value={hasPrerequisite ? "Yes" : "No"}
-                  onChange={(e) => setHasPrerequisite(e.target.value === "Yes")}
-                  className="select select-bordered select-sm w-full"
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </div>
-
-              {/* If "Yes", show input for prerequisite class */}
-              {hasPrerequisite && (
+                {/* Location */}
                 <div>
-                  <label className="label font-semibold">Prerequisite Class</label>
+                  <label className="label font-semibold">Location</label>
                   <input
                     type="text"
-                    value={prerequisiteClass}
-                    onChange={(e) => setPrerequisiteClass(e.target.value)}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     className="input input-bordered input-sm w-full"
-                    placeholder="Enter the prerequisite class"
                     required
                   />
                 </div>
-              )}
-
-              {/* Product Name */}
-              <div>
-                <label className="label font-semibold">Product Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="label font-semibold">Description</label>
-                <textarea
-                  value={description}
-                  rows={6}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ overflowWrap: "break-word", whiteSpace: "pre-wrap" }}
-                  className="textarea textarea-bordered textarea-sm w-full"
-                  required
-                />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="label font-semibold">Location</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input input-bordered input-sm w-full"
-                  required
-                />
               </div>
             </div>
-
-            
             {/* Submit Button */}
             <div className="col-span-1 md:col-span-2">
               <button
