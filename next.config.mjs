@@ -7,7 +7,8 @@ const nextConfig = {
           'picsum.photos', 
           'www.stockvault.net', 
           'images.freeimages.com', 
-          'media.istockphoto.com'
+          'media.istockphoto.com',
+          'example.com'
       ],
   },
 };

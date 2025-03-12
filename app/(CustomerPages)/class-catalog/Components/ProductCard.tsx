@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
 import AddToCartButton from "./AddToCartButton";
@@ -6,7 +8,6 @@ interface ProductCardProps {
   _id: string;
   name: string;
   price: number;
-  category: string;
   image_url: string;
 }
 
@@ -14,7 +15,7 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
   return (
     <div className="group relative h-full">
       <Link
-        href={`/StoreSearch/products/${_id}`}
+        href={`/class-catalog/courses/${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
       >
         <div className="relative aspect-square">
