@@ -93,23 +93,31 @@ const useFinancialData = () => {
     setIsLoading(true);
     setError(null);
   
-    console.log(`📡 Fetching data for: ${selectedCategory}, TimeFrame: ${timeFrame}, StartDate: ${startDate}, EndDate: ${endDate}`);
+    console.log(`📡 Fetching Data:`, {
+      category: selectedCategory,
+      timeFrame,
+      startDate,
+      endDate,
+    });
   
     try {
       const response = await fetch(
-        `/api/financial-analytics?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
+        `/api/financial-analytics/date-filter?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
       );
   
       if (!response.ok) throw new Error("Failed to fetch data");
   
       const data = await response.json();
+      console.log("📊 API Response:", data);
+  
       setFinancialData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, startDate, endDate]);  
+  }, [selectedCategory, startDate, endDate]);
+      
 
   return {
     financialData,
