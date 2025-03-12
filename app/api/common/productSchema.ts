@@ -28,7 +28,14 @@ const baseProductSchema = z.object({
 });
 
 // Schema for items
-export const itemSchema = baseProductSchema.extend({});
+export const itemSchema = baseProductSchema.extend({
+    quantityInStock: z.string().min(0, { message: "Quantity must be a positive number" }),
+    // category: z.string().min(1, { message: "Category is required" }),
+    // material: z.string().min(1, { message: "Material is required" }),
+    // color: z.string().min(1, { message: "Color is required" }),
+    // size: z.string().min(1, { message: "Size is required" }),
+    // image_url: z.string().min(1, { message: "Image URL is required" }),
+});
 
 // Schema for courses (if you need it)
 export const courseSchema = baseProductSchema.extend({

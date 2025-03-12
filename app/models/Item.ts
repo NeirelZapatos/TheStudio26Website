@@ -10,7 +10,7 @@ export interface IItem extends Document {
     image_url: string;
     size: string;
     color: string;
-    quantity_in_stock: string;
+    quantityInStock: string;
 }
 
 
@@ -45,7 +45,7 @@ const itemSchema:Schema = new mongoose.Schema({
     color: {
         type: String,
     },
-    quantity_in_stock: {
+    quantityInStock: {
         type: String,
         required: true,
         default: 0,

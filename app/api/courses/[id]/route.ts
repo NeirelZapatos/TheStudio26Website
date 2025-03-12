@@ -41,12 +41,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     try {
         await dbConnect();
         const { id } = params;
-
-        // Log the ID being used for deletion for troubleshooting
-        console.log("Attempting to delete course with Stripe ID:", id);
-
+        
         // Find and delete the course by its Stripe ID in MongoDB
-        const deletedCourse = await Course.findOneAndDelete({ stripeProductId: id });
+        const deletedCourse = await Course.findByIdAndDelete(id);
 
         if (!deletedCourse) {
             return NextResponse.json({ error: 'Course not found' }, { status: 404 });

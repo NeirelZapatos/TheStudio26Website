@@ -3,12 +3,16 @@
 import { useState } from "react";
 import axios from "axios";
 import { itemTemplates } from "@/utils/productTemplates";
+import Image from "next/image";
 import JewelryForm from "../components/ItemForms/JewelryForm";
 import ToolForm from "../components/ItemForms/ToolForm";
 import StoneForm from "../components/ItemForms/StoneForm";
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Template Search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -34,11 +38,37 @@ export default function Page() {
     "12", "12.5", "13", "13.5", "14", "Other", "N/A",
   ];
 
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
   const createItem = async (e: React.FormEvent) => {
     e.preventDefault();
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
 
     try {
+      let uploadedImageUrl = imageUrl;
+
+      if (file) {
+        uploadedImageUrl = await uploadImage();
+      }
       const productData: any = {
         name,
         description,
@@ -46,10 +76,11 @@ export default function Page() {
         purchaseType: "Item",
         price: convertedPrice,
         quantityInStock,
+        image_url: uploadedImageUrl,
       };
 
       await axios.post("/api/items", productData);
-      setMessage("Product saved to MongoDB");
+      setMessage("Product saved");
 
       // Reset form fields
       setName("");
@@ -58,6 +89,9 @@ export default function Page() {
       setPrice("");
       setQuantityInStock("");
       setRingSize("");
+      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null);
+      setFileName("");
     } catch (error) {
       setMessage("Error creating product");
       console.error(error);
@@ -70,7 +104,11 @@ export default function Page() {
       setName(template.name);
       setDescription(template.description);
       setItemType(template.itemType);
+      setQuantityInStock(template.quantityInStock);
       setPrice(template.price);
+      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null); // Reset the file state
+      setFileName(""); // Reset the file name state
     }
   };
 
@@ -93,11 +131,6 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Render Forms */}
-          {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}
-          {showToolForm && <ToolForm onClose={() => setShowToolForm(false)} />}
-          {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
-
           {/* Template Search Panel */}
           {showTemplateSearch && (
             <div className="mb-6 p-4 border rounded bg-white shadow-sm">
@@ -108,7 +141,7 @@ export default function Page() {
                 onChange={(e) => setSearchText(e.target.value)}
                 className="input input-bordered input-sm w-full mb-2"
               />
-              {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              {filteredTemplateList.length > 0 ? (
                 <ul
                   className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
                   style={{
@@ -134,6 +167,11 @@ export default function Page() {
               )}
             </div>
           )}
+
+          {/* Render Forms */}
+          {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}
+          {showToolForm && <ToolForm onClose={() => setShowToolForm(false)} />}
+          {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
 
           {/* Buttons Row */}
           <div className="flex justify-center mb-4 space-x-4">

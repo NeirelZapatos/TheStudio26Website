@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { courseTemplates } from "@/utils/productTemplates";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -16,6 +17,9 @@ type Product = {
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
   // Template search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -56,6 +60,36 @@ export default function Page() {
     "4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682"
   );
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!file || !fileName.trim()) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", fileName);
+
+    const response = await fetch("/api/imageupload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+    setImageUrl(data.url);
+    return data.url;
+  };
+
+
   const createClass = async (e: React.FormEvent) => {
     e.preventDefault();
     const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
@@ -66,34 +100,25 @@ export default function Page() {
       classCategory === "Other" ? otherCategory : classCategory;
 
     try {
-      // 1) Create product in Stripe
-      const stripeResponse = await axios.post("/api/stripe/create-product", {
-        name,
-        description,
-        itemType,
-        purchaseType: "Course",
-        recurring,
-        price: convertedPrice,
-        duration: convertedDuration,
-      });
-      const createdProduct = stripeResponse.data;
-      console.log("Stripe API Response:", createdProduct);
+      let uploadedImageUrl = imageUrl;
 
-      // 2) Save to MongoDB
+      if (file) {
+        uploadedImageUrl = await uploadImage();
+      }
+
       const productData: any = {
-        id: createdProduct.product.id,
         name,
         description,
         itemType,
         purchaseType: "Course",
         recurring,
         price: convertedPrice,
-        stripeProductId: createdProduct.product.id,
         date,
         time,
         instructor,
         duration: convertedDuration,
         location,
+        image_url: uploadedImageUrl,
         classCategory: finalCategory,
         // Prerequisite fields
         prerequisite: hasPrerequisite,
@@ -114,6 +139,9 @@ export default function Page() {
       setInstructor("");
       setDuration("");
       setLocation("4100 Cameron Park Drive, Suite 118 Cameron Park, CA 95682");
+      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null);
+      setFileName("");
       setClassCategory("");
       setOtherCategory("");
       setHasPrerequisite(false);
@@ -134,6 +162,9 @@ export default function Page() {
       setInstructor(template.instructor);
       setDuration(template.duration);
       setLocation(template.location);
+      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+      setFile(null); // Reset the file state
+      setFileName(""); // Reset the file name state
     }
   };
 
@@ -167,7 +198,7 @@ export default function Page() {
                 className="input input-bordered input-sm w-full mb-2"
               />
 
-              {filteredTemplateList.length > 0 && searchText.length > 0 ? (
+              {filteredTemplateList.length > 0 ? (
                 <ul
                   className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
                   style={{
@@ -198,6 +229,143 @@ export default function Page() {
           <form onSubmit={createClass} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="border-2 border-gray-300 rounded-md aspect-square w-full max-w-[24rem] mx-auto">
+                <img
+                  src={file ? URL.createObjectURL(file) : imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+
+              {/* File Input */}
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 border border-gray-300 rounded-md w-full"
+              />
+
+              {/* File Name Input */}
+              {file && (
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value.replace(/\.[^/.]+$/, ""))}
+                  className="mt-2 p-2 border border-gray-300 rounded-md w-full text-center"
+                  placeholder="Rename file before upload"
+                />
+              )}
+<div className="space-y-4">
+              {/* Product Name */}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Product Name</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input input-bordered input-sm w-full"
+                  required
+                />
+              </div>
+            </div>
+            
+              {/* Recurring / One Time */}
+              <div>
+                <label className="label font-semibold">Recurring / One-Time</label>
+                <select
+                  value={recurring ? "Recurring" : "One-Time"}
+                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="One-Time">One-Time</option>
+                  <option value="Recurring">Recurring</option>
+                </select>
+              </div>
+              {/* Date & Time */}
+              <div className="flex space-x-4">
+                <div className="w-full">
+                  <label className="label font-semibold">Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    required
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="label font-semibold">Time</label>
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="input input-bordered input-sm w-full"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Instructor */}
+              <div>
+                <label className="label font-semibold">Instructor</label>
+                <select
+                  value={instructor}
+                  onChange={(e) => setInstructor(e.target.value)}
+                  className="select select-bordered select-sm w-full"
+                  required
+                >
+                  <option value="">Select an Instructor</option>
+                  <option value="Instructor 1">Instructor 1</option>
+                  <option value="Instructor 2">Instructor 2</option>
+                  <option value="Instructor 3">Instructor 3</option>
+                </select>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="space-y-4">
+              {/* Duration */}
+              <div>
+                <label className="label font-semibold">Duration (minutes)</label>
+                <input
+                  type="number"
+                  value={duration}
+                  min={0}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d*$/.test(val)) {
+                      setDuration(val);
+                    }
+                  }}
+                  className="input input-bordered input-sm w-full"
+                />
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="label font-semibold">Price</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // allow decimals
+                    if (/^\d*\.?\d*$/.test(val)) {
+                      setPrice(val);
+                    }
+                  }}
+                  onWheel={(e) => e.preventDefault()}
+                  placeholder="Price"
+                  step="0.01"
+                  style={{ appearance: "none" }}
+                  className="input input-bordered input-sm w-full"
+                  required
+                  min="0"
+                />
+              </div>
               {/* Class Category */}
               <div>
                 <label className="label font-semibold">Class Category</label>
@@ -297,103 +465,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="space-y-4">
-              {/* Recurring / One Time */}
-              <div>
-                <label className="label font-semibold">Recurring / One-Time</label>
-                <select
-                  value={recurring ? "Recurring" : "One-Time"}
-                  onChange={(e) => setRecurring(e.target.value === "Recurring")}
-                  className="select select-bordered select-sm w-full"
-                  required
-                >
-                  <option value="One-Time">One-Time</option>
-                  <option value="Recurring">Recurring</option>
-                </select>
-              </div>
-
-              {/* Date & Time */}
-              <div className="flex space-x-4">
-                <div className="w-full">
-                  <label className="label font-semibold">Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="input input-bordered input-sm w-full"
-                    required
-                  />
-                </div>
-                <div className="w-full">
-                  <label className="label font-semibold">Time</label>
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="input input-bordered input-sm w-full"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Instructor */}
-              <div>
-                <label className="label font-semibold">Instructor</label>
-                <select
-                  value={instructor}
-                  onChange={(e) => setInstructor(e.target.value)}
-                  className="select select-bordered select-sm w-full"
-                  required
-                >
-                  <option value="">Select an Instructor</option>
-                  <option value="Instructor 1">Instructor 1</option>
-                  <option value="Instructor 2">Instructor 2</option>
-                  <option value="Instructor 3">Instructor 3</option>
-                </select>
-              </div>
-
-              {/* Duration */}
-              <div>
-                <label className="label font-semibold">Duration (minutes)</label>
-                <input
-                  type="number"
-                  value={duration}
-                  min={0}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*$/.test(val)) {
-                      setDuration(val);
-                    }
-                  }}
-                  className="input input-bordered input-sm w-full"
-                />
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="label font-semibold">Price</label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    // allow decimals
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      setPrice(val);
-                    }
-                  }}
-                  onWheel={(e) => e.preventDefault()}
-                  placeholder="Price"
-                  step="0.01"
-                  style={{ appearance: "none" }}
-                  className="input input-bordered input-sm w-full"
-                  required
-                  min="0"
-                />
-              </div>
-            </div>
-
+            
             {/* Submit Button */}
             <div className="col-span-1 md:col-span-2">
               <button
