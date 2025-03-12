@@ -139,4 +139,3 @@ const Buttons: React.FC<{
 };
 
 export default Buttons;
-

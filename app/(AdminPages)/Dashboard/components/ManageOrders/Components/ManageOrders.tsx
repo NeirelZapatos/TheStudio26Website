@@ -10,6 +10,7 @@ import ProcessPickup from '../ProcessPickup'; // Import ProcessPickup utility
 import { printShippingLabels } from '../PrintShippingLabels'; // Import printShippingLabels utility
 import SearchBar from './SearchBar'; // Import SearchBar component
 import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrders utility
+import PackageDetailsModal from './PackageDetailsModal'; // Import PackageDetailsModal component
 
 /**
  * ManageOrders Component:
@@ -21,6 +22,8 @@ import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrd
  * - selectedOrders: Set of selected order IDs for bulk actions.
  * - expandedOrder: ID of the currently expanded order to show details.
  * - searchResults: Array of orders matching the search query.
+ * - isPackageModalOpen: Boolean state to control package details modal visibility.
+ * - selectedForShipping: Array of order IDs selected for shipping label generation.
  * 
  * Props:
  * None (This is a standalone component).
@@ -37,6 +40,7 @@ import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrd
  * - Buttons: Component for action buttons (export, print, filter, etc.).
  * - OrderTables: Component for displaying and interacting with the orders table.
  * - SearchBar: Component for searching and filtering orders.
+ * - PackageDetailsModal: Component for collecting package dimensions and weight.
  * 
  * Handlers:
  * - handleMarkAsFulfilled: Marks selected pickup orders as fulfilled.
@@ -47,6 +51,7 @@ import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrd
  * - handlePrintReceipt: Prints receipts for selected orders.
  * - handleToggleDetails: Toggles the expanded view of an order's details.
  * - getTimeElapsed: Calculates the time elapsed since an order was placed.
+ * - handlePackageDetailsSubmit: Handles submission of package details for shipping labels.
  * 
  * Data Fetching:
  * - Uses SWR to fetch orders from the API with a refresh interval of 5 minutes.
@@ -59,13 +64,22 @@ import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrd
  * - Dynamically generates filter buttons with counts for different order statuses and types (e.g., All Orders, Pickup, Priority, etc.).
  */
 
+interface PackageDetails {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
 const ManageOrders = () => {
   const [activeFilter, setActiveFilter] = useState<OrderFilter>(OrderFilter.ALL); // State for active filter
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set()); // State for selected orders
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null); // State for expanded order details
   const [searchResults, setSearchResults] = useState<IOrder[]>([]); // State for search results
-
+  const [packageDetails, setPackageDetails] = useState<PackageDetails | null>(null);
+  const [isPackageModalOpen, setPackageModalOpen] = useState(false);
+  
   const { data: orders, error, mutate } = useSWR<IOrder[]>('/api/orders', fetchOrders, {
     refreshInterval: 300000, // Refresh data every 5 minutes
   });
@@ -121,25 +135,52 @@ const ManageOrders = () => {
     }
   };
 
-  // Handle printing shipping labels
-  const handlePrintShippingLabels = async () => {
-    try {
-      const labels = await printShippingLabels(Array.from(selectedOrders), orders || []); // Print labels for selected orders
-      if (labels.length > 0) {
-        alert('Shipping labels printed successfully!'); // Alert success
-      } else {
-        alert('No labels were generated. Please check the selected orders and try again.'); // Alert if no labels generated
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error printing shipping labels:', error.message); // Log error
-        alert(`Failed to print shipping labels: ${error.message}`); // Alert user of failure
-      } else {
-        console.error('Unknown error printing shipping labels:', error); // Log unknown error
-        alert('Failed to print shipping labels: Unknown error'); // Alert user of unknown error
-      }
+  // Handle printing shipping labels with package details
+ // Extracted function for printing labels
+ const printLabels = async (details: PackageDetails) => {
+  try {
+    const labels = await printShippingLabels(
+      Array.from(selectedOrders),
+      orders || [],
+      details
+    );
+
+    if (labels.length > 0) {
+      alert('Shipping labels printed successfully!');
+    } else {
+      alert('No labels were generated. Please check the selected orders and try again.');
     }
-  };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error printing shipping labels:', error.message);
+      alert(`Failed to print shipping labels: ${error.message}`);
+    } else {
+      console.error('Unknown error printing shipping labels:', error);
+      alert('Failed to print shipping labels: Unknown error');
+    }
+  }
+};
+
+// Simplified handler - just check if we have details, or open modal
+const handlePrintShippingLabels = () => {
+  if (packageDetails) {
+    printLabels(packageDetails);
+  } else {
+    setPackageModalOpen(true);
+  }
+};
+
+// Handle package details submission
+const handlePackageDetailsSubmit = (details: PackageDetails) => {
+  // Save the details for potential reuse
+  setPackageDetails(details);
+  // Print using these details
+  printLabels(details);
+  // Close the modal
+  setPackageModalOpen(false);
+};
+
+
 
   // Handle exporting orders to CSV
   const handleExportReport = () => {
@@ -248,20 +289,18 @@ const ManageOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Buttons
-          selectedOrdersSize={selectedOrders.size} // Pass selected orders count
-          selectedOrders={selectedOrders} // Pass selected orders
-          filterButtons={filterButtons} // Pass filter buttons
-          activeFilter={activeFilter} // Pass active filter
-          setActiveFilter={setActiveFilter} // Pass setActiveFilter function
-          handlePrintShippingLabels={handlePrintShippingLabels} // Pass print labels handler
-          handlePrintReceipt={handlePrintReceipt} // Pass print receipt handler
-          handleMarkAsFulfilled={handleMarkAsFulfilled} // Pass mark as fulfilled handler
-          orders={orders} // Pass orders data
-        />
-      </div>
-
+      
+      <Buttons
+  selectedOrdersSize={selectedOrders.size}
+  selectedOrders={selectedOrders}
+  filterButtons={filterButtons}
+  activeFilter={activeFilter}
+  setActiveFilter={setActiveFilter}
+  handlePrintShippingLabels={handlePrintShippingLabels} // No parameters needed
+  handlePrintReceipt={handlePrintReceipt}
+  handleMarkAsFulfilled={handleMarkAsFulfilled}
+  orders={orders || []}
+/>
       <div className="mb-4">
         <SearchBar
           orders={orders} // Pass orders data
@@ -281,6 +320,16 @@ const ManageOrders = () => {
         getTimeElapsed={getTimeElapsed} // Pass time elapsed function
         searchQuery={searchQuery} // Pass search query
       />
+
+      {/* Package Details Modal */}
+    
+<PackageDetailsModal
+  isOpen={isPackageModalOpen}
+  onClose={() => setPackageModalOpen(false)}
+  onSubmit={handlePackageDetailsSubmit}
+  initialValues={packageDetails || undefined}
+  onClear={() => setPackageDetails(null)}
+/>
     </div>
   );
 };
