@@ -1,50 +1,156 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css"; // Import default styles
+import AddToCartButton from "../Components/AddToCartButton";
+import { format, parseISO, isSameDay } from "date-fns";
 
+interface Lab {
+    _id: string;
+    name: string;
+    price: number;
+    description: string;
+    date: string;
+    time: string;
+    duration: number;
+    image_url: string;
+    instructor: string;
+    location: string;
+    max_capacity: number;
+}
 
 const Page = () => {
     const [date, setDate] = useState(new Date());
+    const [labs, setLabs] = useState<Lab[]>([]);
+    const [selectedLab, setSelectedLab] = useState<Lab | null>(null);
+    const [quantity, setQuantity] = useState(1);
 
+    useEffect(() => {
+        const fetchLabs = async () => {
+            try {
+                const response = await fetch('/api/lab');
+                const data = await response.json();
+                setLabs(data);
+            } catch (error) {
+                console.error("Error fetching labs:", error);
+            }
+        };
+
+        fetchLabs();
+    }, []);
+
+    // handle date change
     const handleDateChange = (newDate: any) => {
         setDate(newDate);
         console.log("Selected date:", newDate);
     };
 
+    // update participants
+    const handleParticipantsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newParticipants = Math.max(1, parseInt(event.target.value, 10));
+        setQuantity(newParticipants);
+    };
+
+    // mark labs on calendar
+    const tileContent = ({ date, view }: { date: Date; view: string }) => {
+        if (view === "month") {
+            // Check if the current date matches any lab date
+            const hasLab = labs.some((lab) => {
+                const labDate = parseISO(lab.date); // Convert lab.date string to a Date object
+                return isSameDay(date, labDate); // Compare dates using isSameDay
+            });
+
+            if (hasLab) {
+                return <div className="bg-blue-500 text-white p-1 rounded-full">Lab</div>;
+            }
+        }
+        return null;
+    };
+
+    // Normalize dates using date-fns
+    const getLabsForSelectedDate = () => {
+        const selectedDateUTC = format(date, "yyyy-MM-dd");
+        const selectedDateLabs = labs.filter((lab) => {
+            const labDateUTC = format(parseISO(lab.date), "yyyy-MM-dd");
+            return labDateUTC === selectedDateUTC;
+        });
+        return selectedDateLabs;
+    };
+
     return (
         <div>
-            <div className="bg-[#f5f5f5] bg">
-                <section className="text-center p-10 bg-white-100">
-                    <h2 className="text-4xl font-bold text-[#1e1e1e] mb-4 mx-auto">
-                        Bench Time
-                    </h2>
-                    <p className="text-xl font-bold text-[#000000] max-w-3xl mx-auto">
-                        4 hr | $40 | 4100 Cameron Park Drive
-                    </p>
+            <div className="grid grid-cols-3 gap-6 p-6">
+                {/* Calendar Section*/}
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                    <h2 className="text-xl font-bold mb-4">Select a Date</h2>
+                    <Calendar
+                        onChange={handleDateChange}
+                        value={date}
+                        tileContent={({ date }) => {
+                            const hasLab = labs.some((lab) => isSameDay(parseISO(lab.date), date));
 
-                    {/* Calendar Component */}
-                    <div className="flex justify-center mt-6">
-                        <Calendar
-                            onChange={handleDateChange}
-                            value={date}
-                            className="bg-white p-4 rounded-lg shadow-md"
-                            tileDisabled={({ date, view }) => {
-                                if (view === "month") {
-                                    return date.getDay() === 2 || date.getDay() === 3 || date.getDay() === 5 || date.getDay() === 6;
-                                }
-                                return false;
-                            }}
+
+                            // TODO : COLOR THE MARKERS (add className to div below)
+                            return hasLab ? <div>*</div> : null;
+                        }}
+                    />
+                </div>
+
+                {/* Available Lab Section */}
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                    <h2 className="text-xl font-bold mb-4">Available Labs</h2>
+                    {getLabsForSelectedDate().length > 0 ? (
+                        getLabsForSelectedDate().map((lab) => (
+                            <div
+                                key={lab._id}
+                                className={`p-4 border rounded-lg cursor-pointer ${selectedLab?._id === lab._id ? "bg-gray-200" : ""}`}
+                                onClick={() => setSelectedLab(lab)}
+                            >
+                                <h3 className="text-lg font-semibold">{lab.name}</h3>
+                                <p className="text-gray-600">{lab.time} - {lab.duration} hrs</p>
+                                <p className="text-gray-500">Instructor: {lab.instructor}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No labs available on this date.</p>
+                    )}
+                </div>
+
+                {/* Summary and Checkout */}
+                {selectedLab && (
+                    <div className="bg-white p-4 rounded-lg shadow-md">
+                        <h2 className="text-xl font-bold mb-4">Booking Summary</h2>
+                        <img src={selectedLab.image_url} alt={selectedLab.name} className="w-full h-40 object-cover rounded" />
+                        <h3 className="text-lg font-semibold mt-2">{selectedLab.name}</h3>
+                        <p className="text-gray-600">{selectedLab.description}</p>
+                        <p className="text-gray-500">Location: {selectedLab.location}</p>
+                        <p className="text-gray-500">Instructor: {selectedLab.instructor}</p>
+                        <p className="text-gray-500">Time: {selectedLab.time} - {selectedLab.duration} hrs</p>
+                        <p className="text-gray-700 font-bold mt-2">${selectedLab.price} per person</p>
+
+                        {/* Participant Input */}
+                        <label className="block mt-2 font-semibold">Participants:</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max={selectedLab.max_capacity}
+                            value={quantity}
+                            onChange={handleParticipantsChange}
+                            className="border p-2 rounded w-full"
                         />
+
+                        {/* Total Price Calculation */}
+                        <p className="font-bold mt-2">Total: ${(selectedLab.price * quantity).toFixed(2)}</p>
+
+                        {/* Checkout Button */}
+                        <AddToCartButton product={{ ...selectedLab, quantity }} />
                     </div>
-                    <Link href={`/OpenLab/BookingCheckout`}><button className="btn bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mt-6">
-                        <p>Book Now</p>
-                    </button>
-                    </Link>
-                </section>
+                )}
+
             </div>
+
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-center font-bold text-2xl mt-4">
                     Service Description
@@ -114,6 +220,7 @@ const Page = () => {
                 </p>
             </div>
         </div>
+
     );
 };
 
