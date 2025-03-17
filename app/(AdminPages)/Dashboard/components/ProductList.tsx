@@ -4,9 +4,29 @@ import CourseCard, { Course } from "./productList/CourseCard";
 import ItemCard, { Item } from "./productList/ItemCard";
 import EditCourseForm from "./productList/EditCourseForm";
 import EditItemForm from "./productList/EditItemForm";
+import DashboardFilters from "./productList/DashboardFilters";
 
 const ProductList: React.FC = () => {
+  type FilterState = {
+    sort: string;
+    category: string;
+    color: string[];
+    material: string[];
+    size: string[];
+    price: {
+      isCustom: boolean;
+      range: [number, number];
+    };
+  };
   // Data States
+  const [filter, setFilter] = useState<FilterState>({
+    sort: "none",
+    category: "all",
+    color: [],
+    material: [],
+    size: [],
+    price: { isCustom: false, range: [0, 500] as [number, number] },
+  });
   const [courses, setCourses] = useState<Course[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +138,7 @@ const ProductList: React.FC = () => {
         await axios.delete(`/api/items/${item._id}`);
 
         setItems((prev) => prev.filter((i) => i._id !== item._id));
-        
+
         // Clear editing state if needed
         if (editingItem && editingItem._id === item._id) {
           setEditingItem(null);
@@ -129,6 +149,66 @@ const ProductList: React.FC = () => {
       }
     }
   };
+
+  const getFilteredCourses = () => {
+    return courses.filter((course) => {
+      if (filter.category !== "all" && course.category !== filter.category) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const getFilteredItems = () => {
+    return items.filter((item) => {
+      // Apply category filter
+      if (
+        filter.category !== "all" &&
+        item.category?.toLowerCase() !== filter.category
+      ) {
+        return false;
+      }
+
+      // Apply color filter
+      if (
+        filter.color.length > 0 &&
+        (!item.color || !filter.color.includes(item.color.toLowerCase()))
+      ) {
+        return false;
+      }
+
+      // Apply material filter
+      if (
+        filter.material.length > 0 &&
+        (!item.material ||
+          !filter.material.includes(item.material.toLowerCase()))
+      ) {
+        return false;
+      }
+
+      // Apply size filter
+      if (
+        filter.size.length > 0 &&
+        (!item.size || !filter.size.includes(item.size))
+      ) {
+        return false;
+      }
+
+      // Apply price filter
+      if (
+        item.price &&
+        (item.price < filter.price.range[0] ||
+          item.price > filter.price.range[1])
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
+  const filteredCourses = getFilteredCourses();
+  const filteredItems = getFilteredItems();
 
   if (loading) {
     return <div className="p-4">Loading...</div>;
@@ -142,12 +222,16 @@ const ProductList: React.FC = () => {
     <div className="container mx-auto py-8">
       {/* Courses Section */}
       <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Courses</h2>
-        {courses.length === 0 ? (
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold mb-4">Courses</h2>
+          <DashboardFilters filter={filter} setFilter={setFilter} />
+        </div>
+
+        {filteredCourses.length === 0 ? (
           <p>No courses available.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
+            {filteredCourses.map((course) => (
               <div key={course._id} className="bg-white shadow rounded-lg p-4">
                 {editingCourse && editingCourse._id === course._id ? (
                   <EditCourseForm
@@ -168,11 +252,11 @@ const ProductList: React.FC = () => {
       {/* Items Section */}
       <section>
         <h2 className="text-2xl font-semibold mb-4">Items</h2>
-        {items.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <p>No items available.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <div key={item._id} className="bg-white shadow rounded-lg p-4">
                 {editingItem && editingItem._id === item._id ? (
                   <EditItemForm
