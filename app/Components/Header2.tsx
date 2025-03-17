@@ -1,10 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getCart, removeFromCart } from "@/services/cartService";
 
-const Header2 = () => {
+interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string;
+}
+interface CartSummaryProps {
+  cart: CartItem[];
+}
+
+const Header2 = ({ cart }: CartSummaryProps) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    setCartItems(getCart());
+  }, [isCartOpen]); // Update cart when dropdown is toggled
 
   const toggleCart = () => {
     setIsCartOpen((prev) => !prev);
@@ -13,6 +30,13 @@ const Header2 = () => {
   const closeCart = () => {
     setIsCartOpen(false);
   };
+
+  const handleRemoveItem = (productId: string) => {
+    removeFromCart(productId);
+    setCartItems(getCart());
+  }
+
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div className="navbar bg-base-100">
@@ -108,7 +132,6 @@ const Header2 = () => {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                <span className="badge badge-sm indicator-item">8</span>
               </div>
             </div>
             {isCartOpen && (
@@ -117,8 +140,31 @@ const Header2 = () => {
                 className="card card-compact dropdown-content bg-base-100 z-[1] mt-3 w-52 shadow"
               >
                 <div className="card-body">
-                  <span className="text-lg font-bold">8 Items</span>
-                  <span className="text-info">Subtotal: $999</span>
+                  <span className="text-lg font-bold">
+                    {cartItems.length} Items
+                  </span>
+                  {cartItems.length > 0 ? (
+                    <ul className="max-h-60 overflow-y-auto">
+                      {cartItems.map((item) => (
+                        <li key={item.productId} className="flex items-center gap-3 py-2 border-b">
+                          <img
+                            src={item.image_url}
+                            alt={item.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <p className="font-semibold">{item.name}</p>
+                            <p className="text-sm text-gray-500">
+                              ${item.price.toFixed(2)} x {item.quantity}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-center text-gray-500"> Your Cart is Empty</p>
+                  )}
+                  <h3 className="text-xl font-semibold">Subtotal: ${total.toFixed(2)}</h3>
+                  
                   <div className="card-actions">
                     <Link href="/checkout">
                       <button className="btn btn-primary btn-block" onClick={closeCart}>

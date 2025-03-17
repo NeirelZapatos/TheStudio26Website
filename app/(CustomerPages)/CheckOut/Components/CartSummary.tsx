@@ -48,15 +48,13 @@ export default function CartSummary({ cart, onRemoveItem, onQuantityChange }: Ca
           </div>
           <button
             onClick={() => onRemoveItem(item.productId)}
-            className="text-red-500 hover:text-red-700"
+            className="btn btn-error text-white-500 hover:text-red-700"
           >
             Remove
           </button>
         </div>
       ))}
-      <div className="border-t pt-4">
         <h3 className="text-xl font-bold">Total: ${total.toFixed(2)}</h3>
-      </div>
     </div>
   );
 }

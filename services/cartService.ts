@@ -1,5 +1,3 @@
-// services/cartService.ts
-
 interface CartItem {
     productId: string;
     name: string;
@@ -12,7 +10,12 @@ interface CartItem {
   
   export const getCart = (): CartItem[] => {
     const cart = localStorage.getItem(CART_KEY);
-    return cart ? JSON.parse(cart) : [];
+    return cart ? JSON.parse(cart).map((item: CartItem) => (
+      {
+        ...item,
+        price: Number(item.price)
+      }
+    )) : [];
   };
   
   export const addToCart = (item: CartItem) => {
