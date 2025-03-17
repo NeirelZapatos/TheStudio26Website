@@ -144,8 +144,22 @@ const Page = () => {
                         {/* Total Price Calculation */}
                         <p className="font-bold mt-2">Total: ${(selectedLab.price * quantity).toFixed(2)}</p>
 
-                        {/* Checkout Button */}
-                        <AddToCartButton product={{ ...selectedLab, quantity }} />
+                        {/* Checkout and Confirmation Window */}
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded mt-4 w-full" onClick={() => { if (document) { (document.getElementById("my_modal") as HTMLFormElement).showModal(); } }}>Checkout</button>
+                        <dialog id="my_modal" className="modal modal-bottom sm:modal-middle">
+                            <div className="modal-box">
+                                <h3 className="font-bold text-lg">Heads Up!</h3>
+                                <p className="py-4 text-lg">Open Lab Customers need to bring their own materials and tools, or make a request to rent/use materials for a fee. Would you like to rent supplies?</p>
+                                <div className="modal-action">
+                                    <form method="dialog">
+                                        <div className="grid grid-cols-2 gap-6 p-6">
+                                            <button className="bg-red-500 text-white px-4 py-2 rounded mt-4 w-full">Cancel</button>
+                                            <AddToCartButton product={{ ...selectedLab, quantity }} />
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
                     </div>
                 )}
 
