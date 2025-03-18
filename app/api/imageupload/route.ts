@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const fileName = formData.get("fileName") as string;
+    const folder = formData.get("folder") as string | null; // Optional folder
 
     if (!file || !fileName) {
       return NextResponse.json(
@@ -15,9 +16,9 @@ export async function POST(request: Request) {
     }
 
     const sanitizedFileName = fileName.replace(/\s+/g, "-").toLowerCase();
-    const uploadedUrl = await uploadFileToS3(file, sanitizedFileName);
+    const uploadedUrl = await uploadFileToS3(file, sanitizedFileName, folder || undefined);
 
-    return NextResponse.json({ url: uploadedUrl, key: sanitizedFileName });
+    return NextResponse.json({ url: uploadedUrl, key: folder ? `${folder}/${sanitizedFileName}` : sanitizedFileName });
   } catch (error) {
     console.error("Upload failed", error);
     return NextResponse.json(

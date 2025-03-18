@@ -8,7 +8,7 @@ const baseProductSchema = z.object({
     // category: z.string().min(1, { message: "Category is required" }),
     // material: z.string().min(1, { message: "Material is required" }),
     // color: z.string().min(1, { message: "Color is required" }),
-    size: z.string().min(1, { message: "Size is required" }),
+    size: z.string().optional(), // Made optional
     image_url: z.string().min(1, { message: "Image URL is required" }),
     images: z.array(z.string()).min(1, { message: "At least one image is required" }).optional(), // changed to optional for now
     // quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
@@ -21,7 +21,7 @@ const baseProductSchema = z.object({
     metal_finish: z.string().optional(),
     plating: z.string().optional(),
     ring_size: z.number().min(0, { message: "Size must be greater than 0"}).optional(),
-    gauge: z.number().optional(),
+    gauge: z.string().optional(),
     carat_weight: z.number().min(0, { message: "Carat Size must be greater than 0"}).optional(),
     setting_type: z.string().optional(),
     stone_arrangement: z.string().optional(),
@@ -30,7 +30,7 @@ const baseProductSchema = z.object({
     // Tool Fields
     tool_type: z.string().optional(),
     brand: z.string().optional(),
-    weight: z.number().optional(),
+    weight: z.string().optional(),
     material_composition: z.string().optional(),
     kit_type: z.string().optional(),
     kit_contents: z.string().optional(),

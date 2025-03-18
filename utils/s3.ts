@@ -10,26 +10,32 @@ const s3Client = new S3Client({
     },
 });
 
-// Upload Image to S3 with Custom File Name
-export const uploadFileToS3 = async (file: File, fileName: string): Promise<string> => {
-    const sanitizedFileName = fileName.replace(/\s+/g, "-").toLowerCase(); // Ensure clean file name
-
+export const uploadFileToS3 = async (
+    file: File,
+    fileName: string,
+    folder?: string // Optional folder parameter
+  ): Promise<string> => {
+    const sanitizedFileName = fileName.replace(/\s+/g, "-").toLowerCase();
+  
+    // If a folder is specified, prepend it to the key; otherwise, use the file name directly
+    const key = folder ? `${folder}/${sanitizedFileName}` : sanitizedFileName;
+  
     const command = new PutObjectCommand({
-        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-        Key: sanitizedFileName,
-        ContentType: file.type,
+      Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+      Key: key, // Use the constructed key
+      ContentType: file.type,
     });
-
+  
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
-
+  
     await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
+      method: "PUT",
+      body: file,
+      headers: { "Content-Type": file.type },
     });
-
-    return `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${sanitizedFileName}`;
-};
+  
+    return `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${key}`;
+  };
 
 // List All Images from S3 (Filtering Out Non-Image Files)
 export const listS3Images = async (): Promise<{ url: string; key: string }[]> => {

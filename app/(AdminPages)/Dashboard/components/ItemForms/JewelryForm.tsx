@@ -80,6 +80,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       const formData = new FormData();
       formData.append("file", files[i]);
       formData.append("fileName", editableFileNames[i]); // Use the editable file name
+      formData.append("folder", jewelryType.toLowerCase()); // Upload to folder of name jewelryType
 
       try {
         const response = await fetch("/api/imageupload", {
@@ -159,7 +160,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       quantity_in_stock: parseInt(quantityInStock),
       image_url: uploadedImageUrls[0], // Use the first image as the main image
       images: imagesArray,
-      weight: weight ? parseFloat(weight) : null,
+      weight: weight,
       size,
       jewelryType,
       metalType,
@@ -294,13 +295,12 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </label>
           <textarea className="textarea textarea-bordered w-full" value={description} onChange={e => setDescription(e.target.value)}></textarea>
         </div>
-
         <div>
           <label className="label">
             <span className="label-text font-semibold">Jewelry Type</span>
           </label>
           <select className="select select-bordered w-full" value={jewelryType} onChange={e => setJewelryType(e.target.value)} required>
-            <option value="">Select Jewelry Type</option>
+            <option value="" disabled>Select Jewelry Type</option>
             {jewelryTypes.map(type => <option key={type} value={type}>{type}</option>)}
           </select>
         </div>
@@ -308,23 +308,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         <hr className="my-6 border-t border-gray-300" />
 
         {/* --------------- ADDITIONAL FIELDS --------------- */}
-        {/* Basic Product Fields */}
-
         <div className="py-4">
           <span className="text-xl font-semibold">More Details</span>
         </div>
 
-        {/* New: Weight Field */}
         <div>
           <label className="label">
             <span className="label-text font-semibold">Weight (grams)</span>
           </label>
-          <input type="number" step="0.01" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
+          <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
         </div>
-        {/* New: Size Field */}
+
         <div>
           <label className="label">
-            <span className="label-text font-semibold">Dimensions</span>
+            <span className="label-text font-semibold">Size or Dimensions</span>
           </label>
           <input type="text" className="input input-bordered w-full" value={size} onChange={e => setSize(e.target.value)} placeholder="Enter size or dimensions" />
         </div>
@@ -516,7 +513,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       {/* Close Button */}
       <div className="flex justify-end mt-4">
         <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
-          Close
+          Change Item Type
         </button>
       </div>
     </div>
