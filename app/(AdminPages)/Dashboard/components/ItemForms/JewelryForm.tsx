@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import ImageCarousel from "@/app/Components/ImageCarousel";
 
 interface JewelryFormProps {
   onClose: () => void; // Function to close the form
 }
 
 export default function JewelryForm({ onClose }: JewelryFormProps) {
-  // Basic Product Fields
+  // --------------- Basic Product Fields --------------- //
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<string>("");
@@ -21,7 +22,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [metalFinish, setMetalFinish] = useState("");
   const [plating, setPlating] = useState("");
 
-  // Design Fields
+  // --------------- Design Fields --------------- //
   const [ringSize, setRingSize] = useState("");
   const [gauge, setGauge] = useState("");
   const [caratWeight, setCaratWeight] = useState("");
@@ -31,12 +32,12 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
   const [message, setMessage] = useState<string>("");
 
-  // Image Upload State
-  const [file, setFile] = useState<File | null>(null);
-  const [fileName, setFileName] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
+  // --------------- Image Upload State --------------- //
+  const [files, setFiles] = useState<File[]>([]); // Array of files
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]); // Array of preview URLs
+  const [editableFileNames, setEditableFileNames] = useState<string[]>([]);
 
-  // Options for selects
+  // --------------- Options for selects --------------- //
   const jewelryTypes = ["Rings", "Earrings", "Bracelets", "Cuffs", "Pendants", "Other"];
   const metalTypesOptions = ["Gold", "Silver", "Bronze", "Copper", "Platinum", "Mixed Metals"];
   const metalPuritiesOptions = ["10K", "14K", "18K", "22K", "24K", "Sterling Silver", "Fine Silver"];
@@ -49,33 +50,59 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const customizationOptionsList = ["Engraving", "Custom Stone Setting", "Personalized Design"];
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const selectedFile = event.target.files[0];
-      setFile(selectedFile);
-      setFileName(selectedFile.name.replace(/\s+/g, "-"));
+    if (event.target.files && event.target.files.length > 0) {
+      const selectedFiles = Array.from(event.target.files); // Convert FileList to array
+      const newFiles = [...files, ...selectedFiles]; // Add new files to existing files
+
+      // Generate preview URLs for the new files
+      const newPreviewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+      const newFileNames = selectedFiles.map((file) => file.name.replace(/\s+/g, "-"));
+
+      // Update state
+      setFiles(newFiles);
+      setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+      setEditableFileNames([...editableFileNames, ...newFileNames]);
     }
   };
 
-  const uploadImage = async () => {
-    if (!file || !fileName.trim()) return;
+  const handleFileNameChange = (index: number, newName: string) => {
+    const updatedFileNames = [...editableFileNames];
+    updatedFileNames[index] = newName;
+    setEditableFileNames(updatedFileNames);
+  };
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", fileName);
+  const uploadImages = async (): Promise<string[]> => {
+    if (!files.length) return []; // Return an empty array if no files are uploaded
 
-    const response = await fetch("/api/imageupload", {
-      method: "POST",
-      body: formData,
-    });
+    const uploadedImageUrls: string[] = [];
 
-    if (!response.ok) {
-      throw new Error("Upload failed");
+    for (let i = 0; i < files.length; i++) {
+      const formData = new FormData();
+      formData.append("file", files[i]);
+      formData.append("fileName", editableFileNames[i]); // Use the editable file name
+
+      try {
+        const response = await fetch("/api/imageupload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        uploadedImageUrls.push(data.url); // Add the uploaded URL to the array
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        setMessage("Failed to upload one or more images.");
+        return []; // Return an empty array if an error occurs
+      }
     }
 
-    const data = await response.json();
-    setImageUrl(data.url);
-    return data.url;
+    return uploadedImageUrls; // Return the array of uploaded URLs
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,25 +144,23 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       };
     }
 
-    let uploadedImageUrl = imageUrl;
+    let uploadedImageUrls = await uploadImages();
 
-    if (file) {
-      try {
-        uploadedImageUrl = await uploadImage();
-      } catch (error) {
-        setMessage("Failed to upload image.");
-        console.error(error);
-        return;
-      }
-    }
+    // If no images are uploaded, use the placeholder as the first image
+    const imagesArray =
+      uploadedImageUrls.length > 0
+        ? uploadedImageUrls
+        : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
 
     const jewelryData = {
       name,
       description,
       price: parseFloat(price),
-      quantityInStock: parseInt(quantityInStock),
-      weight: weight ? parseFloat(weight) : null,  // New: Include weight
-      size,                                      // New: Include size
+      quantity_in_stock: parseInt(quantityInStock),
+      image_url: uploadedImageUrls[0], // Use the first image as the main image
+      images: imagesArray,
+      weight: weight ? parseFloat(weight) : null,
+      size,
       jewelryType,
       metalType,
       metalPurity,
@@ -147,25 +172,67 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     console.log("Submitted Jewelry Data:", jewelryData);
     setMessage("Jewelry item successfully submitted!");
 
-    // Reset all fields
-    setName("");
-    setDescription("");
-    setPrice("");
-    setQuantityInStock("");
-    setWeight("");
-    setSize("");
-    setJewelryType("");
-    setMetalType("");
-    setMetalPurity("");
-    setMetalFinish("");
-    setPlating("");
-    setRingSize("");
-    setGauge("");
-    setCaratWeight("");
-    setSettingType("");
-    setStoneArrangement("");
-    setCustomizationOptions("");
+    try {
+      // Send a POST request to the backend API
+      const response = await fetch("/api/items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jewelryData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit jewelry item");
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      setMessage("Jewelry item successfully submitted!");
+
+      // Reset all fields
+      setName("");
+      setDescription("");
+      setPrice("");
+      setQuantityInStock("");
+      setWeight("");
+      setSize("");
+      setJewelryType("");
+      setMetalType("");
+      setMetalPurity("");
+      setMetalFinish("");
+      setPlating("");
+      setRingSize("");
+      setGauge("");
+      setCaratWeight("");
+      setSettingType("");
+      setStoneArrangement("");
+      setCustomizationOptions("");
+      setFiles([]);
+      setPreviewUrls([]);
+      setEditableFileNames([]);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error submitting jewelry item:", err.message);
+        setMessage(err.message);
+      } else {
+        console.error("An unknown error occurred:", err);
+        setMessage("An unknown error occurred.");
+      }
+    }
   };
+
+  const cleanupPreviewUrls = () => {
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+  };
+
+  useEffect(() => {
+    return () => {
+      cleanupPreviewUrls();
+    };
+  }, [previewUrls]);
 
   return (
     <div className="bg-white p-6 border rounded shadow-lg">
@@ -177,49 +244,76 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <label className="label">
             <span className="label-text font-semibold">Product Image</span>
           </label>
-          <div className="w-48 h-48 relative">
-            <Image
-              src={imageUrl}
-              alt="Product Image"
-              layout="fill"
-              objectFit="cover"
-              className="rounded"
-            />
-          </div>
+          <ImageCarousel
+            images={
+              previewUrls.length > 0 ? previewUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]
+            }
+            fileNames={editableFileNames}
+            onFileNameChange={handleFileNameChange}
+          />
+          {/* File Input for Multiple Images */}
           <div>
             <input
               type="file"
               onChange={handleFileChange}
               className="file-input file-input-bordered file-input-sm"
+              multiple // Allow multiple file selection
             />
           </div>
         </div>
 
-        {/* Basic Product Fields */}
+        {/* --------------- REQUIRED FIELDS --------------- */}
+        <div className="py-4">
+          <span className="text-xl font-semibold">Required</span>
+        </div>
+
         <div>
           <label className="label">
             <span className="label-text font-semibold">Product Name</span>
           </label>
           <input type="text" className="input input-bordered w-full" value={name} onChange={e => setName(e.target.value)} required />
         </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Amount in Stock</span>
-          </label>
-          <input type="number" className="input input-bordered w-full" value={quantityInStock} onChange={e => setQuantityInStock(e.target.value)} required />
-        </div>
+
         <div>
           <label className="label">
             <span className="label-text font-semibold">Price</span>
           </label>
           <input type="number" step="0.01" className="input input-bordered w-full" value={price} onChange={e => setPrice(e.target.value)} required />
         </div>
+
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Amount in Stock</span>
+          </label>
+          <input type="number" className="input input-bordered w-full" value={quantityInStock} onChange={e => setQuantityInStock(e.target.value)} required />
+        </div>
+
         <div>
           <label className="label">
             <span className="label-text font-semibold">Description</span>
           </label>
           <textarea className="textarea textarea-bordered w-full" value={description} onChange={e => setDescription(e.target.value)}></textarea>
         </div>
+
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Jewelry Type</span>
+          </label>
+          <select className="select select-bordered w-full" value={jewelryType} onChange={e => setJewelryType(e.target.value)} required>
+            <option value="">Select Jewelry Type</option>
+            {jewelryTypes.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </div>
+
+        <hr className="my-6 border-t border-gray-300" />
+
+        {/* --------------- ADDITIONAL FIELDS --------------- */}
+        {/* Basic Product Fields */}
+
+        <div className="py-4">
+          <span className="text-xl font-semibold">More Details</span>
+        </div>
+
         {/* New: Weight Field */}
         <div>
           <label className="label">
@@ -230,18 +324,9 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         {/* New: Size Field */}
         <div>
           <label className="label">
-            <span className="label-text font-semibold">Size / Dimensions</span>
+            <span className="label-text font-semibold">Dimensions</span>
           </label>
           <input type="text" className="input input-bordered w-full" value={size} onChange={e => setSize(e.target.value)} placeholder="Enter size or dimensions" />
-        </div>
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Jewelry Type</span>
-          </label>
-          <select className="select select-bordered w-full" value={jewelryType} onChange={e => setJewelryType(e.target.value)} required>
-            <option value="">Select Jewelry Type</option>
-            {jewelryTypes.map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
         </div>
 
         {/* Metal Information (Always Shown) */}
@@ -415,7 +500,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
         {/* Submit Button */}
         <div className="flex justify-center mt-6">
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          <button onClick={handleSubmit} type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
             Submit Jewelry Item
           </button>
         </div>

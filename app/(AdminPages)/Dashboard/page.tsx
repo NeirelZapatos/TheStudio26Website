@@ -20,7 +20,7 @@ import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";
 
 function DashboardPage() {
-  const [activeSection, setActiveSection] = useState("home");
+  const [activeSection, setActiveSection] = useState("item");
   const [showGettingPaid, setShowGettingPaid] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showProducts, setShowProducts] = useState(false);

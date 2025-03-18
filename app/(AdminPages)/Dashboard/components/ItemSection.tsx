@@ -16,7 +16,7 @@ export default function Page() {
 
   // Template Search
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
-  const [showJewelryForm, setShowJewelryForm] = useState<boolean>(false);
+  const [showJewelryForm, setShowJewelryForm] = useState<boolean>(true); // ! changed to true for testing
   const [showToolForm, setShowToolForm] = useState<boolean>(false);
   const [showStoneForm, setShowStoneForm] = useState<boolean>(false);
   const [searchText, setSearchText] = useState("");
@@ -174,29 +174,33 @@ export default function Page() {
           {showStoneForm && <StoneForm onClose={() => setShowStoneForm(false)} />}
 
           {/* Buttons Row */}
-          <div className="flex justify-center mb-4 space-x-4">
-            <button
-              type="button"
-              className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
-              onClick={() => setShowJewelryForm(true)}
-            >
-              Add Jewelry Details
-            </button>
-            <button
-              type="button"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              onClick={() => setShowToolForm(true)}
-            >
-              Add Tool Details
-            </button>
-            <button
-              type="button"
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={() => setShowStoneForm(true)}
-            >
-              Add Stone Details
-            </button>
-          </div>
+          {(!showJewelryForm && !showToolForm && !showStoneForm) ? (
+            <div className="flex justify-center mb-4 space-x-4">
+              <button
+                type="button"
+                className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+                onClick={() => setShowJewelryForm(true)}
+              >
+                Add Jewelry Details
+              </button>
+              <button
+                type="button"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                onClick={() => setShowToolForm(true)}
+              >
+                Add Tool Details
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={() => setShowStoneForm(true)}
+              >
+                Add Stone Details
+              </button>
+            </div>
+          ) : (
+            <div> </div>
+            )}
 
           {/* Success / Error Message */}
           {message && (
@@ -204,6 +208,8 @@ export default function Page() {
               {message}
             </p>
           )}
+
+
         </div>
       </div>
     </div>
