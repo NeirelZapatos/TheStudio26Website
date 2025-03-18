@@ -59,15 +59,6 @@ const courseSchema: Schema = new mongoose.Schema({
         type: Number,
     },
     stripeProductId: { type: String, default: null, unique: false }, // Allow nulls / Change Later
-    category: {
-        type: String
-    },
-    prerequisite: {
-        type: Boolean
-    },
-    recurring_or_one_time: {
-        type: String
-    }
 });
 
 const Course = mongoose.models.Course || mongoose.model<ICourse>('Course', courseSchema);
