@@ -27,6 +27,20 @@ const Page = () => {
     const [selectedLab, setSelectedLab] = useState<Lab | null>(null);
     const [quantity, setQuantity] = useState(1);
 
+    // Rental Items
+    const [additionalItems, setAdditionalItems] = useState<{ [key: string]: boolean }>({
+        item1: false,
+        item2: false,
+        item3: false,
+    });
+
+    const toggleAdditionalItem = (item: string) => {
+        setAdditionalItems((prev) => ({
+            ...prev,
+            [item]: !prev[item],
+        }));
+    };
+
     useEffect(() => {
         const fetchLabs = async () => {
             try {
@@ -150,10 +164,69 @@ const Page = () => {
                             <div className="modal-box">
                                 <h3 className="font-bold text-lg">Heads Up!</h3>
                                 <p className="py-4 text-lg">Open Lab Customers need to bring their own materials and tools, or make a request to rent/use materials for a fee. Would you like to rent supplies?</p>
+
+                                {/* Additional Items List */}
+                                <div className="flex flex-col gap-4 mt-4">
+                                    {/* Additional Item 1 */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-lg font-semibold text-gray-800">Tools</span>
+                                            <span className="text-sm text-gray-500">Essential tools for your project</span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-lg font-bold text-gray-800">$50</span>
+                                            <button
+                                                className={`flex items-center justify-center w-8 h-8 rounded transition-all ${additionalItems.item1 ? "bg-green-500 text-white" : "bg-gray-200 hover:bg-gray-300"
+                                                    }`}
+                                                onClick={() => toggleAdditionalItem("item1")}
+                                            >
+                                                {additionalItems.item1 ? "✓" : "+"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Item 2 */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-lg font-semibold text-gray-800">Material</span>
+                                            <span className="text-sm text-gray-500">High-quality materials for crafting</span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-lg font-bold text-gray-800">$70</span>
+                                            <button
+                                                className={`flex items-center justify-center w-8 h-8 rounded transition-all ${additionalItems.item2 ? "bg-green-500 text-white" : "bg-gray-200 hover:bg-gray-300"
+                                                    }`}
+                                                onClick={() => toggleAdditionalItem("item2")}
+                                            >
+                                                {additionalItems.item2 ? "✓" : "+"}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Item 3 */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-lg font-semibold text-gray-800">Workspace Setup</span>
+                                            <span className="text-sm text-gray-500">Custom workspace arrangement</span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-lg font-bold text-gray-800">$100</span>
+                                            <button
+                                                className={`flex items-center justify-center w-8 h-8 rounded transition-all ${additionalItems.item3 ? "bg-green-500 text-white" : "bg-gray-200 hover:bg-gray-300"
+                                                    }`}
+                                                onClick={() => toggleAdditionalItem("item3")}
+                                            >
+                                                {additionalItems.item3 ? "✓" : "+"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Modal Actions */}
                                 <div className="modal-action">
                                     <form method="dialog">
                                         <div className="grid grid-cols-2 gap-6 p-6">
-                                            <button className="bg-red-500 text-white px-4 py-2 rounded mt-4 w-full">Cancel</button>
+                                            <button className="bg-red-500 text-white px-4 py-2 rounded mt-4 w-full hover:bg-red-600 transition-all">Cancel</button>
                                             <AddToCartButton product={{ ...selectedLab, quantity }} />
                                         </div>
                                     </form>
