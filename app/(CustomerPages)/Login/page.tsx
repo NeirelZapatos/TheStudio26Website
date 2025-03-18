@@ -82,14 +82,14 @@ export default function LoginPage() {
             {/* Remember Me & Reset Password */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <input
+                {/* <input
                   type="checkbox"
                   id="remember-me"
                   className="h-4 w-4 text-indigo-600"
                 />
                 <label htmlFor="remember-me" className="ml-2 text-gray-700">
                   Remember me
-                </label>
+                </label> */}
               </div>
               <a href="#" className="text-sm text-indigo-600 hover:underline">
                 Reset password
@@ -105,21 +105,21 @@ export default function LoginPage() {
             </button>
 
             {/* Sign Up & Google Sign-In */}
-            <div className="text-center text-gray-600 mb-4">
+            {/* <div className="text-center text-gray-600 mb-4">
               Don’t have an account?{" "}
               <a href="#" className="text-indigo-600 hover:underline">
                 Sign up
               </a>
-            </div>
+            </div> */}
 
-            <div className="flex items-center justify-center mb-4">
+            {/* <div className="flex items-center justify-center mb-4">
               <span className="border-t w-1/4"></span>
               <span className="mx-4 text-gray-500">or</span>
               <span className="border-t w-1/4"></span>
-            </div>
+            </div> */}
 
             {/* Google Sign In Button */}
-            <button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            {/* <button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-600">
               <Image
                 src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
                 width={20}
@@ -128,7 +128,7 @@ export default function LoginPage() {
                 className="w-5 h-5 mr-2"
               />
               Continue with Google
-            </button>
+            </button> */}
           </form>
         </div>
       </div>

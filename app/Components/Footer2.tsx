@@ -1,9 +1,10 @@
 'use client'
 import NewsletterForm from "./NewsletterForm";
+import Link from "next/link";
 
 const Footer2 = () => {
     return (
-    <footer className="footer bg-base-200 text-base-content p-10">
+    <footer className="footer bg-base-200 text-base-content p-10 relative">
       <nav>
         <h6 className="footer-title">Location</h6>
         <a className="link link-hover">
@@ -21,6 +22,7 @@ const Footer2 = () => {
         <a className="link link-hover">916-350-0546</a>
       </nav>
       <NewsletterForm />
+      <Link href="/Login" className="link link-hover absolute bottom-4 right-10">Admin Log In</Link>
     </footer>
   );
 }
