@@ -92,7 +92,7 @@ export default function LoginPage() {
                 </label> */}
               </div>
               <a href="#" className="text-sm text-indigo-600 hover:underline">
-                Reset password
+                Forgot Password?
               </a>
             </div>
 

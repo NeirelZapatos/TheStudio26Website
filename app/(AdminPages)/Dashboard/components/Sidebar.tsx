@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 overflow-y-auto flex flex-col">
-      <h2 className="text-2xl font-bold mb-8">Studio 26</h2>
+      <h2 className="text-2xl font-bold mb-8"><Link href="/">Studio 26</Link></h2>
       <nav className="space-y-2 flex-grow">
         {/* ------------------------ Home Section ------------------------ */}
         <button

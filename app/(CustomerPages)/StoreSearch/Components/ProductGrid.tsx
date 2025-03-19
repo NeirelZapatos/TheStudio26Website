@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
+// import { Pagination } from "@mui/material";
+import Pagination from "./Pagination";
 
 interface Product {
   _id: string;
@@ -34,11 +36,13 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postPerPage, setPostsPerPage] = useState(9);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const params = new URLSearchParams();
-
 
         // Only add parameters if they have values
         if (filter.sort !== "none") {
@@ -90,9 +94,13 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   }
 
+  const lastPostIndex = currentPage * postPerPage;
+  const firstPostIndex = lastPostIndex - postPerPage;
+  const currentPosts = products.slice(firstPostIndex, lastPostIndex);
+
   return (
     <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
-      {products.map((product) => (
+      {currentPosts.map((product) => (
         <ProductCard
           key={product._id}
           _id={product._id}
@@ -102,6 +110,14 @@ export default function ProductGrid({ filter }: ProductGridProps) {
           image_url={product.image_url}
         />
       ))}
+      <div className="col-span-full flex justify-center mt-8">
+        <Pagination
+          totalPosts={products.length}
+          postsPerPage={postPerPage}
+          setCurrentPage={setCurrentPage}
+          currentPage={currentPage}
+        />
+      </div>
     </div>
   );
 }
