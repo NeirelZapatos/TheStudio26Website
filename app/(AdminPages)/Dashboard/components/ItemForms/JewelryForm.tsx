@@ -56,6 +56,18 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const stoneArrangementsOptions = ["Single Stone", "Multi-Stone", "Cluster", "Eternity"];
   const customizationOptionsList = ["Engraving", "Custom Stone Setting", "Personalized Design"];
 
+  const requiredFields = [
+    name,
+    description,
+    price,
+    quantityInStock,
+    jewelryType,
+  ];
+
+  const areRequiredFieldsFilled = () => {
+    return requiredFields.every((field) => field.trim() !== "");
+  };
+
   // --------------- Template Logic --------------- //
   // Fetch templates on component mount
   useEffect(() => {
@@ -76,28 +88,75 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     fetchTemplates();
   }, []);
 
-    // Filter templates based on search text
-    useEffect(() => {
-      const filtered = templates.filter((template) =>
-        template.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-      setFilteredTemplateList(filtered);
-    }, [searchText, templates]);
-  
-    // Load template into form fields
-    const loadTemplate = (index: string) => {
-      if (index !== "") {
-        const template = filteredTemplateList[parseInt(index)];
-        setName(template.name);
-        setDescription(template.description);
-        setPrice(template.price);
-        setQuantityInStock(template.quantityInStock);
-        setJewelryType(template.jewelryType);
-        setPreviewUrls([template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
-        setShowTemplateSearch(false); // Close the template search panel
-        setSearchText(""); // Clear the search text
-      }
+  // Filter templates based on search text
+  useEffect(() => {
+    const filtered = templates.filter((template) =>
+      template.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredTemplateList(filtered);
+  }, [searchText, templates]);
+
+  // Load template into form fields
+  const loadTemplate = (index: string) => {
+    if (index !== "") {
+      const template = filteredTemplateList[parseInt(index)];
+      setName(template.name);
+      setDescription(template.description);
+      setPrice(template.price);
+      setQuantityInStock(template.quantityInStock);
+      setJewelryType(template.jewelryType);
+      setPreviewUrls([template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
+      setShowTemplateSearch(false); // Close the template search panel
+      setSearchText(""); // Clear the search text
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    // Prepare the template data from the form fields
+    const templateData = {
+      name,
+      description,
+      price,
+      quantityInStock,
+      jewelryType,
+      image_url: previewUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
+      images: previewUrls,
+      metalType,
+      metalPurity,
+      metalFinish,
+      plating,
+      ringSize,
+      caratWeight,
+      settingType,
+      stoneArrangement,
+      customizationOptions,
     };
+
+    try {
+      // Send a POST request to save the template
+      const response = await fetch('/api/item-templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(templateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save template');
+      }
+
+      const data = await response.json();
+      console.log('Template saved successfully:', data);
+
+      // Display a success message
+      setMessage('Template saved successfully!');
+    } catch (error: any) {
+      console.error('Error saving template:', error);
+      setMessage(error.message || 'Failed to save template');
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -589,9 +648,24 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-center mt-6">
-          <button onClick={handleSubmit} type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        {/* Save as Template and Submite Button */}
+        <div className="flex justify-center mt-6 space-x-4">
+          <button
+            type="button"
+            onClick={handleSaveAsTemplate}
+            disabled={!areRequiredFieldsFilled()} // Disable if required fields are not filled
+            className={`${areRequiredFieldsFilled()
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-gray-400 cursor-not-allowed"
+              } text-white px-4 py-2 rounded`}
+          >
+            Save as Template
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
             Submit Jewelry Item
           </button>
         </div>
