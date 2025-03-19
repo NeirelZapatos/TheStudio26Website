@@ -8,6 +8,7 @@ export interface IItemTemplate extends Document {
   jewelryType: string;
   image_url?: string;
   images?: string[];
+  color?: string;
   metalType?: string;
   metalPurity?: string;
   metalFinish?: string;
@@ -28,6 +29,7 @@ const ItemTemplateSchema: Schema = new Schema(
     jewelry_type: { type: String, required: true },
     image_url: { type: String },
     images: { type: [String] },
+    color: { type: String },
     metal_type: { type: String },
     metal_purity: { type: String },
     metal_finish: { type: String },
@@ -38,7 +40,6 @@ const ItemTemplateSchema: Schema = new Schema(
     stone_arrangement: { type: String },
     customization_options: { type: String },
   },
-  { timestamps: true }
 );
 
 const ItemTemplate = mongoose.models.ItemTemplate || mongoose.model<IItemTemplate>('ItemTemplate', ItemTemplateSchema);

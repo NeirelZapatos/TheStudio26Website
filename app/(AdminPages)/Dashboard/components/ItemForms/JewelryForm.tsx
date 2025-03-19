@@ -15,13 +15,14 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<string>("");
   const [quantityInStock, setQuantityInStock] = useState<string>("");
-  const [weight, setWeight] = useState<string>(""); // New: Weight field
-  const [size, setSize] = useState<string>("");     // New: Size field
+  const [weight, setWeight] = useState<string>("");
+  const [size, setSize] = useState<string>("");
   const [jewelryType, setJewelryType] = useState("");
   const [metalType, setMetalType] = useState("");
   const [metalPurity, setMetalPurity] = useState("");
   const [metalFinish, setMetalFinish] = useState("");
   const [plating, setPlating] = useState("");
+  const [color, setColor] = useState("");
 
   // --------------- Design Fields --------------- //
   // const [ringSize, setRingSize] = useState("");
@@ -47,7 +48,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   // --------------- Options for selects --------------- //
   const jewelryTypes = ["ring", "earring", "bracelet", "cuff", "pendant", "other"];
   const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals"];
-  const metalPuritiesOptions = ["10K", "14K", "18K", "22K", "24K", "sterling silver", "fine silver"];
+  const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver"];
   const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized"];
   const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique"];
 
@@ -105,18 +106,19 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setDescription(template.description);
       setPrice(template.price);
       setQuantityInStock(template.quantityInStock);
-      setJewelryType(template.jewelry_type); // Updated field name
-      setWeight(template.weight || ""); // Assuming weight is optional
-      setSize(template.size || ""); // Assuming size is optional
-      setMetalType(template.metal_type || ""); // Updated field name
-      setMetalPurity(template.metal_purity || ""); // Updated field name
-      setMetalFinish(template.metal_finish || ""); // Updated field name
+      setJewelryType(template.jewelry_type);
+      setColor(template.color || "");
+      setWeight(template.weight || "");
+      setSize(template.size || "");
+      setMetalType(template.metal_type || "");
+      setMetalPurity(template.metal_purity || "");
+      setMetalFinish(template.metal_finish || "");
       setPlating(template.plating || "");
       // setRingSize(template.ring_size || "");
-      setCaratWeight(template.carat_weight?.toString() || ""); // Updated field name
-      setSettingType(template.setting_type || ""); // Updated field name
-      setStoneArrangement(template.stone_arrangement || ""); // Updated field name
-      setCustomizationOptions(template.customization_options || ""); // Updated field name
+      setCaratWeight(template.carat_weight?.toString() || "");
+      setSettingType(template.setting_type || ""); 
+      setStoneArrangement(template.stone_arrangement || "");
+      setCustomizationOptions(template.customization_options || ""); 
       setPreviewUrls(template.images || [template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
@@ -136,6 +138,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       metal_type: metalType, // Updated field name
       metal_purity: metalPurity, // Updated field name
       metal_finish: metalFinish, // Updated field name
+      color,
       plating,
       // ring_size: ringSize, 
       carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
@@ -475,6 +478,13 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         {/* --------------- ADDITIONAL FIELDS --------------- */}
         <div className="py-4">
           <span className="text-xl font-semibold">More Details</span>
+        </div>
+
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Color</span>
+          </label>
+          <input type="string" className="input input-bordered w-full" value={color} onChange={e => setColor(e.target.value)} placeholder="Enter color" />
         </div>
 
         <div>
