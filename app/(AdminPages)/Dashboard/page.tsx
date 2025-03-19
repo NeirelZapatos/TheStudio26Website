@@ -18,6 +18,7 @@ import FinancialAnalytics from "./components/FinancialAnalytics/FinancialAnalyti
 import ProductList from "./components/ProductList";
 import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";
+import AddAdmin from "./components/AddAdmin";
 
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -57,6 +58,7 @@ function DashboardPage() {
         {activeSection === "productList" && <ProductList />}
         {activeSection === "manageOrders" && <ManageOrders />}
         {activeSection === "classCatalogManager" && <ClassCatalogManager />}
+        {activeSection === "addAdmin" && <AddAdmin />}
       </main>
     </div>
   );

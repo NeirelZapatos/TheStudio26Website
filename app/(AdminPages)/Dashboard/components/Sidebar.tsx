@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           className={`block w-full text-left p-2 rounded-lg ${activeSection === "AddAdmin" ? "bg-gray-700" : "hover:bg-gray-600"
             }`}
         >
-          Add Admins
+          Admin Management
         </button>
       </nav>
 
