@@ -12,7 +12,7 @@ export interface IItemTemplate extends Document {
   metalPurity?: string;
   metalFinish?: string;
   plating?: string;
-  ringSize?: string;
+  // ringSize?: string;
   caratWeight?: string;
   settingType?: string;
   stoneArrangement?: string;
@@ -25,18 +25,18 @@ const ItemTemplateSchema: Schema = new Schema(
     description: { type: String, required: true },
     price: { type: String, required: true },
     quantityInStock: { type: String, required: true },
-    jewelryType: { type: String, required: true },
+    jewelry_type: { type: String, required: true },
     image_url: { type: String },
     images: { type: [String] },
-    metalType: { type: String },
-    metalPurity: { type: String },
-    metalFinish: { type: String },
+    metal_type: { type: String },
+    metal_purity: { type: String },
+    metal_finish: { type: String },
     plating: { type: String },
-    ringSize: { type: String },
-    caratWeight: { type: String },
-    settingType: { type: String },
-    stoneArrangement: { type: String },
-    customizationOptions: { type: String },
+    // ring_size: { type: String },
+    carat_weight: { type: Number },
+    setting_type: { type: String },
+    stone_arrangement: { type: String },
+    customization_options: { type: String },
   },
   { timestamps: true }
 );

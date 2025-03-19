@@ -24,7 +24,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [plating, setPlating] = useState("");
 
   // --------------- Design Fields --------------- //
-  const [ringSize, setRingSize] = useState("");
+  // const [ringSize, setRingSize] = useState("");
   const [gauge, setGauge] = useState("");
   const [caratWeight, setCaratWeight] = useState("");
   const [settingType, setSettingType] = useState("");
@@ -45,16 +45,16 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [filteredTemplateList, setFilteredTemplateList] = useState<any[]>([]);
 
   // --------------- Options for selects --------------- //
-  const jewelryTypes = ["Ring", "Earring", "Bracelet", "Cuff", "Pendant", "Other"];
-  const metalTypesOptions = ["Gold", "Silver", "Bronze", "Copper", "Platinum", "Mixed Metals"];
-  const metalPuritiesOptions = ["10K", "14K", "18K", "22K", "24K", "Sterling Silver", "Fine Silver"];
-  const metalFinishesOptions = ["Polished", "Matte", "Brushed", "Hammered", "Textured", "Oxidized"];
-  const platingOptions = ["Gold-plated", "Rhodium-plated", "Silver-plated", "Rose gold-plated", "Antique"];
+  const jewelryTypes = ["ring", "earring", "bracelet", "cuff", "pendant", "other"];
+  const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals"];
+  const metalPuritiesOptions = ["10K", "14K", "18K", "22K", "24K", "sterling silver", "fine silver"];
+  const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized"];
+  const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique"];
 
-  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
-  const settingTypesOptions = ["Bezel", "Prong", "Pave", "Channel", "Flush", "Tension", "Halo", "Bar"];
-  const stoneArrangementsOptions = ["Single Stone", "Multi-Stone", "Cluster", "Eternity"];
-  const customizationOptionsList = ["Engraving", "Custom Stone Setting", "Personalized Design"];
+  // const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
+  const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar"];
+  const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity"];
+  const customizationOptionsList = ["engraving", "custom stone setting", "personalized design"];
 
   const requiredFields = [
     name,
@@ -100,12 +100,24 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const loadTemplate = (index: string) => {
     if (index !== "") {
       const template = filteredTemplateList[parseInt(index)];
+  
       setName(template.name);
       setDescription(template.description);
       setPrice(template.price);
       setQuantityInStock(template.quantityInStock);
-      setJewelryType(template.jewelryType);
-      setPreviewUrls([template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
+      setJewelryType(template.jewelry_type); // Updated field name
+      setWeight(template.weight || ""); // Assuming weight is optional
+      setSize(template.size || ""); // Assuming size is optional
+      setMetalType(template.metal_type || ""); // Updated field name
+      setMetalPurity(template.metal_purity || ""); // Updated field name
+      setMetalFinish(template.metal_finish || ""); // Updated field name
+      setPlating(template.plating || "");
+      // setRingSize(template.ring_size || "");
+      setCaratWeight(template.carat_weight?.toString() || ""); // Updated field name
+      setSettingType(template.setting_type || ""); // Updated field name
+      setStoneArrangement(template.stone_arrangement || ""); // Updated field name
+      setCustomizationOptions(template.customization_options || ""); // Updated field name
+      setPreviewUrls(template.images || [template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
     }
@@ -118,20 +130,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       description,
       price,
       quantityInStock,
-      jewelryType,
+      jewelry_type: jewelryType, // Updated field name
       image_url: previewUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
       images: previewUrls,
-      metalType,
-      metalPurity,
-      metalFinish,
+      metal_type: metalType, // Updated field name
+      metal_purity: metalPurity, // Updated field name
+      metal_finish: metalFinish, // Updated field name
       plating,
-      ringSize,
-      caratWeight,
-      settingType,
-      stoneArrangement,
-      customizationOptions,
+      // ring_size: ringSize, 
+      carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
+      setting_type: settingType, // Updated field name
+      stone_arrangement: stoneArrangement, // Updated field name
+      customization_options: customizationOptions, // Updated field name
     };
-
+  
     try {
       // Send a POST request to save the template
       const response = await fetch('/api/item-templates', {
@@ -141,15 +153,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(templateData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save template');
       }
-
+  
       const data = await response.json();
       console.log('Template saved successfully:', data);
-
+  
       // Display a success message
       setMessage('Template saved successfully!');
     } catch (error: any) {
@@ -220,48 +232,48 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setMessage("Please fill in all required fields.");
       return;
     }
-
+  
     // Prepare design fields based on jewelry type
     let designData = {};
-    if (jewelryType === "Rings") {
+    if (jewelryType === "ring") {
       designData = {
-        ringSize,
+        // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        caratWeight,
-        settingType,
-        stoneArrangement,
-        customizationOptions,
+        carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
+        setting_type: settingType, // Updated field name
+        stone_arrangement: stoneArrangement, // Updated field name
+        customization_options: customizationOptions, // Updated field name
       };
     } else if (
-      jewelryType === "Earrings" ||
-      jewelryType === "Bracelets" ||
-      jewelryType === "Cuffs" ||
-      jewelryType === "Pendants"
+      jewelryType === "earring" ||
+      jewelryType === "bracelet" ||
+      jewelryType === "cuff" ||
+      jewelryType === "pendant"
     ) {
       designData = {
-        stoneArrangement,
-        customizationOptions,
+        stone_arrangement: stoneArrangement, // Updated field name
+        customization_options: customizationOptions, // Updated field name
       };
-    } else if (jewelryType === "Other") {
+    } else if (jewelryType === "other") {
       // Display all design fields if "Other" is selected
       designData = {
-        ringSize,
+        // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        caratWeight,
-        settingType,
-        stoneArrangement,
-        customizationOptions,
+        carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
+        setting_type: settingType, // Updated field name
+        stone_arrangement: stoneArrangement, // Updated field name
+        customization_options: customizationOptions, // Updated field name
       };
     }
-
+  
     let uploadedImageUrls = await uploadImages();
-
+  
     // If no images are uploaded, use the placeholder as the first image
     const imagesArray =
       uploadedImageUrls.length > 0
         ? uploadedImageUrls
         : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
-
+  
     const jewelryData = {
       name,
       description,
@@ -271,17 +283,17 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       images: imagesArray,
       weight: weight,
       size,
-      jewelryType,
-      metalType,
-      metalPurity,
-      metalFinish,
+      jewelry_type: jewelryType, // Updated field name
+      metal_type: metalType, // Updated field name
+      metal_purity: metalPurity, // Updated field name
+      metal_finish: metalFinish, // Updated field name
       plating,
       ...designData,
     };
-
+  
     console.log("Submitted Jewelry Data:", jewelryData);
     setMessage("Jewelry item successfully submitted!");
-
+  
     try {
       // Send a POST request to the backend API
       const response = await fetch("/api/items", {
@@ -291,17 +303,17 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(jewelryData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to submit jewelry item");
       }
-
+  
       const data = await response.json();
       console.log("API Response:", data);
-
+  
       setMessage("Jewelry item successfully submitted!");
-
+  
       // Reset all fields
       setName("");
       setDescription("");
@@ -314,7 +326,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setMetalPurity("");
       setMetalFinish("");
       setPlating("");
-      setRingSize("");
+      // setRingSize("");
       setGauge("");
       setCaratWeight("");
       setSettingType("");
@@ -518,9 +530,9 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         </div>
 
         {/* Conditional Design Fields */}
-        {jewelryType === "Ring" && (
+        {jewelryType === "ring" && (
           <>
-            <div>
+            {/* <div>
               <label className="label">
                 <span className="label-text font-semibold">Ring Size</span>
               </label>
@@ -528,7 +540,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 <option value="">Select Ring Size</option>
                 {ringSizesOptions.map(size => <option key={size} value={size}>{size}</option>)}
               </select>
-            </div>
+            </div> */}
             <div>
               <label className="label">
                 <span className="label-text font-semibold">Gauge (Thickness)</span>
@@ -571,7 +583,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </>
         )}
 
-        {(jewelryType === "Earring" || jewelryType === "Bracelet" || jewelryType === "Cuff" || jewelryType === "Pendant") && (
+        {(jewelryType === "earring" || jewelryType === "bracelet" || jewelryType === "cuff" || jewelryType === "pendant") && (
           <>
             <div>
               <label className="label">
@@ -594,10 +606,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </>
         )}
 
-        {jewelryType === "Other" && (
+        {jewelryType === "other" && (
           <>
             {/* Display all design fields if "Other" is selected */}
-            <div>
+            {/* <div>
               <label className="label">
                 <span className="label-text font-semibold">Ring Size</span>
               </label>
@@ -605,7 +617,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 <option value="">Select Ring Size</option>
                 {ringSizesOptions.map(size => <option key={size} value={size}>{size}</option>)}
               </select>
-            </div>
+            </div> */}
             <div>
               <label className="label">
                 <span className="label-text font-semibold">Gauge (Thickness)</span>
