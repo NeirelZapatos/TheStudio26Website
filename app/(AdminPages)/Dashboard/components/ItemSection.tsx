@@ -118,55 +118,7 @@ export default function Page() {
         <div className="bg-white p-6 rounded shadow">
           <h2 className="text-2xl font-semibold mb-6 text-center">
             Add a New Product
-          </h2>
-
-          {/* Template Search Toggle */}
-          <div className="flex justify-center mb-6">
-            <button
-              type="button"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={() => setShowTemplateSearch(!showTemplateSearch)}
-            >
-              {showTemplateSearch ? "Hide Templates" : "Browse Templates"}
-            </button>
-          </div>
-
-          {/* Template Search Panel */}
-          {showTemplateSearch && (
-            <div className="mb-6 p-4 border rounded bg-white shadow-sm">
-              <input
-                type="text"
-                placeholder="Search Templates"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="input input-bordered input-sm w-full mb-2"
-              />
-              {filteredTemplateList.length > 0 ? (
-                <ul
-                  className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
-                  style={{
-                    maxHeight: filteredTemplateList.length > 4 ? "160px" : "auto",
-                  }}
-                >
-                  {filteredTemplateList.map((template, index) => (
-                    <li
-                      key={index}
-                      onClick={() => {
-                        loadTemplate(index.toString());
-                        setShowTemplateSearch(false);
-                        setSearchText("");
-                      }}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      {template.name}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500 text-sm">No templates found</p>
-              )}
-            </div>
-          )}
+          </h2> 
 
           {/* Render Forms */}
           {showJewelryForm && <JewelryForm onClose={() => setShowJewelryForm(false)} />}

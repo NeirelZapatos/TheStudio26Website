@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import ImageCarousel from "@/app/Components/ImageCarousel";
+import { itemTemplates } from "@/utils/productTemplates";
 
 interface JewelryFormProps {
   onClose: () => void; // Function to close the form
@@ -37,8 +38,14 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]); // Array of preview URLs
   const [editableFileNames, setEditableFileNames] = useState<string[]>([]);
 
+  // --------------- Template Search State --------------- //
+  const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState("");
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [filteredTemplateList, setFilteredTemplateList] = useState<any[]>([]);
+
   // --------------- Options for selects --------------- //
-  const jewelryTypes = ["Rings", "Earrings", "Bracelets", "Cuffs", "Pendants", "Other"];
+  const jewelryTypes = ["Ring", "Earring", "Bracelet", "Cuff", "Pendant", "Other"];
   const metalTypesOptions = ["Gold", "Silver", "Bronze", "Copper", "Platinum", "Mixed Metals"];
   const metalPuritiesOptions = ["10K", "14K", "18K", "22K", "24K", "Sterling Silver", "Fine Silver"];
   const metalFinishesOptions = ["Polished", "Matte", "Brushed", "Hammered", "Textured", "Oxidized"];
@@ -48,6 +55,49 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const settingTypesOptions = ["Bezel", "Prong", "Pave", "Channel", "Flush", "Tension", "Halo", "Bar"];
   const stoneArrangementsOptions = ["Single Stone", "Multi-Stone", "Cluster", "Eternity"];
   const customizationOptionsList = ["Engraving", "Custom Stone Setting", "Personalized Design"];
+
+  // --------------- Template Logic --------------- //
+  // Fetch templates on component mount
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await fetch('/api/item-templates');
+        if (!response.ok) {
+          throw new Error('Failed to fetch templates');
+        }
+        const data = await response.json();
+        setTemplates(data.data);
+        setFilteredTemplateList(data.data); // Initialize filtered list with all templates
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
+
+    // Filter templates based on search text
+    useEffect(() => {
+      const filtered = templates.filter((template) =>
+        template.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredTemplateList(filtered);
+    }, [searchText, templates]);
+  
+    // Load template into form fields
+    const loadTemplate = (index: string) => {
+      if (index !== "") {
+        const template = filteredTemplateList[parseInt(index)];
+        setName(template.name);
+        setDescription(template.description);
+        setPrice(template.price);
+        setQuantityInStock(template.quantityInStock);
+        setJewelryType(template.jewelryType);
+        setPreviewUrls([template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
+        setShowTemplateSearch(false); // Close the template search panel
+        setSearchText(""); // Clear the search text
+      }
+    };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -240,6 +290,50 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       <h3 className="text-xl font-semibold mb-4 text-center">Jewelry Specifications</h3>
       <form onSubmit={handleSubmit}>
 
+        {/* Template Search Toggle */}
+        <div className="flex justify-center mb-6">
+          <button
+            type="button"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={() => setShowTemplateSearch(!showTemplateSearch)}
+          >
+            {showTemplateSearch ? "Hide Templates" : "Browse Templates"}
+          </button>
+        </div>
+
+        {/* Template Search Panel */}
+        {showTemplateSearch && (
+          <div className="mb-6 p-4 border rounded bg-white shadow-sm">
+            <input
+              type="text"
+              placeholder="Search Templates"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="input input-bordered input-sm w-full mb-2"
+            />
+            {filteredTemplateList.length > 0 ? (
+              <ul
+                className="border border-gray-200 rounded-md shadow-md overflow-y-auto"
+                style={{
+                  maxHeight: filteredTemplateList.length > 4 ? "160px" : "auto",
+                }}
+              >
+                {filteredTemplateList.map((template, index) => (
+                  <li
+                    key={index}
+                    onClick={() => loadTemplate(index.toString())}
+                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                  >
+                    {template.name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">No templates found</p>
+            )}
+          </div>
+        )}
+
         {/* Image Upload Section */}
         <div className="mb-6 flex flex-col items-center space-y-4">
           <label className="label">
@@ -293,7 +387,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <label className="label">
             <span className="label-text font-semibold">Description</span>
           </label>
-          <textarea className="textarea textarea-bordered w-full" value={description} onChange={e => setDescription(e.target.value)}></textarea>
+          <textarea rows={4} className="textarea textarea-bordered w-full" value={description} onChange={e => setDescription(e.target.value)}></textarea>
         </div>
         <div>
           <label className="label">
@@ -365,7 +459,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         </div>
 
         {/* Conditional Design Fields */}
-        {jewelryType === "Rings" && (
+        {jewelryType === "Ring" && (
           <>
             <div>
               <label className="label">
@@ -418,7 +512,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </>
         )}
 
-        {(jewelryType === "Earrings" || jewelryType === "Bracelets" || jewelryType === "Cuffs" || jewelryType === "Pendants") && (
+        {(jewelryType === "Earring" || jewelryType === "Bracelet" || jewelryType === "Cuff" || jewelryType === "Pendant") && (
           <>
             <div>
               <label className="label">
