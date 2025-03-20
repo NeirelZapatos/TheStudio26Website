@@ -66,7 +66,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   ];
 
   const areRequiredFieldsFilled = () => {
-    return requiredFields.every((field) => field.trim() !== "");
+    return requiredFields.every((field) => field && field.trim() !== "");
   };
 
   // --------------- Template Logic --------------- //
@@ -101,7 +101,8 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const loadTemplate = (index: string) => {
     if (index !== "") {
       const template = filteredTemplateList[parseInt(index)];
-  
+
+      setFiles([]); // Clear existing files and Previews
       setName(template.name);
       setDescription(template.description);
       setPrice(template.price);
@@ -116,9 +117,9 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setPlating(template.plating || "");
       // setRingSize(template.ring_size || "");
       setCaratWeight(template.carat_weight?.toString() || "");
-      setSettingType(template.setting_type || ""); 
+      setSettingType(template.setting_type || "");
       setStoneArrangement(template.stone_arrangement || "");
-      setCustomizationOptions(template.customization_options || ""); 
+      setCustomizationOptions(template.customization_options || "");
       setPreviewUrls(template.images || [template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
@@ -126,6 +127,18 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   };
 
   const handleSaveAsTemplate = async () => {
+    // upload new files first
+    let uploadedImageUrls = await uploadImages();
+
+    const existingUrls = previewUrls.filter((url) => !url.startsWith("blob:") && !url.includes('ProductPlaceholder.png'));
+
+    const allImageUrls = [...uploadedImageUrls, ...existingUrls];
+
+    // Use placeholder if no valid images
+    const imagesArray = allImageUrls.length > 0
+      ? allImageUrls
+      : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
+
     // Prepare the template data from the form fields
     const templateData = {
       name,
@@ -133,8 +146,8 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       price,
       quantityInStock,
       jewelry_type: jewelryType, // Updated field name
-      image_url: previewUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
-      images: previewUrls,
+      image_url: allImageUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
+      images: imagesArray,
       metal_type: metalType, // Updated field name
       metal_purity: metalPurity, // Updated field name
       metal_finish: metalFinish, // Updated field name
@@ -146,7 +159,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       stone_arrangement: stoneArrangement, // Updated field name
       customization_options: customizationOptions, // Updated field name
     };
-  
+
     try {
       // Send a POST request to save the template
       const response = await fetch('/api/item-templates', {
@@ -156,15 +169,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(templateData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save template');
       }
-  
+
       const data = await response.json();
       console.log('Template saved successfully:', data);
-  
+
       // Display a success message
       setMessage('Template saved successfully!');
     } catch (error: any) {
@@ -231,11 +244,12 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !price || !quantityInStock || !jewelryType) {
+
+    if (!areRequiredFieldsFilled()) {
       setMessage("Please fill in all required fields.");
       return;
     }
-  
+
     // Prepare design fields based on jewelry type
     let designData = {};
     if (jewelryType === "ring") {
@@ -268,21 +282,28 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         customization_options: customizationOptions, // Updated field name
       };
     }
-  
+
     let uploadedImageUrls = await uploadImages();
-  
+
+    const existingS3Urls = previewUrls.filter(url =>
+      !url.startsWith('blob:') &&
+      url.includes('.s3.')  // Simple check for S3 URLs
+    );
+
+    const allImageUrls = [...uploadedImageUrls, ...uploadedImageUrls];
+
     // If no images are uploaded, use the placeholder as the first image
     const imagesArray =
-      uploadedImageUrls.length > 0
-        ? uploadedImageUrls
+      allImageUrls.length > 0
+        ? allImageUrls
         : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
-  
+
     const jewelryData = {
       name,
       description,
       price: parseFloat(price),
       quantity_in_stock: parseInt(quantityInStock),
-      image_url: uploadedImageUrls[0], // Use the first image as the main image
+      image_url: imagesArray[0], // Use the first image as the main image
       images: imagesArray,
       weight: weight,
       size,
@@ -293,10 +314,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       plating,
       ...designData,
     };
-  
+
     console.log("Submitted Jewelry Data:", jewelryData);
     setMessage("Jewelry item successfully submitted!");
-  
+
     try {
       // Send a POST request to the backend API
       const response = await fetch("/api/items", {
@@ -306,17 +327,17 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(jewelryData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to submit jewelry item");
       }
-  
+
       const data = await response.json();
       console.log("API Response:", data);
-  
+
       setMessage("Jewelry item successfully submitted!");
-  
+
       // Reset all fields
       setName("");
       setDescription("");
@@ -677,8 +698,8 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
             onClick={handleSaveAsTemplate}
             disabled={!areRequiredFieldsFilled()} // Disable if required fields are not filled
             className={`${areRequiredFieldsFilled()
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-gray-400 cursor-not-allowed"
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-gray-400 cursor-not-allowed"
               } text-white px-4 py-2 rounded`}
           >
             Save as Template
