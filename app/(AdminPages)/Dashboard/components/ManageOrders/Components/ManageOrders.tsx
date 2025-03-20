@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // Import React and useState hook
+import React, { useState, useEffect } from 'react'; // Import React and useState hook
 import useSWR from 'swr'; // Import useSWR for data fetching
 import { IOrder } from '@/app/models/Order'; // Import IOrder interface
 import Buttons from './Buttons'; // Import Buttons component
@@ -10,8 +10,7 @@ import ProcessPickup from '../ProcessPickup'; // Import ProcessPickup utility
 import { printShippingLabels } from '../PrintShippingLabels'; // Import printShippingLabels utility
 import SearchBar from './SearchBar'; // Import SearchBar component
 import { fetchOrders } from '@/utils/fetchUtils/fetchOrders'; // Import fetchOrders utility
-import PackageDetailsModal from './PackageDetailsModal'; // Import PackageDetailsModal component
-
+import  PackageDetailsModal  from './PackageDetailsModal';
 /**
  * ManageOrders Component:
  * Main component for managing orders, including filtering, searching, selecting, and performing actions like exporting, printing, and marking orders as fulfilled.
@@ -72,17 +71,98 @@ interface PackageDetails {
 }
 
 const ManageOrders = () => {
-  const [activeFilter, setActiveFilter] = useState<OrderFilter>(OrderFilter.ALL); // State for active filter
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set()); // State for selected orders
-  const [expandedOrder, setExpandedOrder] = useState<string | null>(null); // State for expanded order details
-  const [searchResults, setSearchResults] = useState<IOrder[]>([]); // State for search results
-  const [packageDetails, setPackageDetails] = useState<PackageDetails | null>(null);
+  const [activeFilter, setActiveFilter] = useState<OrderFilter>(OrderFilter.ALL);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<IOrder[]>([]);
+  const [packageDetails, setPackageDetails] = useState<PackageDetails[]>([]);
   const [isPackageModalOpen, setPackageModalOpen] = useState(false);
-  
+  const [currentPackageIndex, setCurrentPackageIndex] = useState(0);
+  const [hasBeenInitialized, setHasBeenInitialized] = useState<boolean[]>([]);
+
   const { data: orders, error, mutate } = useSWR<IOrder[]>('/api/orders', fetchOrders, {
-    refreshInterval: 300000, // Refresh data every 5 minutes
+    refreshInterval: 300000,
   });
+
+  // Initialize hasBeenInitialized when selectedOrders changes
+  useEffect(() => {
+    setHasBeenInitialized(new Array(selectedOrders.size).fill(false));
+  }, [selectedOrders.size]);
+
+  // Handle package details submission
+  const handlePackageDetailsSubmit = (details: PackageDetails) => {
+    const newPackageDetails = [...packageDetails];
+    newPackageDetails[currentPackageIndex] = details;
+    setPackageDetails(newPackageDetails);
+
+    const newHasBeenInitialized = [...hasBeenInitialized];
+    newHasBeenInitialized[currentPackageIndex] = true;
+    setHasBeenInitialized(newHasBeenInitialized);
+
+    if (currentPackageIndex < selectedOrders.size - 1) {
+      setCurrentPackageIndex(currentPackageIndex + 1);
+    } else {
+      printLabels(newPackageDetails);
+      setPackageModalOpen(false);
+      setPackageDetails([]);
+      setHasBeenInitialized([]);
+      setCurrentPackageIndex(0);
+    }
+  };
+
+  // Initialize package details when modal opens
+  useEffect(() => {
+    if (isPackageModalOpen && selectedOrders.size > 0) {
+      // If the current package hasn't been initialized, reset its input fields
+      if (!hasBeenInitialized[currentPackageIndex]) {
+        setPackageDetails((prev) => {
+          const updatedDetails = [...prev];
+          updatedDetails[currentPackageIndex] = { length: 0, width: 0, height: 0, weight: 0 };
+          return updatedDetails;
+        });
+      }
+    }
+  }, [isPackageModalOpen, currentPackageIndex, hasBeenInitialized, selectedOrders.size]);
+
+  // Handle printing labels for all packages
+  const printLabels = async (details: PackageDetails[]) => {
+    try {
+      const labels = await printShippingLabels(
+        Array.from(selectedOrders),
+        orders || [],
+        details
+      );
+
+      if (labels.length > 0) {
+        alert('Shipping labels printed successfully!');
+        // Reset the printShippingLabels button and checkboxes state
+        setSelectedOrders(new Set());
+        setPackageDetails([]);
+        setHasBeenInitialized([]);
+        setCurrentPackageIndex(0);
+      } else {
+        alert('No labels were generated. Please check the selected orders and try again.');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error printing shipping labels:', error.message);
+        alert(`Failed to print shipping labels: ${error.message}`);
+      } else {
+        console.error('Unknown error printing shipping labels:', error);
+        alert('Failed to print shipping labels: Unknown error');
+      }
+    }
+  };
+
+  // Simplified handler - just check if we have details, or open modal
+  const handlePrintShippingLabels = () => {
+    if (packageDetails.length === selectedOrders.size) {
+      printLabels(packageDetails);
+    } else {
+      setPackageModalOpen(true);
+    }
+  };
 
   // Handle marking orders as fulfilled
   const handleMarkAsFulfilled = async () => {
@@ -135,53 +215,6 @@ const ManageOrders = () => {
     }
   };
 
-  // Handle printing shipping labels with package details
- // Extracted function for printing labels
- const printLabels = async (details: PackageDetails) => {
-  try {
-    const labels = await printShippingLabels(
-      Array.from(selectedOrders),
-      orders || [],
-      details
-    );
-
-    if (labels.length > 0) {
-      alert('Shipping labels printed successfully!');
-    } else {
-      alert('No labels were generated. Please check the selected orders and try again.');
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error printing shipping labels:', error.message);
-      alert(`Failed to print shipping labels: ${error.message}`);
-    } else {
-      console.error('Unknown error printing shipping labels:', error);
-      alert('Failed to print shipping labels: Unknown error');
-    }
-  }
-};
-
-// Simplified handler - just check if we have details, or open modal
-const handlePrintShippingLabels = () => {
-  if (packageDetails) {
-    printLabels(packageDetails);
-  } else {
-    setPackageModalOpen(true);
-  }
-};
-
-// Handle package details submission
-const handlePackageDetailsSubmit = (details: PackageDetails) => {
-  // Save the details for potential reuse
-  setPackageDetails(details);
-  // Print using these details
-  printLabels(details);
-  // Close the modal
-  setPackageModalOpen(false);
-};
-
-
-
   // Handle exporting orders to CSV
   const handleExportReport = () => {
     if (orders) {
@@ -216,11 +249,14 @@ const handlePackageDetailsSubmit = (details: PackageDetails) => {
     return `${minutes}m ago`; // Return minutes
   };
 
-  const filteredOrders = orders ? SortOrders(orders, activeFilter, searchQuery) : []; // Filter and sort orders
+  // Filter and sort orders - moved before the dependency is used
+  const filteredOrders = orders ? SortOrders(orders, activeFilter, searchQuery) : [];
+  
+  // Filter out orders with invalid customer data
   const validOrders = orders?.filter(order => 
     order.customer?.first_name && 
     order.customer?.last_name
-  ) || []; // Filter out orders with invalid customer data
+  ) || [];
 
   // Define filter buttons with counts
   const filterButtons = [
@@ -274,6 +310,12 @@ const handlePackageDetailsSubmit = (details: PackageDetails) => {
     },
   ];
 
+  // Handle toggling order details
+  const handleToggleDetails = (orderId: string) => {
+    setExpandedOrder((prevOrderId) => (prevOrderId === orderId ? null : orderId)); // Toggle expanded order
+  };
+
+  // Early return for loading and error states - moved to after all hooks
   if (!orders) {
     return <div className="flex justify-center items-center h-64">Loading orders...</div>; // Show loading state
   }
@@ -282,54 +324,52 @@ const handlePackageDetailsSubmit = (details: PackageDetails) => {
     return <div className="text-red-600">Error: {error.message}</div>; // Show error state
   }
 
-  // Handle toggling order details
-  const handleToggleDetails = (orderId: string) => {
-    setExpandedOrder((prevOrderId) => (prevOrderId === orderId ? null : orderId)); // Toggle expanded order
-  };
-
   return (
     <div className="space-y-6">
-      
       <Buttons
-  selectedOrdersSize={selectedOrders.size}
-  selectedOrders={selectedOrders}
-  filterButtons={filterButtons}
-  activeFilter={activeFilter}
-  setActiveFilter={setActiveFilter}
-  handlePrintShippingLabels={handlePrintShippingLabels} // No parameters needed
-  handlePrintReceipt={handlePrintReceipt}
-  handleMarkAsFulfilled={handleMarkAsFulfilled}
-  orders={orders || []}
-/>
+        selectedOrdersSize={selectedOrders.size}
+        selectedOrders={selectedOrders}
+        filterButtons={filterButtons}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+        handlePrintShippingLabels={handlePrintShippingLabels}
+        handlePrintReceipt={handlePrintReceipt}
+        handleMarkAsFulfilled={handleMarkAsFulfilled}
+        orders={orders || []}
+      />
       <div className="mb-4">
         <SearchBar
-          orders={orders} // Pass orders data
-          onSearchResults={setSearchResults} // Pass search results handler
-          searchQuery={searchQuery} // Pass search query
-          setSearchQuery={setSearchQuery} // Pass setSearchQuery function
+          orders={orders}
+          onSearchResults={setSearchResults}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
         />
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders} // Pass filtered orders
-        selectedOrders={selectedOrders} // Pass selected orders
-        expandedOrder={expandedOrder} // Pass expanded order
-        handleSelectAll={handleSelectAll} // Pass select all handler
-        handleSelectOrder={handleSelectOrder} // Pass select order handler
-        handleToggleDetails={handleToggleDetails} // Pass toggle details handler
-        getTimeElapsed={getTimeElapsed} // Pass time elapsed function
-        searchQuery={searchQuery} // Pass search query
+        filteredOrders={filteredOrders}
+        selectedOrders={selectedOrders}
+        expandedOrder={expandedOrder}
+        handleSelectAll={handleSelectAll}
+        handleSelectOrder={handleSelectOrder}
+        handleToggleDetails={handleToggleDetails}
+        getTimeElapsed={getTimeElapsed}
+        searchQuery={searchQuery}
       />
 
-      {/* Package Details Modal */}
-    
-<PackageDetailsModal
-  isOpen={isPackageModalOpen}
-  onClose={() => setPackageModalOpen(false)}
-  onSubmit={handlePackageDetailsSubmit}
-  initialValues={packageDetails || undefined}
-  onClear={() => setPackageDetails(null)}
-/>
+      <PackageDetailsModal
+        isOpen={isPackageModalOpen}
+        onClose={() => setPackageModalOpen(false)}
+        onSubmit={handlePackageDetailsSubmit}
+        initialValues={packageDetails[currentPackageIndex] || undefined}
+        onClear={() => setPackageDetails([])}
+        currentPackageIndex={currentPackageIndex}
+        totalPackages={selectedOrders.size}
+        onPrevious={() => setCurrentPackageIndex(currentPackageIndex - 1)}
+        onNext={() => setCurrentPackageIndex(currentPackageIndex + 1)}
+        customerName={`${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.first_name || 'N/A'} ${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.last_name || ''}`}
+        orderId={Array.from(selectedOrders)[currentPackageIndex]}
+      />
     </div>
   );
 };

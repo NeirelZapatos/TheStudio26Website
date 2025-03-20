@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Package, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 
 interface PackageDetails {
   length: number;
@@ -14,6 +14,12 @@ interface PackageDetailsModalProps {
   onSubmit: (details: PackageDetails) => void;
   onClear?: () => void;
   initialValues?: PackageDetails;
+  currentPackageIndex: number;
+  totalPackages: number;
+  onPrevious: () => void;
+  onNext: () => void;
+  customerName: string; // Add customer name prop
+  orderId: string; // Add order ID prop
 }
 
 const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({ 
@@ -21,7 +27,13 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
   onClose, 
   onSubmit,
   onClear,
-  initialValues 
+  initialValues,
+  currentPackageIndex,
+  totalPackages,
+  onPrevious,
+  onNext,
+  customerName,
+  orderId
 }) => {
   const [packageDetails, setPackageDetails] = useState<PackageDetails>({
     length: 0,
@@ -31,17 +43,14 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
   });
   const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
-  // Reset form or populate with initial values when modal opens
+  // Sync the modal's state with the initialValues prop
   useEffect(() => {
-    if (isOpen) {
-      if (initialValues) {
-        setPackageDetails(initialValues);
-      } else {
-        setPackageDetails({ length: 0, width: 0, height: 0, weight: 0 });
-      }
-      setErrors({});
+    if (initialValues) {
+      setPackageDetails(initialValues);
+    } else {
+      setPackageDetails({ length: 0, width: 0, height: 0, weight: 0 });
     }
-  }, [isOpen, initialValues]);
+  }, [initialValues]);
 
   const validateInputs = () => {
     const newErrors: { [key: string]: boolean } = {};
@@ -63,7 +72,6 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
     }
 
     onSubmit(packageDetails);
-    onClose();
   };
 
   const handleClear = () => {
@@ -88,7 +96,16 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
         <h2 className="text-xl font-bold mb-4">
           {initialValues ? 'Edit Package Details' : 'Enter Package Details'}
         </h2>
-        
+
+        <div className="mb-4">
+          <div className="text-sm text-gray-600">
+            <strong>Customer:</strong> {customerName}
+          </div>
+          <div className="text-sm text-gray-600">
+            <strong>Order ID:</strong> {orderId}
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Package Details</h3>
@@ -102,8 +119,9 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                   type="number"
                   step="0.1"
                   min="0.1"
-                  value={packageDetails.length}
+                  value={packageDetails.length || ''}
                   onChange={(e) => handlePackageDetailChange('length', e.target.value)}
+                  placeholder="Length required"
                   className={`w-full p-2 border rounded ${errors['length'] ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 {errors['length'] && (
@@ -119,8 +137,9 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                   type="number"
                   step="0.1"
                   min="0.1"
-                  value={packageDetails.width}
+                  value={packageDetails.width || ''}
                   onChange={(e) => handlePackageDetailChange('width', e.target.value)}
+                  placeholder="Width required"
                   className={`w-full p-2 border rounded ${errors['width'] ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 {errors['width'] && (
@@ -136,8 +155,9 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                   type="number"
                   step="0.1"
                   min="0.1"
-                  value={packageDetails.height}
+                  value={packageDetails.height || ''}
                   onChange={(e) => handlePackageDetailChange('height', e.target.value)}
+                  placeholder="Height required"
                   className={`w-full p-2 border rounded ${errors['height'] ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 {errors['height'] && (
@@ -153,8 +173,9 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                   type="number"
                   step="0.1"
                   min="0.1"
-                  value={packageDetails.weight}
+                  value={packageDetails.weight || ''}
                   onChange={(e) => handlePackageDetailChange('weight', e.target.value)}
+                  placeholder="Weight required"
                   className={`w-full p-2 border rounded ${errors['weight'] ? 'border-red-500' : 'border-gray-300'}`}
                 />
                 {errors['weight'] && (
@@ -176,6 +197,15 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
               </button>
             )}
             <div className="flex gap-2 ml-auto">
+              {currentPackageIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={onPrevious}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Previous
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -187,7 +217,7 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                {initialValues ? 'Update' : 'Add'}
+                {currentPackageIndex < totalPackages - 1 ? 'Next' : 'Print'}
               </button>
             </div>
           </div>

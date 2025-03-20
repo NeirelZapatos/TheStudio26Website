@@ -1,6 +1,14 @@
 import { IOrder } from "@/app/models/Order";
 import axios from "axios";
 
+interface PackageDetails {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
+
 interface ShippoLabelResponse {
   label_url?: string;
   tracking_number?: string;
@@ -69,28 +77,17 @@ const validateAddress = (addressString: string) => {
 export const printShippingLabels = async (
   selectedOrders: string[],
   orders: IOrder[],
-  packageDetails: {  // Remove the ? to make this required
-    length: number;
-    width: number;
-    height: number;
-    weight: number;
-  }
+  packageDetails: PackageDetails[]
 ) => {
-  // Validate package details first
-  if (!packageDetails || 
-      packageDetails.length <= 0 || 
-      packageDetails.width <= 0 || 
-      packageDetails.height <= 0 || 
-      packageDetails.weight <= 0) {
-    throw new Error('All package dimensions (length, width, height, weight) must be provided and greater than zero');
+  if (packageDetails.length !== selectedOrders.length) {
+    throw new Error('Package details must be provided for each selected order');
   }
 
   try {
-    const labels = await Promise.all(selectedOrders.map(async (orderId) => {
+    const labels = await Promise.all(selectedOrders.map(async (orderId, index) => {
       const order = orders.find(o => o._id.toString() === orderId);
       if (!order) throw new Error(`Order ${orderId} not found`);
       
-      // Handle both customer and customer_id patterns
       const customerData = order.customer || order.customer_id;
       if (!customerData || !order.shipping_address) {
         throw new Error(`Order ${orderId} missing customer or address data`);
@@ -99,12 +96,11 @@ export const printShippingLabels = async (
       try {
         const parsedAddress = validateAddress(order.shipping_address);
 
-        // Simplified API call that matches the backend expectations
         const response = await axios.post<ShippoLabelResponse>(
           '/api/shipping',
           {
-            order_ids: [order._id.toString()],  // Always send as array to match backend
-            package_details: packageDetails  // Use the entire object directly
+            order_ids: [order._id.toString()],
+            package_details: packageDetails[index]
           }
         );
 
@@ -125,17 +121,16 @@ export const printShippingLabels = async (
       }
     }));
 
-// Handle label downloads
-labels.forEach((label, index) => {
-  if (label?.label_url) {
-    const link = document.createElement('a');
-    link.href = label.label_url;
-    link.download = `label_${selectedOrders[index]}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-});
+    labels.forEach((label, index) => {
+      if (label?.label_url) {
+        const link = document.createElement('a');
+        link.href = label.label_url;
+        link.download = `label_${selectedOrders[index]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
 
     return labels;
 
@@ -145,4 +140,3 @@ labels.forEach((label, index) => {
     throw new Error(message);
   }
 };
-

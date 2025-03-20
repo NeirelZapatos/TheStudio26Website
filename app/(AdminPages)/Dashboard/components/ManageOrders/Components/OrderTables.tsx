@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { IOrder } from '@/app/models/Order';
-import PackageDetailsModal from './PackageDetailsModal'; // Import PackageDetailsModal component
 
 import { 
   Store, 
@@ -73,7 +72,6 @@ const OrderTables: React.FC<{
   handleToggleDetails,
   getTimeElapsed,
   searchQuery,
-  
 }) => {
   const [isPackageModalOpen, setPackageModalOpen] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
@@ -122,19 +120,10 @@ const OrderTables: React.FC<{
           <thead>
             <tr className="bg-gray-50">
               {/* Header Checkbox */}
-<th className="p-4 w-[50px]">
-  <input
-    type="checkbox"
-    aria-label="Select all orders"
-    checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
-    onChange={handleSelectAll}
-    className="rounded border-gray-300 w-4 h-4"
-  />
-</th>
-
-<th className="p-4 w-[50px]">
+              <th className="p-4 w-[50px]">
                 <input
                   type="checkbox"
+                  aria-label="Select all orders"
                   checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 w-4 h-4"
@@ -221,7 +210,6 @@ const OrderTables: React.FC<{
                       >
                         {expandedOrder === order._id?.toString() ? 'Hide Details' : 'View Details'}
                       </button>
-                      
                     </div>
                   </td>
                 </tr>
@@ -230,7 +218,7 @@ const OrderTables: React.FC<{
                     <td colSpan={7} className="p-4 bg-gray-50">
                       <div className="space-y-4">
                         <h3 className="text-xl font-semibold">Order Details</h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div><strong>Order ID:</strong> {order._id?.toString() ?? ''}</div>
                           <div><strong>Customer:</strong> {order.customer?.first_name} {order.customer?.last_name}</div>
                           <div><strong>Order Date:</strong> {new Date(order.order_date).toLocaleDateString()}</div>
@@ -239,29 +227,32 @@ const OrderTables: React.FC<{
                           <div><strong>Order Status:</strong> {order.order_status}</div>
                           <div className="col-span-2"><strong>Shipping Address:</strong> {order.shipping_address}</div>
                           <div className="col-span-2"><strong>Billing Address:</strong> {order.billing_address}</div>
-                          <div><strong>Total Amount:</strong> ${order.total_amount}</div>
-                          
-                          <strong>Items:</strong>
+                          <div className="col-span-2"><strong>Total Amount:</strong> ${order.total_amount}</div>
+                        </div>
+                        
+                        {/* Items Section - Fixed Layout */}
+                        <div className="mt-6">
+                          <h4 className="text-lg font-semibold mb-4">Items</h4>
                           {(order.products || []).length > 0 && (
-                            <ul className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                               {(order.products || []).map((product, index) => (
-                                <li key={index} className="p-4 bg-white rounded-lg shadow">
-                                  <div className="flex gap-4">
+                                <div key={index} className="bg-white p-4 rounded-lg shadow">
+                                  <div className="flex flex-col sm:flex-row gap-4">
                                     <img
                                       src={product.product?.image_url}
                                       alt={product.product?.name}
                                       className="w-32 h-32 object-cover rounded"
                                     />
-                                    <div>
-                                      <div className="font-medium">{product.product?.name}</div>
-                                      <div className="text-sm text-gray-600">{product.product?.description}</div>
-                                      <div className="text-sm">Quantity: {product.quantity}</div>
-                                      <div className="text-sm text-gray-500">Price: ${product.product?.price}</div>
+                                    <div className="flex-1">
+                                      <div className="font-medium text-lg">{product.product?.name}</div>
+                                      <div className="text-sm text-gray-600 mt-1">{product.product?.description}</div>
+                                      <div className="mt-2 text-sm">Quantity: {product.quantity}</div>
+                                      <div className="text-sm text-gray-700">Price: ${product.product?.price}</div>
                                     </div>
                                   </div>
-                                </li>
+                                </div>
                               ))}
-                            </ul>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -273,7 +264,6 @@ const OrderTables: React.FC<{
           </tbody>
         </table>
       </div>
-    
     </>
   );
 };
