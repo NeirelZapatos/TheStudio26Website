@@ -52,6 +52,21 @@ const PRICE_FILTERS = {
   ] as const,
 };
 
+const CUT_FILTERS = {
+  id: "cut",
+  name: "Cut",
+  options: [
+    { value: "round", label: "Round" },
+    { value: "oval", label: "Oval" },
+    { value: "pear", label: "Pear" },
+    { value: "emerald", label: "Emerald" },
+    { value: "princess", label: "Princess" },
+    { value: "marquise", label: "Marquise" },
+    { value: "heart", label: "Heart" },
+    { value: "cushion", label: "Cushion" },
+  ] as const,
+};
+
 interface FilterProps {
   filter: FilterState;
   setFilter: React.Dispatch<React.SetStateAction<FilterState>>;
@@ -69,7 +84,7 @@ interface FilterState {
   };
 }
 
-const DashboardFilters = ({ filter, setFilter }: FilterProps) => {
+const ItemFilters = ({ filter, setFilter }: FilterProps) => {
   const handleCategoryChange = (category: string) => {
     setFilter((prev) => ({
       ...prev,
@@ -261,6 +276,40 @@ const DashboardFilters = ({ filter, setFilter }: FilterProps) => {
             </div>
           </div>
 
+          {/* Cut Filter */}
+          <div className="collapse collapse-arrow border-t pt-2">
+            <input type="checkbox" className="peer" />
+            <div className="collapse-title font-medium peer-checked:mb-1">
+              Cut Type
+            </div>
+            <div className="collapse-content px-1 pt-0">
+              <ul className="grid grid-cols-4 gap-2">
+                {CUT_FILTERS.options.map((option, optionIdx) => (
+                  <li key={option.value} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`cut-filter-${optionIdx}`}
+                      className="checkbox checkbox-sm"
+                      checked={filter.size.includes(option.value)}
+                      onChange={() => {
+                        applyArrayFilter({
+                          category: "size",
+                          value: option.value,
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`cut-filter-${optionIdx}`}
+                      className="px-2 text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
           {/* Price Filter */}
           <div className="collapse collapse-arrow border-t pt-2">
             <input type="checkbox" className="peer" />
@@ -330,4 +379,4 @@ const DashboardFilters = ({ filter, setFilter }: FilterProps) => {
   );
 };
 
-export default DashboardFilters;
+export default ItemFilters;

@@ -2,6 +2,7 @@
 import React from "react";
 
 export type Course = {
+  classType: string;
   category: string;
   _id: string;
   name: string;

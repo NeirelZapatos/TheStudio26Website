@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import CourseCard, { Course } from "./productList/CourseCard";
 import ItemCard, { Item } from "./productList/ItemCard";
-import EditCourseForm from "./productList/EditCourseForm";
 import EditItemForm from "./productList/EditItemForm";
+import ItemFilters from "./productList/ItemFilters";
 
-const ProductList: React.FC = () => {
+const ItemsList: React.FC = () => {
   type FilterState = {
     sort: string;
     category: string;
@@ -26,30 +25,12 @@ const ProductList: React.FC = () => {
     size: [],
     price: { isCustom: false, range: [0, 500] as [number, number] },
   });
-  const [courses, setCourses] = useState<Course[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   // Editing States
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
-
-  // Fetch courses
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get("/api/courses");
-        setCourses(response.data);
-      } catch (err) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourses();
-  }, []);
 
   // Fetch items
   useEffect(() => {
@@ -66,48 +47,6 @@ const ProductList: React.FC = () => {
     };
     fetchItems();
   }, []);
-
-  // Handlers for editing courses
-  const handleEditCourse = (course: Course) => {
-    setEditingCourse(course);
-  };
-
-  const handleSaveCourse = async (updatedCourse: Course) => {
-    try {
-      await axios.put(`/api/courses/${updatedCourse._id}`, updatedCourse);
-      setCourses((prev) =>
-        prev.map((c) => (c._id === updatedCourse._id ? updatedCourse : c))
-      );
-      setEditingCourse(null);
-    } catch (err) {
-      console.error("Error saving course:", err);
-      setError(true);
-    }
-  };
-
-  const handleCancelCourse = () => {
-    setEditingCourse(null);
-  };
-
-  const handleDeleteCourse = async (course: Course) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      try {
-        // Call Next.js DELETE route, sending JSON in the body
-        await axios.delete(`/api/courses/${course._id}`);
-
-        // Remove from state
-        setCourses((prev) => prev.filter((c) => c._id !== course._id));
-
-        // Clear editing state if needed
-        if (editingCourse && editingCourse._id === course._id) {
-          setEditingCourse(null);
-        }
-      } catch (err) {
-        console.error("Error deleting course:", err);
-        setError(true);
-      }
-    }
-  };
 
   // Handlers for editing items
   const handleEditItem = (item: Item) => {
@@ -147,15 +86,6 @@ const ProductList: React.FC = () => {
         setError(true);
       }
     }
-  };
-
-  const getFilteredCourses = () => {
-    return courses.filter((course) => {
-      if (filter.category !== "all" && course.category !== filter.category) {
-        return false;
-      }
-      return true;
-    });
   };
 
   const getFilteredItems = () => {
@@ -206,7 +136,6 @@ const ProductList: React.FC = () => {
     });
   };
 
-  const filteredCourses = getFilteredCourses();
   const filteredItems = getFilteredItems();
 
   if (loading) {
@@ -219,37 +148,12 @@ const ProductList: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8">
-      {/* Courses Section */}
+      {/* Items Section */}
       <section className="mb-10">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold mb-4">Courses</h2>
+          <h2 className="text-2xl font-semibold mb-4">Items</h2>
+          <ItemFilters filter={filter} setFilter={setFilter} />
         </div>
-
-        {filteredCourses.length === 0 ? (
-          <p>No courses available.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course) => (
-              <div key={course._id} className="bg-white shadow rounded-lg p-4">
-                {editingCourse && editingCourse._id === course._id ? (
-                  <EditCourseForm
-                    initialCourse={editingCourse}
-                    onSave={handleSaveCourse}
-                    onCancel={handleCancelCourse}
-                    onDelete={handleDeleteCourse}
-                  />
-                ) : (
-                  <CourseCard course={course} onEdit={handleEditCourse} />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Items Section */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Items</h2>
         {filteredItems.length === 0 ? (
           <p>No items available.</p>
         ) : (
@@ -275,4 +179,4 @@ const ProductList: React.FC = () => {
   );
 };
 
-export default ProductList;
+export default ItemsList;
