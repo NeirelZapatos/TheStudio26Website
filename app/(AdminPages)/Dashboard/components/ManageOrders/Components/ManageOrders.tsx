@@ -7,11 +7,7 @@ import { useOrderManagement } from './hooks/useOrderManagement';
 import { usePackageManagement } from './hooks/usePackageManagement';
 import { useOrderActions } from './hooks/useOrderActions'; // Import the hook
 import { useOrderFilters } from './hooks/useOrderFilters'; // Import the hook
-import exportOrdersToCSV from '@/utils/ExportReport';
-import ProcessPickup from '../ProcessPickup';
-import generateReceiptPDF from '@/utils/GenerateReceipt';
-import { OrderFilter } from '@/utils/sortOrders';
-import { IOrder } from '@/app/models/Order'; // Updated import path for IOrder
+
 
 
 /**
@@ -97,6 +93,8 @@ const ManageOrders = () => {
     setCurrentPackageIndex,
     handlePackageDetailsSubmit,
     handlePrintShippingLabels,
+    modifiedDetails,
+    handleTemporaryUpdate
   } = usePackageManagement(selectedOrders, orders, setSelectedOrders);
 
   const {
@@ -154,13 +152,14 @@ const ManageOrders = () => {
         onClose={() => setPackageModalOpen(false)}
         onSubmit={handlePackageDetailsSubmit}
         initialValues={packageDetails[currentPackageIndex] || undefined}
-        onClear={() => setPackageDetails([])}
         currentPackageIndex={currentPackageIndex}
         totalPackages={selectedOrders.size}
         onPrevious={() => setCurrentPackageIndex(currentPackageIndex - 1)}
         onNext={() => setCurrentPackageIndex(currentPackageIndex + 1)}
         customerName={`${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.first_name || 'N/A'} ${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.last_name || ''}`}
         orderId={Array.from(selectedOrders)[currentPackageIndex]}
+        modifiedDetails={modifiedDetails}
+        handleTemporaryUpdate={handleTemporaryUpdate}
       />
     </div>
   );
