@@ -48,14 +48,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={() => setActiveSection("connect")}
                 className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "connect"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
+                  activeSection === "connect" ? "bg-gray-700" : "hover:bg-gray-600"
                 }`}
               >
                 Connect & Setup
               </button>
-
               <button
                 onClick={() => setActiveSection("financialAnalytics")}
                 className={`block w-full text-left p-2 rounded-lg ${
@@ -66,7 +63,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Financial Analytics
               </button>
-
               <button
                 onClick={() => setActiveSection("invoices")}
                 className={`block w-full text-left p-2 rounded-lg ${
@@ -101,9 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={() => setActiveSection("calendar")}
                 className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "calendar"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
+                  activeSection === "calendar" ? "bg-gray-700" : "hover:bg-gray-600"
                 }`}
               >
                 Calendar
@@ -140,9 +134,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={() => setActiveSection("class")}
                 className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "class"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
+                  activeSection === "class" ? "bg-gray-700" : "hover:bg-gray-600"
                 }`}
               >
                 Create a Class
@@ -170,18 +162,24 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
+        {/* ------------------------ Rental Equipment Section ------------------------ */}
+        <button
+          onClick={() => setActiveSection("rentalEquipment")}
+          className={`block w-full text-left p-2 rounded-lg ${
+            activeSection === "rentalEquipment" ? "bg-gray-700" : "hover:bg-gray-600"
+          }`}
+        >
+          Rental Equipment
+        </button>
         {/* ------------------------ Customer Management Section ------------------------ */}
         <button
           onClick={() => setActiveSection("customerManagement")}
           className={`block w-full text-left p-2 rounded-lg ${
-            activeSection === "customerManagement"
-              ? "bg-gray-700"
-              : "hover:bg-gray-600"
+            activeSection === "customerManagement" ? "bg-gray-700" : "hover:bg-gray-600"
           }`}
         >
           Customer Management
         </button>
-
         <button
           onClick={() => setActiveSection("newsletter")}
           className={`block w-full text-left p-2 rounded-lg ${
@@ -190,11 +188,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Newsletter
         </button>
-
-        {/* Added Manage Orders Button */}
+        {/* ------------------------ Manage Orders Section ------------------------ */}
         <button
           onClick={() => setActiveSection("manageOrders")}
-          className={`block w-full text-left p-2 rounded-lg ${activeSection === "ManageOrders" ? "bg-gray-700" : "hover:bg-gray-600"}`}
+          className={`block w-full text-left p-2 rounded-lg ${
+            activeSection === "ManageOrders" ? "bg-gray-700" : "hover:bg-gray-600"
+          }`}
         >
           Manage Orders
         </button>
