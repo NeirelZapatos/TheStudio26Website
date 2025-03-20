@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react'; // Import React and useState
 import Buttons from './Buttons'; // Import Buttons component
 import OrderTables from './OrderTables'; // Import OrderTables component
 import SearchBar from './SearchBar'; // Import SearchBar component
-import  PackageDetailsModal  from './PackageDetailsModal';
+import PackageDetailsModal from './PackageDetailsModal';
 import { useOrderManagement } from './hooks/useOrderManagement';
 import { usePackageManagement } from './hooks/usePackageManagement';
+import { useOrderActions } from './hooks/useOrderActions'; // Import the hook
+import { useOrderFilters } from './hooks/useOrderFilters'; // Import the hook
 import exportOrdersToCSV from '@/utils/ExportReport';
 import ProcessPickup from '../ProcessPickup';
 import generateReceiptPDF from '@/utils/GenerateReceipt';
 import { OrderFilter } from '@/utils/sortOrders';
+import { IOrder } from '@/app/models/Order'; // Updated import path for IOrder
+
 
 /**
  * ManageOrders Component:
@@ -62,7 +66,6 @@ import { OrderFilter } from '@/utils/sortOrders';
  * - Dynamically generates filter buttons with counts for different order statuses and types (e.g., All Orders, Pickup, Priority, etc.).
  */
 
-
 const ManageOrders = () => {
   const {
     activeFilter,
@@ -70,7 +73,7 @@ const ManageOrders = () => {
     searchQuery,
     setSearchQuery,
     selectedOrders,
-    setSelectedOrders, // Destructure setSelectedOrders
+    setSelectedOrders,
     expandedOrder,
     setExpandedOrder,
     searchResults,
@@ -94,81 +97,16 @@ const ManageOrders = () => {
     setCurrentPackageIndex,
     handlePackageDetailsSubmit,
     handlePrintShippingLabels,
-  } = usePackageManagement(selectedOrders, orders, setSelectedOrders); // Pass setSelectedOrders as the third argument
+  } = usePackageManagement(selectedOrders, orders, setSelectedOrders);
 
-  const handleMarkAsFulfilled = async () => {
-    if (!orders) {
-      alert('Orders data not loaded yet');
-      return;
-    }
+  const {
+    handleMarkAsFulfilled,
+    handleExportReport,
+    handlePrintReceipt,
+    getTimeElapsed,
+  } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
 
-    const selectedOrderIds = Array.from(selectedOrders);
-    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
-
-    const nonPickupOrders = selectedOrdersData.filter(order => order.shipping_method !== 'Pickup');
-    if (nonPickupOrders.length > 0) {
-      alert('Cannot fulfill delivery orders. Select only pickup orders.');
-      return;
-    }
-
-    try {
-      await ProcessPickup(selectedOrderIds, 'fulfilled', mutate);
-      setSelectedOrders(new Set());
-    } catch (error) {
-      console.error('Error fulfilling orders:', error);
-      alert('Failed to mark orders as fulfilled.');
-    }
-  };
-
-  const handleExportReport = () => {
-    if (orders) {
-      exportOrdersToCSV(orders);
-    }
-  };
-
-  const handlePrintReceipt = () => {
-    if (orders) {
-      selectedOrders.forEach((orderId) => {
-        const order = orders.find((order) => order._id.toString() === orderId);
-        if (order) {
-          generateReceiptPDF(order);
-        }
-      });
-    }
-  };
-
-  const getTimeElapsed = (orderDate: string) => {
-    const orderTime = new Date(orderDate).getTime();
-    const now = Date.now();
-    const diff = now - orderTime;
-
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    return `${minutes}m ago`;
-  };
-
-  const filterButtons = [
-    { label: 'All Orders', value: OrderFilter.ALL, count: validOrders.length },
-    { label: 'Pickup', value: OrderFilter.PICKUP, count: validOrders.filter(order => order.shipping_method === 'Pickup' && order.order_status !== 'fulfilled').length },
-    { label: 'Priority', value: OrderFilter.PRIORITY, count: validOrders.filter((order) => {
-      const orderAge = (Date.now() - new Date(order.order_date).getTime()) / (1000 * 60 * 60 * 24);
-      return (
-        order.order_status === 'pending' &&
-        (order.shipping_method === 'Express' ||
-          order.shipping_method === 'Next Day' ||
-          order.shipping_method === 'Priority' ||
-          ((order.shipping_method === 'Standard' || order.shipping_method === 'Ground') &&
-            orderAge > 3))
-      );
-    }).length },
-    { label: 'Pending', value: OrderFilter.PENDING, count: validOrders.filter((order) => order.order_status === 'pending').length },
-    { label: 'Deliveries', value: OrderFilter.DELIVERIES, count: validOrders.filter(order => order.shipping_method !== 'Pickup' && order.order_status === 'pending').length },
-    { label: 'Fulfilled', value: OrderFilter.FULFILLED, count: validOrders.filter(order => ['shipped', 'fulfilled', 'delivered'].includes(order.order_status?? '')).length },
-  ];
+  const { filterButtons } = useOrderFilters(validOrders || []);
 
   if (!orders) {
     return <div className="flex justify-center items-center h-64">Loading orders...</div>;
