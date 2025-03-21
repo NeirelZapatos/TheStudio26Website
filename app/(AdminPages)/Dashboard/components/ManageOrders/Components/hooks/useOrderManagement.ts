@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { IOrder } from '@/app/models/Order';
-import { OrderFilter } from '@/utils/sortOrders';
+import { OrderFilter, SortOrders } from '@/utils/sortOrders';
 import { fetchOrders } from '@/utils/fetchUtils/fetchOrders';
-import { searchOrders } from '@/utils/searchUtils'; // Import the searchOrders function
+import { searchOrders } from '@/utils/searchUtils';
 
 export const useOrderManagement = () => {
   const [activeFilter, setActiveFilter] = useState<OrderFilter>(OrderFilter.ALL);
@@ -16,8 +16,12 @@ export const useOrderManagement = () => {
     refreshInterval: 300000,
   });
 
-  // Recalculate filteredOrders whenever searchQuery, activeFilter, or orders change
-  const filteredOrders = orders ? searchOrders(orders, searchQuery) : [];
+  // First filter orders based on search query
+  const searchFilteredOrders = orders ? searchOrders(orders, searchQuery) : [];
+  
+  // Then sort the filtered orders based on priority
+  const filteredOrders = searchFilteredOrders ? SortOrders(searchFilteredOrders, activeFilter) : [];
+  
   const validOrders = orders?.filter(order => order.customer?.first_name && order.customer?.last_name) || [];
 
   const handleSelectOrder = (orderId: string) => {
@@ -58,7 +62,7 @@ export const useOrderManagement = () => {
     orders,
     error,
     mutate,
-    filteredOrders, // Return the filtered orders
+    filteredOrders, // Return the filtered and sorted orders
     validOrders,
     handleSelectOrder,
     handleSelectAll,
