@@ -20,13 +20,10 @@ const useImageUpload = () => {
             setFiles(newFiles);
             setPreviewUrls([...previewUrls, ...newPreviewUrls]);
             setEditableFileNames([...editableFileNames, ...newFileNames]);
-        }
-    };
 
-    const handleFileNameChange = (index: number, newName: string) => {
-        const updatedFileNames = [...editableFileNames];
-        updatedFileNames[index] = newName;
-        setEditableFileNames(updatedFileNames);
+            return previewUrls.length + newPreviewUrls.length - 1;
+        }
+        return -1;
     };
 
     const uploadImages = async (folder: string): Promise<string[]> => {
@@ -72,7 +69,6 @@ const useImageUpload = () => {
         editableFileNames,
         setEditableFileNames,
         handleFileChange,
-        handleFileNameChange,
         uploadImages,
         cleanupPreviewUrls,
     };

@@ -9,6 +9,10 @@ interface JewelryFormProps {
 }
 
 export default function JewelryForm({ onClose }: JewelryFormProps) {
+
+  // --------------- Image Carousel and --------------- //
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0);
+
   const {
     files,
     setFiles,
@@ -17,7 +21,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     editableFileNames,
     setEditableFileNames,
     handleFileChange,
-    handleFileNameChange,
     uploadImages,
     cleanupPreviewUrls,
   } = useImageUpload();
@@ -108,7 +111,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const loadTemplate = (index: string) => {
     if (index !== "") {
       const template = filteredTemplateList[parseInt(index)];
-  
+
       setName(template.name);
       setDescription(template.description);
       setPrice(template.price);
@@ -123,9 +126,9 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setPlating(template.plating || "");
       // setRingSize(template.ring_size || "");
       setCaratWeight(template.carat_weight?.toString() || "");
-      setSettingType(template.setting_type || ""); 
+      setSettingType(template.setting_type || "");
       setStoneArrangement(template.stone_arrangement || "");
-      setCustomizationOptions(template.customization_options || ""); 
+      setCustomizationOptions(template.customization_options || "");
       setPreviewUrls(template.images || [template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
@@ -137,7 +140,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
     const existingUrls = previewUrls.filter((url) => !url.startsWith("blob:") && !url.includes("ProductPlaceholder"));
 
-    const allImageUrls = [...uploadedImageUrls, ...existingUrls];
+    const allImageUrls = [...existingUrls, ...uploadedImageUrls];
 
     const imagesArray = allImageUrls.length > 0 ? allImageUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
 
@@ -161,7 +164,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       stone_arrangement: stoneArrangement, // Updated field name
       customization_options: customizationOptions, // Updated field name
     };
-  
+
     try {
       // Send a POST request to save the template
       const response = await fetch('/api/item-templates', {
@@ -171,15 +174,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(templateData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save template');
       }
-  
+
       const data = await response.json();
       console.log('Template saved successfully:', data);
-  
+
       // Display a success message
       setMessage('Template saved successfully!');
     } catch (error: any) {
@@ -188,13 +191,24 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     }
   };
 
+
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const latestIndex = handleFileChange(e); // Get the index of the latest uploaded image
+    if (latestIndex !== -1) {
+      setCurrentCarouselIndex(latestIndex); // Update the carousel index
+    }
+  };
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || !quantityInStock || !jewelryType) {
       setMessage("Please fill in all required fields.");
       return;
     }
-  
+
     // Prepare design fields based on jewelry type
     let designData = {};
     if (jewelryType === "ring") {
@@ -227,15 +241,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         customization_options: customizationOptions, // Updated field name
       };
     }
-  
+
     let uploadedImageUrls = await uploadImages(jewelryType.toLowerCase());
-  
+
     // If no images are uploaded, use the placeholder as the first image
     const imagesArray =
       uploadedImageUrls.length > 0
         ? uploadedImageUrls
         : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
-  
+
     const jewelryData = {
       name,
       description,
@@ -252,10 +266,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       plating,
       ...designData,
     };
-  
+
     console.log("Submitted Jewelry Data:", jewelryData);
     setMessage("Jewelry item successfully submitted!");
-  
+
     try {
       // Send a POST request to the backend API
       const response = await fetch("/api/items", {
@@ -265,17 +279,17 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         },
         body: JSON.stringify(jewelryData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to submit jewelry item");
       }
-  
+
       const data = await response.json();
       console.log("API Response:", data);
-  
+
       setMessage("Jewelry item successfully submitted!");
-  
+
       // Reset all fields
       setName("");
       setDescription("");
@@ -366,14 +380,14 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
             images={
               previewUrls.length > 0 ? previewUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]
             }
-            fileNames={editableFileNames}
-            onFileNameChange={handleFileNameChange}
+            currentIndex={currentCarouselIndex} // Pass the current index
+            onIndexChange={setCurrentCarouselIndex} // Pass the setter function
           />
           {/* File Input for Multiple Images */}
           <div>
             <input
               type="file"
-              onChange={handleFileChange}
+              onChange={handleFileUpload}
               className="file-input file-input-bordered file-input-sm"
               multiple // Allow multiple file selection
             />
@@ -626,8 +640,8 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
             onClick={handleSaveAsTemplate}
             disabled={!areRequiredFieldsFilled()} // Disable if required fields are not filled
             className={`${areRequiredFieldsFilled()
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-gray-400 cursor-not-allowed"
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-gray-400 cursor-not-allowed"
               } text-white px-4 py-2 rounded`}
           >
             Save as Template

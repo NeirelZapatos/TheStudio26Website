@@ -1,31 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const ImageCarousel = ({ images, fileNames, onFileNameChange }: { 
-  images: string[]; 
-  fileNames: string[]; 
-  onFileNameChange: (index: number, newName: string) => void; 
-}) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+interface ImageCarouselProps {
+  images: string[];
+  currentIndex?: number;
+  onIndexChange?: (index: number) => void;
+}
+
+const ImageCarousel = ({ images, currentIndex=0, onIndexChange }: ImageCarouselProps) => { 
+  const [localIndex, setLocalIndex] = useState(currentIndex);
+
+  useEffect(() => {
+    setLocalIndex(currentIndex);
+  }, [currentIndex]);
+
 
   const goToPrevious = (e: React.MouseEvent) => {
     e.preventDefault();
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
-    );
+    const newIndex = localIndex === 0 ? images.length -1 : localIndex - 1;
+    setLocalIndex(newIndex);
+    onIndexChange?.(newIndex);
   };
 
   const goToNext = (e: React.MouseEvent) => {
     e.preventDefault();
-    setCurrentIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
-    );
+    const newIndex = localIndex === images.length -1 ? 0 : localIndex + 1;
+    setLocalIndex(newIndex);
+    onIndexChange?.(newIndex);
   };
 
   return (
     <div className="w-full">
       {/* Counter Above the Carousel */}
       <div className="text-center mb-2 text-sm text-gray-600">
-        {`${currentIndex + 1}/${images.length}`}
+        {`${localIndex + 1}/${images.length}`}
       </div>
 
       {/* Carousel Container */}
@@ -53,7 +60,7 @@ const ImageCarousel = ({ images, fileNames, onFileNameChange }: {
               key={index}
               id={`slide${index}`}
               className={`carousel-item w-full flex flex-col justify-center items-center ${
-                index === currentIndex ? "block" : "hidden"
+                index === localIndex ? "block" : "hidden"
               }`}
             >
               {/* Image */}
@@ -64,19 +71,6 @@ const ImageCarousel = ({ images, fileNames, onFileNameChange }: {
                   className="w-full h-full object-cover border-2 border-gray-300 rounded-lg"
                 />
               </div>
-
-              {/* File Name Input (Conditionally Rendered) */}
-              {fileNames.length > 0 && (
-                <div className="mt-2 w-64">
-                  <input
-                    type="text"
-                    className="input input-bordered w-full"
-                    value={fileNames[index]}
-                    onChange={(e) => onFileNameChange(index, e.target.value)}
-                    placeholder="Enter file name"
-                  />
-                </div>
-              )}
             </div>
           ))}
         </div>
