@@ -10,107 +10,10 @@ import StoneForm from "../components/ItemForms/StoneForm";
 
 export default function Page() {
   const [message, setMessage] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
-  const [fileName, setFileName] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
 
-  // Template Search
-  const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
   const [showJewelryForm, setShowJewelryForm] = useState<boolean>(true); // ! changed to true for testing
   const [showToolForm, setShowToolForm] = useState<boolean>(false);
   const [showStoneForm, setShowStoneForm] = useState<boolean>(false);
-  const [searchText, setSearchText] = useState("");
-  const filteredTemplateList = itemTemplates.filter((template) =>
-    template.name.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  // Product form fields
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [itemType, setItemType] = useState<string>("");
-  const [ringSize, setRingSize] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
-  const [quantityInStock, setQuantityInStock] = useState<string>("");
-
-  const ringSizes = [
-    "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5",
-    "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5",
-    "12", "12.5", "13", "13.5", "14", "Other", "N/A",
-  ];
-
-  const uploadImage = async () => {
-    if (!file || !fileName.trim()) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", fileName);
-
-    const response = await fetch("/api/imageupload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Upload failed");
-    }
-
-    const data = await response.json();
-    setImageUrl(data.url);
-    return data.url;
-  };
-
-  const createItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const convertedPrice = price ? Math.round(parseFloat(price) * 100) : 0;
-
-    try {
-      let uploadedImageUrl = imageUrl;
-
-      if (file) {
-        uploadedImageUrl = await uploadImage();
-      }
-      const productData: any = {
-        name,
-        description,
-        itemType,
-        purchaseType: "Item",
-        price: convertedPrice,
-        quantityInStock,
-        image_url: uploadedImageUrl,
-      };
-
-      await axios.post("/api/items", productData);
-      setMessage("Product saved");
-
-      // Reset form fields
-      setName("");
-      setDescription("");
-      setItemType("");
-      setPrice("");
-      setQuantityInStock("");
-      setRingSize("");
-      setImageUrl("https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
-      setFile(null);
-      setFileName("");
-    } catch (error) {
-      setMessage("Error creating product");
-      console.error(error);
-    }
-  };
-
-  const loadTemplate = (index: string) => {
-    if (index !== "") {
-      const template = itemTemplates[parseInt(index)];
-      setName(template.name);
-      setDescription(template.description);
-      setItemType(template.itemType);
-      setQuantityInStock(template.quantityInStock);
-      setPrice(template.price);
-      setImageUrl(template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png");
-      setFile(null); // Reset the file state
-      setFileName(""); // Reset the file name state
-    }
-  };
 
   return (
     <div className="bg-gray-100 min-h-screen py-8">

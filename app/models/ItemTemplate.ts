@@ -6,6 +6,8 @@ export interface IItemTemplate extends Document {
   price: string;
   quantityInStock: string;
   jewelryType: string;
+  category: string;
+  size?: string;
   image_url?: string;
   images?: string[];
   color?: string;
@@ -27,6 +29,8 @@ const ItemTemplateSchema: Schema = new Schema(
     price: { type: String, required: true },
     quantityInStock: { type: String, required: true },
     jewelry_type: { type: String, required: true },
+    category: { type: String, required: true },
+    size: { type: String },
     image_url: { type: String },
     images: { type: [String] },
     color: { type: String },

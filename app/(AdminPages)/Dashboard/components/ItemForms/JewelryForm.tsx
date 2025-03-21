@@ -150,19 +150,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       description,
       price,
       quantityInStock,
-      jewelry_type: jewelryType, // Updated field name
+      jewelry_type: jewelryType,  
       image_url: allImageUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
       images: imagesArray,
-      metal_type: metalType, // Updated field name
-      metal_purity: metalPurity, // Updated field name
-      metal_finish: metalFinish, // Updated field name
+      metal_type: metalType,  
+      metal_purity: metalPurity,  
+      metal_finish: metalFinish,  
       color,
       plating,
+      size,
       // ring_size: ringSize, 
-      carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
-      setting_type: settingType, // Updated field name
-      stone_arrangement: stoneArrangement, // Updated field name
-      customization_options: customizationOptions, // Updated field name
+      carat_weight: caratWeight ? parseFloat(caratWeight) : undefined,  
+      setting_type: settingType,  
+      stone_arrangement: stoneArrangement,  
+      customization_options: customizationOptions,  
     };
 
     try {
@@ -215,10 +216,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       designData = {
         // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
-        setting_type: settingType, // Updated field name
-        stone_arrangement: stoneArrangement, // Updated field name
-        customization_options: customizationOptions, // Updated field name
+        carat_weight: caratWeight,  
+        setting_type: settingType,  
+        stone_arrangement: stoneArrangement,  
+        customization_options: customizationOptions,  
       };
     } else if (
       jewelryType === "earring" ||
@@ -227,43 +228,44 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       jewelryType === "pendant"
     ) {
       designData = {
-        stone_arrangement: stoneArrangement, // Updated field name
-        customization_options: customizationOptions, // Updated field name
+        stone_arrangement: stoneArrangement,  
+        customization_options: customizationOptions,  
       };
     } else if (jewelryType === "other") {
       // Display all design fields if "Other" is selected
       designData = {
         // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        carat_weight: caratWeight ? parseFloat(caratWeight) : undefined, // Updated field name
-        setting_type: settingType, // Updated field name
-        stone_arrangement: stoneArrangement, // Updated field name
-        customization_options: customizationOptions, // Updated field name
+        carat_weight: caratWeight,  
+        setting_type: settingType,  
+        stone_arrangement: stoneArrangement,  
+        customization_options: customizationOptions,  
       };
     }
 
     let uploadedImageUrls = await uploadImages(jewelryType.toLowerCase());
 
-    // If no images are uploaded, use the placeholder as the first image
-    const imagesArray =
-      uploadedImageUrls.length > 0
-        ? uploadedImageUrls
-        : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
+    const existingUrls = previewUrls.filter((url) => !url.startsWith("blob:") && !url.includes("ProductPlaceholder"));
+
+    const allImageUrls = [...existingUrls, ...uploadedImageUrls];
+
+    const imagesArray = allImageUrls.length > 0 ? allImageUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"];
 
     const jewelryData = {
       name,
       description,
       price: parseFloat(price),
       quantity_in_stock: parseInt(quantityInStock),
-      image_url: uploadedImageUrls[0], // Use the first image as the main image
+      image_url: allImageUrls[0], // Use the first image as the main image
       images: imagesArray,
       weight: weight,
-      size,
-      jewelry_type: jewelryType, // Updated field name
-      metal_type: metalType, // Updated field name
-      metal_purity: metalPurity, // Updated field name
-      metal_finish: metalFinish, // Updated field name
+      size: size,
+      jewelry_type: jewelryType,  
+      metal_type: metalType,  
+      metal_purity: metalPurity,  
+      metal_finish: metalFinish,  
       plating,
+      category: "Jewelry",
       ...designData,
     };
 
@@ -452,7 +454,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
         <div>
           <label className="label">
-            <span className="label-text font-semibold">Weight (grams)</span>
+            <span className="label-text font-semibold">Weight</span>
           </label>
           <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
         </div>

@@ -28,6 +28,10 @@ const itemSchema:Schema = new mongoose.Schema({
     description: {
         type: String,
     },
+    category: {
+        type: String,
+        required: true,
+    },
     itemType: {
         type: String,
     },
