@@ -37,7 +37,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [postPerPage, setPostsPerPage] = useState(9);
+  const [postPerPage, setPostsPerPage] = useState(24);
 
   useEffect(() => {
     const fetchProducts = async () => {

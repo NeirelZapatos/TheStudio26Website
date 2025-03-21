@@ -60,20 +60,23 @@ const AddAdmin = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
+  
       if (!response.ok) throw new Error("Failed to add admin. Password must be at least 5 characters.");
-
-      const data = await response.json();
-      setAdmins((prevAdmins) => [...prevAdmins, data]);
+  
+      // Fetch updated list of admins
+      const updatedAdmins = await fetch("/api/admins").then((res) => res.json());
+      setAdmins(updatedAdmins); // Ensure fresh data
+  
       setEmail("");
       setPassword("");
-
+  
       setSuccessMessage("Admin added successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(err.message);
     }
   };
+  
 
   const sortedAdmins = admins.sort((a, b) => 
     a.email === "thestudio26llcwebsite@gmail.com" ? -1 : 
