@@ -12,11 +12,31 @@ interface FinancialData {
   categoryRevenue: Record<string, CategoryRevenue>;
 }
 
+interface BestSellingItem {
+  name: string;
+  sales: number;
+}
+
+interface BestSellingItems {
+  Jewelry: BestSellingItem[];
+  Stones: BestSellingItem[];
+  Supplies: BestSellingItem[];
+  Courses: BestSellingItem[];
+}
+
 const useFinancialData = () => {
   const [financialData, setFinancialData] = useState<FinancialData>({
     revenue: 0,
     categoryRevenue: {},
   });
+
+  const [bestSellingItems, setBestSellingItems] = useState<BestSellingItems>({
+    Jewelry: [],
+    Stones: [],
+    Supplies: [],
+    Courses: [],
+  });
+  
   const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
   const [timeFrame, setTimeFrame] = useState<string>("Daily");
   const [isLoading, setIsLoading] = useState(false);
@@ -111,6 +131,12 @@ const useFinancialData = () => {
       console.log("📊 API Response:", data);
   
       setFinancialData(data);
+
+      const bestSellingResponse = await fetch(`/api/best-selling-items?startDate=${startDate}&endDate=${endDate}`);
+      if (!bestSellingResponse.ok) throw new Error("Failed to fetch best-selling items");
+      const bestSellingData = await bestSellingResponse.json();
+      setBestSellingItems(bestSellingData.bestSellingItems);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -121,6 +147,7 @@ const useFinancialData = () => {
 
   return {
     financialData,
+    bestSellingItems,
     selectedCategory,
     setSelectedCategory,
     timeFrame,
