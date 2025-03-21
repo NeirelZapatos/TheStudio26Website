@@ -15,7 +15,7 @@ export interface IItemTemplate extends Document {
   metalPurity?: string;
   metalFinish?: string;
   plating?: string;
-  // ringSize?: string;
+  ringSize?: string;
   caratWeight?: string;
   settingType?: string;
   stoneArrangement?: string;
@@ -38,8 +38,8 @@ const ItemTemplateSchema: Schema = new Schema(
     metal_purity: { type: String },
     metal_finish: { type: String },
     plating: { type: String },
-    // ring_size: { type: String },
-    carat_weight: { type: Number },
+    ring_size: { type: String },
+    carat_weight: { type: String },
     setting_type: { type: String },
     stone_arrangement: { type: String },
     customization_options: { type: String },

@@ -77,13 +77,13 @@ const itemSchema:Schema = new mongoose.Schema({
         type: String
     },
     ring_size: {
-        type: Number
+        type: String
     },
     gauge: {
-        type: Number
+        type: String
     },
     carat_weight: {
-        type: Number
+        type: String
     },
     setting_type: {
         type: String
@@ -107,7 +107,7 @@ const itemSchema:Schema = new mongoose.Schema({
     //     type: String
     // },
     weight: {
-        type: Number
+        type: String
     },
     material_composition: {
         type: String
@@ -139,10 +139,10 @@ const itemSchema:Schema = new mongoose.Schema({
     //     type: String
     // },
     stone_thickness: {
-        type: Number
+        type: String
     },
     stone_diameter: {
-        type: Number
+        type: String
     },
     shape_variation: {
         type: String

@@ -13,6 +13,7 @@ const baseProductSchema = z.object({
     images: z.array(z.string()).min(1, { message: "At least one image is required" }).optional(), // changed to optional for now
     // quantity_in_stock: z.number().min(0, { message: "Quantity must be a positive number" }),
     // purchaseType: z.enum(["Item", "Course"]),
+
     stripeProductId: z.string().optional(),
     color: z.string().optional(),
 

@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
-import { itemTemplates } from "@/utils/productTemplates";
-import Image from "next/image";
 import JewelryForm from "../components/ItemForms/JewelryForm";
 import ToolForm from "../components/ItemForms/ToolForm";
 import StoneForm from "../components/ItemForms/StoneForm";
@@ -63,8 +60,6 @@ export default function Page() {
               {message}
             </p>
           )}
-
-
         </div>
       </div>
     </div>

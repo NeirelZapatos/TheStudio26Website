@@ -41,7 +41,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [color, setColor] = useState("");
 
   // --------------- Design Fields --------------- //
-  // const [ringSize, setRingSize] = useState("");
+  const [ringSize, setRingSize] = useState("");
   const [gauge, setGauge] = useState("");
   const [caratWeight, setCaratWeight] = useState("");
   const [settingType, setSettingType] = useState("");
@@ -61,8 +61,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver"];
   const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized"];
   const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique"];
-
-  // const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
+  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
   const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar"];
   const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity"];
   const customizationOptionsList = ["engraving", "custom stone setting", "personalized design"];
@@ -76,7 +75,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   ];
 
   const areRequiredFieldsFilled = () => {
-    return requiredFields.every((field) => field.trim() !== "");
+    return requiredFields.every((field) => field && field.trim() !== "");
   };
 
   // --------------- Template Logic --------------- //
@@ -120,12 +119,13 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setColor(template.color || "");
       setWeight(template.weight || "");
       setSize(template.size || "");
+      setRingSize(template.ring_size || "");
       setMetalType(template.metal_type || "");
       setMetalPurity(template.metal_purity || "");
       setMetalFinish(template.metal_finish || "");
       setPlating(template.plating || "");
       // setRingSize(template.ring_size || "");
-      setCaratWeight(template.carat_weight?.toString() || "");
+      setCaratWeight(template.carat_weight || "");
       setSettingType(template.setting_type || "");
       setStoneArrangement(template.stone_arrangement || "");
       setCustomizationOptions(template.customization_options || "");
@@ -150,20 +150,22 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       description,
       price,
       quantityInStock,
-      jewelry_type: jewelryType,  
+      jewelry_type: jewelryType,
       image_url: allImageUrls[0] || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png",
       images: imagesArray,
-      metal_type: metalType,  
-      metal_purity: metalPurity,  
-      metal_finish: metalFinish,  
+      metal_type: metalType,
+      metal_purity: metalPurity,
+      metal_finish: metalFinish,
       color,
       plating,
       size,
+      ring_size: ringSize,
       // ring_size: ringSize, 
-      carat_weight: caratWeight ? parseFloat(caratWeight) : undefined,  
-      setting_type: settingType,  
-      stone_arrangement: stoneArrangement,  
-      customization_options: customizationOptions,  
+      carat_weight: caratWeight,
+      setting_type: settingType,
+      stone_arrangement: stoneArrangement,
+      customization_options: customizationOptions,
+      category: "Jewelry",
     };
 
     try {
@@ -214,12 +216,12 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     let designData = {};
     if (jewelryType === "ring") {
       designData = {
-        // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        carat_weight: caratWeight,  
-        setting_type: settingType,  
-        stone_arrangement: stoneArrangement,  
-        customization_options: customizationOptions,  
+        ring_size: ringSize,
+        carat_weight: caratWeight,
+        setting_type: settingType,
+        stone_arrangement: stoneArrangement,
+        customization_options: customizationOptions,
       };
     } else if (
       jewelryType === "earring" ||
@@ -228,18 +230,17 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       jewelryType === "pendant"
     ) {
       designData = {
-        stone_arrangement: stoneArrangement,  
-        customization_options: customizationOptions,  
+        stone_arrangement: stoneArrangement,
+        customization_options: customizationOptions,
       };
     } else if (jewelryType === "other") {
       // Display all design fields if "Other" is selected
       designData = {
-        // ring_size: ringSize ? parseFloat(ringSize) : undefined,
         gauge,
-        carat_weight: caratWeight,  
-        setting_type: settingType,  
-        stone_arrangement: stoneArrangement,  
-        customization_options: customizationOptions,  
+        carat_weight: caratWeight,
+        setting_type: settingType,
+        stone_arrangement: stoneArrangement,
+        customization_options: customizationOptions,
       };
     }
 
@@ -260,10 +261,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       images: imagesArray,
       weight: weight,
       size: size,
-      jewelry_type: jewelryType,  
-      metal_type: metalType,  
-      metal_purity: metalPurity,  
-      metal_finish: metalFinish,  
+      jewelry_type: jewelryType,
+      metal_type: metalType,
+      metal_purity: metalPurity,
+      metal_finish: metalFinish,
       plating,
       category: "Jewelry",
       ...designData,
@@ -304,7 +305,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setMetalPurity("");
       setMetalFinish("");
       setPlating("");
-      // setRingSize("");
       setGauge("");
       setCaratWeight("");
       setSettingType("");
@@ -438,6 +438,18 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </select>
         </div>
 
+        {jewelryType === "ring" && (
+          <div>
+            <label className="label">
+              <span className="label-text font-semibold">Ring Size</span>
+            </label>
+            <select className="select select-bordered w-full" value={ringSize} onChange={e => setRingSize(e.target.value)}>
+              <option value="">Select Ring Size</option>
+              {ringSizesOptions.map(rs => <option key={rs} value={rs}>{rs}</option>)}
+            </select>
+          </div>
+        )}
+
         <hr className="my-6 border-t border-gray-300" />
 
         {/* --------------- ADDITIONAL FIELDS --------------- */}
@@ -445,28 +457,13 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <span className="text-xl font-semibold">More Details</span>
         </div>
 
+        {/* Metal Information (Always Shown) */}
         <div>
           <label className="label">
             <span className="label-text font-semibold">Color</span>
           </label>
           <input type="string" className="input input-bordered w-full" value={color} onChange={e => setColor(e.target.value)} placeholder="Enter color" />
         </div>
-
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Weight</span>
-          </label>
-          <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
-        </div>
-
-        <div>
-          <label className="label">
-            <span className="label-text font-semibold">Size or Dimensions</span>
-          </label>
-          <input type="text" className="input input-bordered w-full" value={size} onChange={e => setSize(e.target.value)} placeholder="Enter size or dimensions" />
-        </div>
-
-        {/* Metal Information (Always Shown) */}
         <div>
           <label className="label">
             <span className="label-text font-semibold">Metal Type</span>
@@ -507,15 +504,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         {/* Conditional Design Fields */}
         {jewelryType === "ring" && (
           <>
-            {/* <div>
-              <label className="label">
-                <span className="label-text font-semibold">Ring Size</span>
-              </label>
-              <select className="select select-bordered w-full" value={ringSize} onChange={e => setRingSize(e.target.value)}>
-                <option value="">Select Ring Size</option>
-                {ringSizesOptions.map(size => <option key={size} value={size}>{size}</option>)}
-              </select>
-            </div> */}
             <div>
               <label className="label">
                 <span className="label-text font-semibold">Gauge (Thickness)</span>
@@ -562,6 +550,18 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <>
             <div>
               <label className="label">
+                <span className="label-text font-semibold">Size or Dimensions</span>
+              </label>
+              <input type="text" className="input input-bordered w-full" value={size} onChange={e => setSize(e.target.value)} placeholder="Enter size or dimensions" />
+            </div>
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Weight</span>
+              </label>
+              <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
+            </div>
+            <div>
+              <label className="label">
                 <span className="label-text font-semibold">Stone Arrangement</span>
               </label>
               <select className="select select-bordered w-full" value={stoneArrangement} onChange={e => setStoneArrangement(e.target.value)}>
@@ -593,6 +593,18 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 {ringSizesOptions.map(size => <option key={size} value={size}>{size}</option>)}
               </select>
             </div> */}
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Size or Dimensions</span>
+              </label>
+              <input type="text" className="input input-bordered w-full" value={size} onChange={e => setSize(e.target.value)} placeholder="Enter size or dimensions" />
+            </div>
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Weight</span>
+              </label>
+              <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
+            </div>
             <div>
               <label className="label">
                 <span className="label-text font-semibold">Gauge (Thickness)</span>
@@ -651,7 +663,11 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className={`${areRequiredFieldsFilled()
+              ? "bg-blue-500 rounded hover:bg-blue-600"
+              : "bg-gray-400 cursor-not-allowed"
+              } text-white px-4 py-2 rounded`}
+            disabled={!areRequiredFieldsFilled()} // Disable if required fields are not filled  
           >
             Submit Jewelry Item
           </button>
