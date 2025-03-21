@@ -91,17 +91,20 @@ export const isDateFragment = (str: string): boolean => {
  * Extract date components from a Date object in various formats
  * for flexible date matching
  */
-export const getDateComponents = (date: Date): string[] => {
+export const getDateComponents = (date: Date | string | number): string[] => {
+  // Ensure the input is a Date object
+  const dateObj = date instanceof Date ? date : new Date(date);
+  
   const components = [];
   
   // Add full date in various formats
-  components.push(date.toLocaleDateString('en-US')); // MM/DD/YYYY
-  components.push(date.toISOString().split('T')[0]); // YYYY-MM-DD
+  components.push(dateObj.toLocaleDateString('en-US')); // MM/DD/YYYY
+  components.push(dateObj.toISOString().split('T')[0]); // YYYY-MM-DD
   
   // Add individual components
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const year = date.getFullYear();
+  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate();
+  const year = dateObj.getFullYear();
   
   // Add MM/DD
   components.push(`${month}/${day}`);
@@ -185,7 +188,7 @@ export const getMatchScore = (order: IOrder, searchQuery: string): number => {
   }
   
   // Check for date matches - improved to handle fragments
-  const orderDateObj = new Date(order.order_date);
+  const orderDateObj = new Date(order.order_date); // Ensure this is a Date object
   const dateComponents = getDateComponents(orderDateObj);
   
   // If query looks like a date fragment
