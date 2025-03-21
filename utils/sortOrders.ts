@@ -1,5 +1,4 @@
 import { IOrder } from '@/app/models/Order'; // Import the IOrder interface from the Order model
-import { filterOrders } from '../app/(AdminPages)/Dashboard/components/ManageOrders/FilterOrders'; // Import the filterOrders utility function
 
 // SortOrders.ts
 export enum OrderFilter {
@@ -102,14 +101,12 @@ export const sortOrders = (
   });
 };
 
-// Sort orders based on the active filter and search query
+// Sort orders based on the active filter
 export const SortOrders = (
   orders: IOrder[],
-  activeFilter: OrderFilter,
-  searchQuery: string
+  activeFilter: OrderFilter
 ): IOrder[] => {
-  const filteredOrders = filterOrders(orders, activeFilter, searchQuery); // Filter orders based on the active filter and search query
-  return sortOrders(filteredOrders, activeFilter); // Sort the filtered orders
+  return sortOrders(orders, activeFilter); // Sort the orders based on the active filter
 };
 
 export default SortOrders; // Export the SortOrders function

@@ -71,13 +71,11 @@ const ManageOrders = () => {
     selectedOrders,
     setSelectedOrders,
     expandedOrder,
-    setExpandedOrder,
-    searchResults,
     setSearchResults,
     orders,
     error,
     mutate,
-    filteredOrders,
+    filteredOrders, // This is already filtered based on the searchQuery
     validOrders,
     handleSelectOrder,
     handleSelectAll,
@@ -86,7 +84,6 @@ const ManageOrders = () => {
 
   const {
     packageDetails,
-    setPackageDetails,
     isPackageModalOpen,
     setPackageModalOpen,
     currentPackageIndex,
@@ -99,7 +96,6 @@ const ManageOrders = () => {
 
   const {
     handleMarkAsFulfilled,
-    handleExportReport,
     handlePrintReceipt,
     getTimeElapsed,
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
@@ -137,7 +133,7 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders}
+        filteredOrders={filteredOrders} // Pass the filtered orders to OrderTables
         selectedOrders={selectedOrders}
         expandedOrder={expandedOrder}
         handleSelectAll={handleSelectAll}

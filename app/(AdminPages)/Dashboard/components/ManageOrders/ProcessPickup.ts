@@ -1,7 +1,15 @@
+import { IOrder } from "@/app/models/Order";
+
+// Updated MutateFunction type
+type MutateFunction = (
+  data?: IOrder[] | Promise<IOrder[]> | ((currentData: IOrder[] | undefined) => IOrder[] | undefined),
+  shouldRevalidate?: boolean
+) => Promise<IOrder[] | undefined>;
+
 export const ProcessPickup = async (
   orderIds: string[],
   orderStatus: string,
-  mutate: (data?: IOrder[] | Promise<IOrder[]>, shouldRevalidate?: boolean) => Promise<IOrder[] | undefined>
+  mutate: MutateFunction // Use the updated MutateFunction type
 ): Promise<IOrder[]> => {
   try {
     // Step 1: Update the order_status for the selected orders
@@ -21,26 +29,24 @@ export const ProcessPickup = async (
     const updatedOrdersData = await updateResponse.json();
     
     // Step 2: Use optimistic update pattern with SWR's mutate
-    // This updates the local data immediately without waiting for revalidation
     await mutate(
-      (currentOrders) => {
+      (currentOrders: IOrder[] | undefined) => {
         if (!currentOrders) return [];
         
-        // Create a new array with updated orders
-        return currentOrders.map(order => {
+        return currentOrders.map((order: IOrder) => {
           if (orderIds.includes(order._id.toString())) {
             return {
               ...order,
               order_status: orderStatus
-            };
+            } as IOrder; // Explicitly assert the type as IOrder
           }
           return order;
         });
-      }, 
-      false // Set to false to avoid immediate revalidation (which causes the flicker)
+      },
+      false // Avoid immediate revalidation
     );
     
-    // Step 3: Then trigger a background revalidation to ensure data consistency
+    // Step 3: Trigger a background revalidation
     setTimeout(() => {
       mutate();
     }, 300);

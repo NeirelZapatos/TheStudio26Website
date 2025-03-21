@@ -9,9 +9,9 @@ type MutateFunction = () => Promise<any>;
 export const useOrderActions = (
   orders: IOrder[] | null, 
   selectedOrders: Set<string>, 
-  mutate: MutateFunction, 
+  mutate: MutateFunction, // Use the updated MutateFunction type
   setSelectedOrders: React.Dispatch<React.SetStateAction<Set<string>>>
-) => {
+) =>  {
   const handleMarkAsFulfilled = async () => {
     if (!orders) {
       alert('Orders data not loaded yet');

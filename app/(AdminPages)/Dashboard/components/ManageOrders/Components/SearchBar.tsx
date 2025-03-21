@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react'; // Import React and useEffect
-import { IOrder } from '@/app/models/Order'; // Import IOrder interface
+import React, { useEffect } from 'react';
+import { IOrder } from '@/app/models/Order';
+import { searchOrders } from '@/utils/searchUtils'; // Import the search function
+
 
 /**
  * SearchBar Component:
@@ -13,44 +15,36 @@ import { IOrder } from '@/app/models/Order'; // Import IOrder interface
  */
 
 interface SearchBarProps {
-  orders: IOrder[]; // Orders data
-  onSearchResults: (filteredOrders: IOrder[]) => void; // Function to set search results
-  searchQuery: string; // Current search query
-  setSearchQuery: (query: string) => void; // Function to set search query
+  orders: IOrder[];
+  onSearchResults: (filteredOrders: IOrder[]) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const SearchBar = ({ orders, onSearchResults, searchQuery, setSearchQuery }: SearchBarProps) => {
+  // Process search whenever query or orders change
   useEffect(() => {
-    const searchOrders = () => {
-      const query = searchQuery.toLowerCase(); // Convert query to lowercase for case-insensitive search
-      const filtered = orders.filter((order) => {
-        const customerName = `${order.customer?.first_name} ${order.customer?.last_name}`.toLowerCase(); // Get customer name
-        const orderId = order._id.toString().toLowerCase(); // Get order ID
-        const orderDate = new Date(order.order_date).toLocaleDateString().toLowerCase(); // Get order date
+    const normalizedQuery = searchQuery.trim();
+    const filtered = searchOrders(orders, normalizedQuery); // Use the searchOrders function
+    onSearchResults(filtered);
+  }, [searchQuery, orders, onSearchResults]);
 
-        // Search across multiple fields, starting from the beginning of the string
-        return (
-          customerName.startsWith(query) || // Match customer name from the beginning
-          orderId.startsWith(query) || // Match order ID from the beginning
-          orderDate.startsWith(query) // Match order date from the beginning
-        );
-      });
-
-      onSearchResults(filtered); // Set search results
-    };
-
-    searchOrders(); // Call search function
-  }, [searchQuery, orders, onSearchResults]); // Re-run effect when searchQuery or orders change
+  // Handle input changes with better space handling
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedQuery = e.target.value.replace(/\s+/g, ' '); // Replace multiple spaces with a single space
+    setSearchQuery(sanitizedQuery);
+  };
 
   return (
     <div className="relative">
-      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span> {/* Search icon */}
+      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
       <input
         type="text"
-        placeholder="Search by customer name, order ID, or date..." // Placeholder text
-        className="w-full pl-10 pr-4 py-2 border rounded-lg" // Input styling
-        value={searchQuery} // Current search query
-        onChange={(e) => setSearchQuery(e.target.value)} // Handle input change (no modifications here)
+        placeholder="Search by customer name, order ID, or date..."
+        className="w-full pl-10 pr-4 py-2 border rounded-lg"
+        value={searchQuery}
+        onChange={handleInputChange}
+        autoComplete="off"
       />
     </div>
   );

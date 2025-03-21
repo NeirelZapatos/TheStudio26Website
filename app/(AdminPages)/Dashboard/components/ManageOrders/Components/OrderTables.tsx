@@ -83,19 +83,6 @@ const OrderTables: React.FC<{
     return firstName || lastName ? `${firstName} ${lastName}`.trim() : 'N/A';
   };
 
-  const highlightMatch = (text: string, query: string) => {
-    if (!query) return text;
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    return text.split(regex).map((part, index) =>
-      part.toLowerCase() === query.toLowerCase() ? (
-        <span key={index} className="bg-yellow-300 text-black">{part}</span>
-      ) : (
-        part
-      )
-    );
-  };
-
   const getOrderCount = (order: IOrder): number => {
     return (order.products || []).reduce((sum, product) => {
       const quantity = product?.quantity || 0;
@@ -162,14 +149,14 @@ const OrderTables: React.FC<{
                   <td className="p-4">
                     <div className="space-y-1">
                       <div className="font-medium flex items-center gap-2">
-                        {highlightMatch(getCustomerName(order), searchQuery)}
+                        {getCustomerName(order)} {/* Plain text rendering */}
                       </div>
                       <div className="text-sm text-gray-500">
-                        ID: {highlightMatch(order._id?.toString() ?? '', searchQuery)}
+                        ID: {order._id?.toString() ?? ''} {/* Plain text rendering */}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {highlightMatch(getTimeElapsed(order.order_date.toString()), searchQuery)}
+                        {getTimeElapsed(order.order_date.toString())} {/* Plain text rendering */}
                       </div>
                     </div>
                   </td>
@@ -183,7 +170,7 @@ const OrderTables: React.FC<{
                       ) : (
                         <Truck className="w-4 h-4" />
                       )}
-                      <span className="text-sm">{highlightMatch(order?.shipping_method ?? '', searchQuery)}</span>
+                      <span className="text-sm">{order?.shipping_method ?? ''}</span> {/* Plain text rendering */}
                     </div>
                   </td>
                   <td className="p-4">
@@ -200,7 +187,7 @@ const OrderTables: React.FC<{
                     </span>
                   </td>
                   <td className="p-4">
-                    {highlightMatch(new Date(order.order_date).toLocaleDateString(), searchQuery)}
+                    {new Date(order.order_date).toLocaleDateString()} {/* Plain text rendering */}
                   </td>
                   <td className="p-4">
                     <div className="flex space-x-2">
