@@ -1,10 +1,24 @@
-import React from "react"; // Import React
+import React, { useMemo } from "react"; // Import React
 import DatePickers from "./DatePickers"; // Import DatePickers component
 import RevenueOptions from "./RevenueOptions"; // Import RevenueOptions component
 import RevenueDetails from "./RevenueDetails"; // Import RevenueDetails component
 import useFinancialData from "./hooks/useFinancialData"; // Import custom hook for financial data
 import BestSellingItems from "./BestSellingItems"; // Import Best Selling Items component
 import useOrderData from "./hooks/useOrderData"; // Import custom hook for order data
+
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 /**
  * FinancialAnalytics Component:
@@ -62,28 +76,46 @@ const FinancialAnalytics: React.FC = () => {
 
   // Define product categories and time frames for filtering
   //const productCategories = ["All Categories", "Courses", "Jewelry", "Stones", "Supplies"];
+// Memoize RevenueDetails to avoid unnecessary re-renders
+const memoizedRevenueDetails = useMemo(() => (
+  <RevenueDetails
+    financialData={financialData}
+    timeFrame={timeFrame}
+    formatRevenue={formatRevenue}
+  />
+), [financialData, timeFrame, formatRevenue]);
 
-  return (
-    <section className="bg-white text-gray-900 shadow-lg rounded-lg p-6 my-6">
-      <h2 className="text-2xl font-semibold mb-6">Financial Analytics</h2>
+const revenueChartData = useMemo(() => ({
+  labels: Object.keys(financialData.categoryRevenue), // Categories as labels
+  datasets: [
+    {
+      label: "Revenue ($)",
+      data: Object.values(financialData.categoryRevenue).map((cat) => cat.revenue),
+      borderColor: "rgb(75, 192, 192)", // Teal-colored line
+      backgroundColor: "rgba(75, 192, 192, 0.2)", // Light teal fill
+      fill: true,
+    },
+  ],
+}), [financialData]);
 
-      {/* Revenue Section */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Revenue:</h3>
-        <div className="flex flex-wrap items-center justify-between">
-          {/* Revenue Options Component */}
-          <RevenueOptions timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
+return (
+  <section className="bg-white text-gray-900 shadow-lg rounded-lg p-6 my-6">
+    <h2 className="text-2xl font-semibold mb-6">Financial Analytics</h2>
 
-          {/* Date Pickers Component */}
-          <DatePickers
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            onFilterClick={fetchDataByDateRange}
-          />
-        </div>
+    {/* Revenue Section */}
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-2">Revenue:</h3>
+      <div className="flex flex-wrap items-center justify-between">
+        <RevenueOptions timeFrame={timeFrame} setTimeFrame={setTimeFrame} />
+        <DatePickers
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onFilterClick={fetchDataByDateRange}
+        />
       </div>
+    </div>
 
       {/* Loading, Error, or Revenue Details */}
       {isLoading ? (
@@ -94,7 +126,7 @@ const FinancialAnalytics: React.FC = () => {
         <div className="text-red-500">{error}</div>
       ) : (
         <>
-        
+       
         <RevenueDetails
           financialData={financialData}
           timeFrame={timeFrame}

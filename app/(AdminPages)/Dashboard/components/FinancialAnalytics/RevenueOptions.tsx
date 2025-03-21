@@ -20,7 +20,10 @@ const RevenueOptions: React.FC<RevenueOptionsProps> = ({ timeFrame, setTimeFrame
       {timeFrames.map((frame) => (
         <button
           key={frame}
-          onClick={() => setTimeFrame(frame)}
+          onClick={() => {
+            console.log(`🟢 Button Clicked: ${frame}`);
+            setTimeFrame(frame);
+          }}
           className={`p-2 rounded-lg ${
             timeFrame === frame ? "bg-blue-400 text-white" : "bg-gray-200 text-gray-900"
           }`}
