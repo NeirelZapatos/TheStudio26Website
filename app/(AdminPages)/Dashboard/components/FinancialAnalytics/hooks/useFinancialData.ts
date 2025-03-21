@@ -1,7 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react"; // Import React hooks
 
 /**
- * Custom hook to fetch and manage financial data.
+ * useFinancialData Hook:
+ * Manages fetching and formatting financial data, including revenue and category revenue.
+ * Returns:
+ * - financialData: Object containing revenue and category revenue data.
+ * - selectedCategory: The currently selected product category.
+ * - setSelectedCategory: Function to update the selected category.
+ * - timeFrame: The currently selected time frame.
+ * - setTimeFrame: Function to update the time frame.
+ * - isLoading: Loading state.
+ * - error: Error message (if any).
+ * - startDate: Start date for date range filtering.
+ * - setStartDate: Function to update the start date.
+ * - endDate: End date for date range filtering.
+ * - setEndDate: Function to update the end date.
+ * - fetchDataByDateRange: Function to fetch data based on a date range.
+ * - formatRevenue: Function to format revenue as currency.
  */
 interface CategoryRevenue {
   revenue: number;
@@ -24,100 +39,98 @@ const useFinancialData = () => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  /**
-   * Calculate the date range based on the selected time frame.
-   */
-  const calculateDateRange = useCallback(() => {
-    const today = new Date();
-    let start: string, end: string;
-  
-    switch (timeFrame) {
-      case "Yearly":
-        start = `${today.getFullYear()}-01-01`; // Start of the year
-        end = `${today.getFullYear()}-12-31`; // End of the year
-        break;
-  
-      case "Quarterly":
-        const quarterStartMonth = Math.floor(today.getMonth() / 3) * 3; // Get first month of the quarter
-        const quarterEndMonth = quarterStartMonth + 2; // Get last month of the quarter
-        start = `${today.getFullYear()}-${(quarterStartMonth + 1).toString().padStart(2, "0")}-01`;
-        end = `${today.getFullYear()}-${(quarterEndMonth + 1).toString().padStart(2, "0")}-${new Date(today.getFullYear(), quarterEndMonth + 1, 0).getDate()}`;
-        break;
-  
-      case "Monthly":
-        start = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-01`;
-        end = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()}`;
-        break;
-  
-      default:
-        // "Daily" - Use today's date
-        start = end = today.toISOString().split("T")[0];
-    }
-  
-    console.log(`🟢 TimeFrame: ${timeFrame}, Start Date: ${start}, End Date: ${end}`);
-    setStartDate(start);
-    setEndDate(end);
-  }, [timeFrame]);  
+  // Fetch financial data when the selected category or time frame changes
+  useEffect(() => {
+    const calculateDateRange = () => {
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth();
+      const currentDay = new Date().getDate();
 
-  /**
-   * Fetch financial data based on category and date range.
-   */
-  /*
-  const fetchFinancialData = useCallback(async () => {
+      const nextDate = new Date(currentYear, currentMonth, currentDay);
+      nextDate.setDate(nextDate.getDate() + 1);
+      const nextYear = nextDate.getFullYear();
+      const nextMonth = (nextDate.getMonth() + 1).toString().padStart(2, "0");
+      const nextDay = nextDate.getDate().toString().padStart(2, "0");
+
+      let start = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${currentDay}`;
+      let end = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${nextDay}`;
+
+      if (timeFrame === "Yearly") {
+        start = `${currentYear}-01-01`;
+        end = `${currentYear}-12-31`;
+      } else if (timeFrame === "Quarterly") {
+        const quarterFirstMonth = Math.floor(currentMonth / 3) * 3;
+        const quarterLastMonth = quarterFirstMonth + 2;
+        start = `${currentYear}-${(quarterFirstMonth + 1).toString().padStart(2, "0")}-01`;
+        end = `${currentYear}-${(quarterLastMonth + 1).toString().padStart(2, "0")}-${new Date(
+          currentYear,
+          quarterLastMonth + 1,
+          0
+        ).getDate()}`;
+      } else if (timeFrame === "Monthly") {
+        start = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-01`;
+        end = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${new Date(
+          currentYear,
+          currentMonth + 1,
+          0
+        ).getDate().toString().padStart(2, "0")}`;
+      } else {
+        start = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${currentDay}`;
+        end = `${nextYear}-${nextMonth}-${nextDay}`;
+      }
+
+      return { start, end };
+    };
+
+    const fetchData = async () => {
+      const { start, end } = calculateDateRange();
+      setStartDate(start);
+      setEndDate(end);
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `/api/financial-analytics/date-filter?category=${selectedCategory}&startDate=${start}&endDate=${end}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const data = await response.json();
+        setFinancialData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory, timeFrame]);
+
+  // Fetch financial data based on a custom date range
+  const fetchDataByDateRange = async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      const response = await fetch(
-        `/api/financial-analytics?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch data");
-      const data = await response.json();
-      setFinancialData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedCategory, startDate, endDate]);
-
-  useEffect(() => {
-    calculateDateRange(); 
-  }, [timeFrame, calculateDateRange]);
-
-  useEffect(() => {
-    fetchFinancialData();
-  }, [selectedCategory, startDate, endDate, fetchFinancialData]);
-  */
-
-  const fetchDataByDateRange = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-  
-    console.log(`📡 Fetching Data:`, {
-      category: selectedCategory,
-      timeFrame,
-      startDate,
-      endDate,
-    });
-  
     try {
       const response = await fetch(
         `/api/financial-analytics/date-filter?category=${selectedCategory}&startDate=${startDate}&endDate=${endDate}`
       );
-  
       if (!response.ok) throw new Error("Failed to fetch data");
-  
       const data = await response.json();
-      console.log("📊 API Response:", data);
-  
       setFinancialData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, startDate, endDate]);
-      
+  };
+
+  // Format revenue as currency
+  const formatRevenue = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
 
   return {
     financialData,
@@ -127,12 +140,12 @@ const useFinancialData = () => {
     setTimeFrame,
     isLoading,
     error,
-    startDate, 
+    startDate,
     setStartDate,
-    endDate, 
+    endDate,
     setEndDate,
-    fetchDataByDateRange, 
-    formatRevenue: (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value),
+    fetchDataByDateRange,
+    formatRevenue
   };
 };
 
