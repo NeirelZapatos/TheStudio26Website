@@ -3,6 +3,7 @@ import DatePickers from "./DatePickers"; // Import DatePickers component
 import RevenueOptions from "./RevenueOptions"; // Import RevenueOptions component
 import RevenueDetails from "./RevenueDetails"; // Import RevenueDetails component
 import useFinancialData from "./hooks/useFinancialData"; // Import custom hook for financial data
+import BestSellingItems from "./BestSellingItems"; // Import Best-Selling Items component
 import useOrderData from "./hooks/useOrderData"; // Import custom hook for order data
 
 /**
@@ -41,6 +42,7 @@ const FinancialAnalytics: React.FC = () => {
   // Destructure values from the `useFinancialData` hook
   const { 
     financialData, // Financial data (revenue and category revenue)
+    bestSellingItems, // Revenue Trends (or) Best-selling items per category
     timeFrame, // Selected time frame (e.g., "Daily", "Monthly")
     setTimeFrame, // Function to update the time frame
     isLoading, // Loading state
@@ -91,11 +93,17 @@ const FinancialAnalytics: React.FC = () => {
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
+        <>
         <RevenueDetails
           financialData={financialData}
           timeFrame={timeFrame}
           formatRevenue={formatRevenue}
         />
+
+        {/* Best Selling Items Section */}
+        <BestSellingItems bestSellingItems={bestSellingItems} />
+
+        </>
       )}
     </section>
   );
