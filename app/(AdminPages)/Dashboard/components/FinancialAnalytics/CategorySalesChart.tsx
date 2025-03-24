@@ -22,18 +22,44 @@ const CategorySalesChart: React.FC<ChartProps> = ({ category, data }) => {
         ]
     };
 
-    const chartOptions: ChartOptions<"bar"> = {
+    const chartOptions: any = {
         responsive: true,
         plugins: {
+          title: {
+            display: true,
+            text: `Top 3 ${category} Items by Sales`,
+          },
+          legend: {
+            display: false,
+          },
+        },
+      
+        scales: {
+          y: {
+            type: "linear",
             title: {
-                display: true,
-                text: `Top 3 ${category} Items by Sales`,
+              display: true,
+              text: "Sales Count",
+              font: {
+                size: 14,
+                weight: "bold",
+              },
+              padding: {
+                top: 10,
+              },
             },
-            legend: {
-                display: false
-            }
-        }
-    };
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+          x: {
+            ticks: {
+              autoSkip: false,
+            },
+          },
+        },
+      };
+      
 
     return (
         <div className = "bg-white p-4 rounded-lg shadow-md">
