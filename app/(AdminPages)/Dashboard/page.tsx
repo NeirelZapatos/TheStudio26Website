@@ -10,7 +10,6 @@ import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
 import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagement/CustomerManagementSection";
-
 import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
@@ -19,6 +18,7 @@ import ProductList from "./components/ProductList";
 import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";
 import AddAdmin from "./components/AddAdmin";
+import RentalEquipmentSection from "./components/RentalEquipmentSection";
 
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -48,16 +48,15 @@ function DashboardPage() {
         {activeSection === "pos" && <PointOfSaleSection />}
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
-        {activeSection == "item" && <ItemSection />}
-        {activeSection == "class" && <ClassSection />}
-        {activeSection === "customerManagement" && (
-          <CustomerManagementSection />
-        )}
+        {activeSection === "item" && <ItemSection />}
+        {activeSection === "class" && <ClassSection />}
+        {activeSection === "customerManagement" && <CustomerManagementSection />}
         {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {activeSection === "productList" && <ProductList />}
         {activeSection === "manageOrders" && <ManageOrders />}
         {activeSection === "classCatalogManager" && <ClassCatalogManager />}
+        {activeSection === "rentalEquipment" && <RentalEquipmentSection />} {/* New tab */}
         {activeSection === "addAdmin" && <AddAdmin />}
       </main>
     </div>
