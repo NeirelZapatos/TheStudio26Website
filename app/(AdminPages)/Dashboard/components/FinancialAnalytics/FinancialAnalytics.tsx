@@ -4,6 +4,7 @@ import RevenueOptions from "./RevenueOptions"; // Import RevenueOptions componen
 import RevenueDetails from "./RevenueDetails"; // Import RevenueDetails component
 import useFinancialData from "./hooks/useFinancialData"; // Import custom hook for financial data
 import BestSellingItems from "./BestSellingItems"; // Import Best-Selling Items component
+import CategorySalesChart from "./CategorySalesChart" // Import Revenue trends in graphical format
 import useOrderData from "./hooks/useOrderData"; // Import custom hook for order data
 
 /**
@@ -102,6 +103,14 @@ const FinancialAnalytics: React.FC = () => {
 
         {/* Best Selling Items Section */}
         <BestSellingItems bestSellingItems={bestSellingItems} />
+
+        {/* Sales Trend Graphs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <CategorySalesChart category="Jewelry" data={bestSellingItems.Jewelry} />
+          <CategorySalesChart category="Stones" data={bestSellingItems.Stones} />
+          <CategorySalesChart category="Supplies" data={bestSellingItems.Supplies} />
+          <CategorySalesChart category="Courses" data={bestSellingItems.Courses} />
+        </div>
 
         </>
       )}
