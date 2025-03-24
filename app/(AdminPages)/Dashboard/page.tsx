@@ -17,6 +17,7 @@ import FinancialAnalytics from "./components/FinancialAnalytics/FinancialAnalyti
 import ProductList from "./components/ProductList";
 import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";
+import AddAdmin from "./components/AddAdmin";
 import RentalEquipmentSection from "./components/RentalEquipmentSection";
 
 function DashboardPage() {
@@ -56,6 +57,7 @@ function DashboardPage() {
         {activeSection === "manageOrders" && <ManageOrders />}
         {activeSection === "classCatalogManager" && <ClassCatalogManager />}
         {activeSection === "rentalEquipment" && <RentalEquipmentSection />} {/* New tab */}
+        {activeSection === "addAdmin" && <AddAdmin />}
       </main>
     </div>
   );
