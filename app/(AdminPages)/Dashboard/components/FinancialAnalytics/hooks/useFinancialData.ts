@@ -136,21 +136,6 @@ const useFinancialData = () => {
       }
     };
 
-    const fetchBestSellingItems = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/best-selling-items?startDate=${startDate}&endDate=${endDate}`);
-        if (!response.ok) throw new Error("Failed to fetch best-selling items");
-        const data = await response.json();
-        setBestSellingItems(data.bestSellingItems);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : "An error occurred");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     const fetchCategorySales = async () => {
       setIsLoading(true);
       setError(null);
@@ -167,9 +152,29 @@ const useFinancialData = () => {
     };
 
     fetchData();
-    fetchBestSellingItems();
     fetchCategorySales();
   }, [selectedCategory, timeFrame]);
+
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+
+    const fetchBestSellingItems = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/best-selling-items?startDate=${startDate}&endDate=${endDate}`);
+        if (!response.ok) throw new Error("Failed to fetch best-selling items");
+        const data = await response.json();
+        setBestSellingItems(data.bestSellingItems);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "An error occurred");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBestSellingItems();
+  }, [startDate, endDate]);
 
   // Fetch financial data based on a custom date range
   const fetchDataByDateRange = async () => {
