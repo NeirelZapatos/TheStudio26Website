@@ -4,11 +4,7 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import HomeSection from "./components/HomeSection";
-import ConnectSetupSection from "./components/ConnectSetupSection";
-import InvoicesSection from "./components/InvoicesSection";
-import PointOfSaleSection from "./components/PointOfSaleSection";
 import BookingCalendarSection from "./components/BookingCalendarSection";
-import WorkScheduleSection from "./components/WorkScheduleSection";
 import CustomerManagementSection from "./components/CustomerManagement/CustomerManagementSection";
 import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
@@ -24,7 +20,6 @@ import RentalEquipmentSection from "./components/RentalEquipmentSection";
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
   const [showGettingPaid, setShowGettingPaid] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
   const [showCoursesAndItems, setShowCoursesAndItems] = useState(false);
 
@@ -36,8 +31,6 @@ function DashboardPage() {
           setActiveSection={setActiveSection}
           showGettingPaid={showGettingPaid}
           setShowGettingPaid={setShowGettingPaid}
-          showCalendar={showCalendar}
-          setShowCalendar={setShowCalendar}
           showProducts={showProducts}
           setShowProducts={setShowProducts}
           showCoursesAndItems={showCoursesAndItems}
@@ -47,14 +40,15 @@ function DashboardPage() {
       <main className="ml-64 flex-1 overflow-y-auto bg-gray-100 p-8">
         <Header />
         {activeSection === "home" && <HomeSection />}
-        {activeSection === "connect" && <ConnectSetupSection />}
-        {activeSection === "invoices" && <InvoicesSection />}
-        {activeSection === "pos" && <PointOfSaleSection />}
+        {activeSection === "financialAnalytics" && <FinancialAnalytics />}
+        {activeSection === "finances" && <FinancesSection />}
         {activeSection === "calendar" && <BookingCalendarSection />}
         {activeSection === "work" && <WorkScheduleSection />}
         {activeSection === "item" && <ItemSection />}
         {activeSection === "class" && <ClassSection />}
-        {activeSection === "customerManagement" && <CustomerManagementSection />}
+        {activeSection === "customerManagement" && (
+          <CustomerManagementSection />
+        )}
         {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
         {/* {activeSection === "productList" && <ProductList />} */}
@@ -62,7 +56,8 @@ function DashboardPage() {
         {activeSection === "itemsList" && <ItemsListSection />}
         {activeSection === "manageOrders" && <ManageOrders />}
         {activeSection === "classCatalogManager" && <ClassCatalogManager />}
-        {activeSection === "rentalEquipment" && <RentalEquipmentSection />} {/* New tab */}
+        {activeSection === "rentalEquipment" && <RentalEquipmentSection />}{" "}
+        {/* New tab */}
         {activeSection === "addAdmin" && <AddAdmin />}
       </main>
     </div>
