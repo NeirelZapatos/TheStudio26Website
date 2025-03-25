@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { IOrder } from '@/app/models/Order';
-import PackageDetailsModal from './PackageDetailsModal'; // Import PackageDetailsModal component
 
 import { 
   Store, 
@@ -73,7 +72,6 @@ const OrderTables: React.FC<{
   handleToggleDetails,
   getTimeElapsed,
   searchQuery,
-  
 }) => {
   const [isPackageModalOpen, setPackageModalOpen] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
@@ -83,19 +81,6 @@ const OrderTables: React.FC<{
     const firstName = order.customer.first_name || '';
     const lastName = order.customer.last_name || '';
     return firstName || lastName ? `${firstName} ${lastName}`.trim() : 'N/A';
-  };
-
-  const highlightMatch = (text: string, query: string) => {
-    if (!query) return text;
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    return text.split(regex).map((part, index) =>
-      part.toLowerCase() === query.toLowerCase() ? (
-        <span key={index} className="bg-yellow-300 text-black">{part}</span>
-      ) : (
-        part
-      )
-    );
   };
 
   const getOrderCount = (order: IOrder): number => {
@@ -122,19 +107,10 @@ const OrderTables: React.FC<{
           <thead>
             <tr className="bg-gray-50">
               {/* Header Checkbox */}
-<th className="p-4 w-[50px]">
-  <input
-    type="checkbox"
-    aria-label="Select all orders"
-    checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
-    onChange={handleSelectAll}
-    className="rounded border-gray-300 w-4 h-4"
-  />
-</th>
-
-<th className="p-4 w-[50px]">
+              <th className="p-4 w-[50px]">
                 <input
                   type="checkbox"
+                  aria-label="Select all orders"
                   checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 w-4 h-4"
@@ -173,14 +149,14 @@ const OrderTables: React.FC<{
                   <td className="p-4">
                     <div className="space-y-1">
                       <div className="font-medium flex items-center gap-2">
-                        {highlightMatch(getCustomerName(order), searchQuery)}
+                        {getCustomerName(order)} {/* Plain text rendering */}
                       </div>
                       <div className="text-sm text-gray-500">
-                        ID: {highlightMatch(order._id?.toString() ?? '', searchQuery)}
+                        ID: {order._id?.toString() ?? ''} {/* Plain text rendering */}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {highlightMatch(getTimeElapsed(order.order_date.toString()), searchQuery)}
+                        {getTimeElapsed(order.order_date.toString())} {/* Plain text rendering */}
                       </div>
                     </div>
                   </td>
@@ -194,7 +170,7 @@ const OrderTables: React.FC<{
                       ) : (
                         <Truck className="w-4 h-4" />
                       )}
-                      <span className="text-sm">{highlightMatch(order?.shipping_method ?? '', searchQuery)}</span>
+                      <span className="text-sm">{order?.shipping_method ?? ''}</span> {/* Plain text rendering */}
                     </div>
                   </td>
                   <td className="p-4">
@@ -211,7 +187,7 @@ const OrderTables: React.FC<{
                     </span>
                   </td>
                   <td className="p-4">
-                    {highlightMatch(new Date(order.order_date).toLocaleDateString(), searchQuery)}
+                    {new Date(order.order_date).toLocaleDateString()} {/* Plain text rendering */}
                   </td>
                   <td className="p-4">
                     <div className="flex space-x-2">
@@ -221,7 +197,6 @@ const OrderTables: React.FC<{
                       >
                         {expandedOrder === order._id?.toString() ? 'Hide Details' : 'View Details'}
                       </button>
-                      
                     </div>
                   </td>
                 </tr>
@@ -230,7 +205,7 @@ const OrderTables: React.FC<{
                     <td colSpan={7} className="p-4 bg-gray-50">
                       <div className="space-y-4">
                         <h3 className="text-xl font-semibold">Order Details</h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div><strong>Order ID:</strong> {order._id?.toString() ?? ''}</div>
                           <div><strong>Customer:</strong> {order.customer?.first_name} {order.customer?.last_name}</div>
                           <div><strong>Order Date:</strong> {new Date(order.order_date).toLocaleDateString()}</div>
@@ -239,31 +214,65 @@ const OrderTables: React.FC<{
                           <div><strong>Order Status:</strong> {order.order_status}</div>
                           <div className="col-span-2"><strong>Shipping Address:</strong> {order.shipping_address}</div>
                           <div className="col-span-2"><strong>Billing Address:</strong> {order.billing_address}</div>
-                          <div><strong>Total Amount:</strong> ${order.total_amount}</div>
-                          
-                          <strong>Items:</strong>
-                          {(order.products || []).length > 0 && (
-                            <ul className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {(order.products || []).map((product, index) => (
-                                <li key={index} className="p-4 bg-white rounded-lg shadow">
-                                  <div className="flex gap-4">
-                                    <img
-                                      src={product.product?.image_url}
-                                      alt={product.product?.name}
-                                      className="w-32 h-32 object-cover rounded"
-                                    />
-                                    <div>
-                                      <div className="font-medium">{product.product?.name}</div>
-                                      <div className="text-sm text-gray-600">{product.product?.description}</div>
-                                      <div className="text-sm">Quantity: {product.quantity}</div>
-                                      <div className="text-sm text-gray-500">Price: ${product.product?.price}</div>
-                                    </div>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          <div className="col-span-2"><strong>Total Amount:</strong> ${order.total_amount}</div>
                         </div>
+                        
+                        {/* Items Section - Fixed Layout */}
+                        {/* Items Section - Fixed Layout */}
+{/* Items Section - Fixed Layout */}
+<div className="mt-6">
+  <h4 className="text-lg font-semibold mb-4">Items</h4>
+  {(order.products || []).length > 0 && (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {(() => {
+        // Define an interface for our unique products tracker
+        interface UniqueProductEntry {
+          product: any; // Use the actual type of product here if available
+          quantity: number;
+          displayData: any; // Use the actual type here
+        }
+        
+        // Create an object with index signature to track unique products
+        const uniqueProducts: Record<string, UniqueProductEntry> = {};
+        
+        // Count occurrences of each product
+        (order.products || []).forEach((product) => {
+          const productId = product.product?._id?.toString() || 'unknown';
+          
+          if (!uniqueProducts[productId]) {
+            uniqueProducts[productId] = {
+              product: product.product,
+              quantity: 0,
+              displayData: product
+            };
+          }
+          
+          uniqueProducts[productId].quantity += product.quantity || 0;
+        });
+        
+        // Convert to array and render
+        return Object.values(uniqueProducts).map((item, index) => (
+          <div key={index} className="bg-white p-4 rounded-lg shadow">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <img
+                src={item.product?.image_url}
+                alt={item.product?.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+              <div className="flex-1">
+                <div className="font-medium text-lg">{item.product?.name}</div>
+                <div className="text-sm text-gray-600 mt-1">{item.product?.description}</div>
+                <div className="mt-2 text-sm font-medium">Quantity: {item.quantity}</div>
+                <div className="text-sm text-gray-700">Price: ${item.product?.price}</div>
+              </div>
+            </div>
+          </div>
+        ));
+      })()}
+    </div>
+  )}
+</div>
+
                       </div>
                     </td>
                   </tr>
@@ -273,7 +282,6 @@ const OrderTables: React.FC<{
           </tbody>
         </table>
       </div>
-    
     </>
   );
 };

@@ -1,6 +1,13 @@
 import { IOrder } from "@/app/models/Order";
 import axios from "axios";
 
+interface PackageDetails {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+}
+
 interface ShippoLabelResponse {
   label_url?: string;
   tracking_number?: string;
@@ -49,11 +56,9 @@ interface ShippoLabelRequest {
   };
 }
 
-// Validate address format - more flexible address parser 
 const validateAddress = (addressString: string) => {
   const parts = addressString.split(',').map(part => part.trim());
   
-  // Ensure we have at least street, city, state, zip
   if (parts.length < 4) {
     throw new Error('Invalid address format. Expected at least: "Street, City, State, ZIP"');
   }
@@ -63,86 +68,70 @@ const validateAddress = (addressString: string) => {
     city: parts[1],
     state: parts[2],
     zip: parts[3],
-    country: parts.length >= 5 ? parts[4] : 'US' // Default to US if country not provided
+    country: parts.length >= 5 ? parts[4] : 'US'
   };
 };
+
 export const printShippingLabels = async (
   selectedOrders: string[],
   orders: IOrder[],
-  packageDetails: {  // Remove the ? to make this required
-    length: number;
-    width: number;
-    height: number;
-    weight: number;
-  }
+  packageDetails: PackageDetails[]
 ) => {
-  // Validate package details first
-  if (!packageDetails || 
-      packageDetails.length <= 0 || 
-      packageDetails.width <= 0 || 
-      packageDetails.height <= 0 || 
-      packageDetails.weight <= 0) {
-    throw new Error('All package dimensions (length, width, height, weight) must be provided and greater than zero');
+  if (packageDetails.length !== selectedOrders.length) {
+    throw new Error(`Package details must be provided for each selected order. 
+      Received ${packageDetails.length} details for ${selectedOrders.length} orders`);
   }
 
   try {
-    const labels = await Promise.all(selectedOrders.map(async (orderId) => {
-      const order = orders.find(o => o._id.toString() === orderId);
-      if (!order) throw new Error(`Order ${orderId} not found`);
-      
-      // Handle both customer and customer_id patterns
-      const customerData = order.customer || order.customer_id;
-      if (!customerData || !order.shipping_address) {
-        throw new Error(`Order ${orderId} missing customer or address data`);
-      }
-
-      try {
-        const parsedAddress = validateAddress(order.shipping_address);
-
-        // Simplified API call that matches the backend expectations
-        const response = await axios.post<ShippoLabelResponse>(
-          '/api/shipping',
-          {
-            order_ids: [order._id.toString()],  // Always send as array to match backend
-            package_details: packageDetails  // Use the entire object directly
-          }
-        );
-
-        if (response.data.error) {
-          throw new Error(response.data.error);
-        }
-
-        if (!response.data.label_url) {
-          throw new Error('No label URL returned from Shippo');
-        }
-
-        return response.data;
-
-      } catch (error: any) {
-        const message = error.response?.data?.error || error.message;
-        window.alert(`Order ${orderId} Failed: ${message}`);
-        throw new Error(message);
-      }
-    }));
-
-// Handle label downloads
-labels.forEach((label, index) => {
-  if (label?.label_url) {
-    const link = document.createElement('a');
-    link.href = label.label_url;
-    link.download = `label_${selectedOrders[index]}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Send all orders in a single request to match the API expectation
+    // In printShippingLabels function:
+const requestData = {
+  order_ids: selectedOrders,
+  package_details: {
+    length: packageDetails[0].length.toString(),
+    width: packageDetails[0].width.toString(),
+    height: packageDetails[0].height.toString(),
+    weight: packageDetails[0].weight.toString()
   }
-});
+};
 
-    return labels;
+    console.log('Sending bulk shipping request:', requestData);
+    const response = await axios.post('/api/shipping', requestData);
 
+    if (response.data.error) {
+      throw new Error(response.data.error);
+    }
+
+    // Handle response based on API structure
+    if (Array.isArray(response.data)) {
+      // If API returns an array of labels
+      return response.data.map(label => {
+        if (label.label_url) {
+          const link = document.createElement('a');
+          link.href = label.label_url;
+          link.download = `label_${label.order_id || 'order'}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        return label;
+      });
+    } else if (response.data.label_url) {
+      // If API returns a single label
+      const link = document.createElement('a');
+      link.href = response.data.label_url;
+      link.download = `label_${selectedOrders[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return [response.data];
+    } else {
+      throw new Error('Invalid response format from shipping API');
+    }
   } catch (error: any) {
-    const message = error.message || 'Unknown error';
+    const message = error.response?.data?.error || error.message;
+    console.error('Shipping error:', error);
     window.alert(`Shipping Error: ${message}`);
     throw new Error(message);
   }
 };
-
