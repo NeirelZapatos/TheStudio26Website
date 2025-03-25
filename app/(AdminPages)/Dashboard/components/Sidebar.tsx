@@ -10,6 +10,8 @@ interface SidebarProps {
   setShowCalendar: (show: boolean) => void;
   showProducts: boolean;
   setShowProducts: (show: boolean) => void;
+  showCoursesAndItems: boolean;
+  setShowCoursesAndItems: (show: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -21,6 +23,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   setShowCalendar,
   showProducts,
   setShowProducts,
+  showCoursesAndItems,
+  setShowCoursesAndItems,
 }) => {
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 overflow-y-auto flex flex-col">
@@ -133,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Create a Class
               </button>
-              <button
+              {/* <button
                 onClick={() => setActiveSection("productList")}
                 className={`block w-full text-left p-2 rounded-lg ${activeSection === "productList"
                     ? "bg-gray-700"
@@ -141,7 +145,37 @@ const Sidebar: React.FC<SidebarProps> = ({
                   }`}
               >
                 Product List
+              </button> */}
+              <button
+                onClick={() => setShowCoursesAndItems(!showCoursesAndItems)}
+                className="block w-full text-left p-2 rounded-lg hover:bg-gray-600"
+              >
+                Product List
               </button>
+              {showCoursesAndItems && (
+                <div className="pl-4 space-y-1">
+                  <button
+                    onClick={() => setActiveSection("coursesList")}
+                    className={`block w-full text-left p-2 rounded-lg ${
+                      activeSection === "courseList"
+                        ? "bg-gray-700"
+                        : "hover:bg-gray-600"
+                    }`}
+                  >
+                    Courses
+                  </button>
+                  <button
+                    onClick={() => setActiveSection("itemsList")}
+                    className={`block w-full text-left p-2 rounded-lg ${
+                      activeSection === "itemList"
+                        ? "bg-gray-700"
+                        : "hover:bg-gray-600"
+                    }`}
+                  >
+                    Items
+                  </button>
+                </div>
+              )}
               <button
                 onClick={() => setActiveSection("classCatalogManager")}
                 className={`block w-full text-left p-2 rounded-lg ${activeSection === "classCatalogManager"
