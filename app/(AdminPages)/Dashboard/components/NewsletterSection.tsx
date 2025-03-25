@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { TReaderDocument, renderToStaticMarkup, Reader } from "@usewaypoint/email-builder";
 import { getEmailTemplates } from "@/app/lib/emailTemplates";
 import { IEmailTemplate } from "@/app/models/EmailTemplate";
+import NewsletterConfigForm from "@/app/Components/NewsletterConfigForm";
 
 const NewsletterSection: React.FC = () => {
     const [templates, setTemplates] = useState<IEmailTemplate[]>([]);
@@ -13,6 +14,9 @@ const NewsletterSection: React.FC = () => {
     const [subject, setSubject] = useState('');
     const [sendingLoading, setSendingLoading] = useState(false);
     const [message, setMessage] = useState('');
+    
+    // New state for confirmation dialog
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
     // Fetch templates from database
     useEffect(() => {
@@ -57,13 +61,31 @@ const NewsletterSection: React.FC = () => {
         }
     };
 
-    // Handle sending newsletter
+    // Modified to show confirmation dialog instead of immediately sending
+    const handleSendButtonClick = () => {
+        if (!selectedTemplate) {
+            setMessage('Please select a template first');
+            return;
+        }
+        
+        if (!subject.trim()) {
+            setMessage('Please enter a subject for your newsletter');
+            return;
+        }
+        
+        // Show confirmation dialog
+        setShowConfirmDialog(true);
+    };
+
+    // Actual send function (called after confirmation)
     const handleSendNewsletter = async () => {
         if (!selectedTemplate) {
             setMessage('Please select a template first');
             return;
         }
-
+        // Close the dialog
+        setShowConfirmDialog(false);
+        
         setSendingLoading(true);
         setMessage('');
 
@@ -142,12 +164,12 @@ const NewsletterSection: React.FC = () => {
                 </div>
                 
                 <button 
-                    onClick={handleSendNewsletter} 
+                    onClick={handleSendButtonClick} 
                     disabled={sendingLoading || !selectedTemplate || templates.length === 0}
                     className={`block w-full p-2 rounded-lg text-center ${
                         sendingLoading || !selectedTemplate || templates.length === 0
                             ? 'bg-gray-300 cursor-not-allowed'
-                            : 'bg-gray-200 hover:bg-gray-300'
+                            : 'bg-blue-500 hover:bg-blue-600 text-white'
                     }`}
                 > 
                     {sendingLoading ? 'Sending...' : 'Send Newsletter'}
@@ -160,6 +182,8 @@ const NewsletterSection: React.FC = () => {
                         {message}
                     </div>
                 )}
+                <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+                <NewsletterConfigForm />
             </div>
 
             <div className="flex-1 p-4 bg-gray-100 rounded-lg">
@@ -171,6 +195,33 @@ const NewsletterSection: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Confirmation Dialog */}
+            {showConfirmDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                        <h3 className="text-lg font-bold mb-4">Send Newsletter Confirmation</h3>
+                        <p className="mb-6">
+                            Are you sure you want to send the newsletter with subject "<span className="font-semibold">{subject}</span>" to all subscribers? 
+                            This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setShowConfirmDialog(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSendNewsletter}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                            >
+                                Confirm Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

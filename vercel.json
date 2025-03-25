@@ -1,8 +1,8 @@
 {
-    "crons": [
-      {
-        "path": "/api/cron/monthly-newsletter",
-        "schedule": "0 0 1 * *"
-      }
-    ]
-  }
+  "crons": [
+    {
+      "path": "/api/cron/monthly-newsletter",
+      "schedule": "0 * * * *" 
+    }
+  ]
+}

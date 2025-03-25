@@ -8,13 +8,23 @@ import {
   Stack, 
   Typography,
   Alert,
-  Tooltip
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { 
+  Refresh as RefreshIcon,
+  Delete as DeleteIcon 
+} from '@mui/icons-material';
 import { useSamplesDrawerOpen, resetDocument } from '../../documents/editor/EditorContext';
 import SidebarButton from './SidebarButton';
-import { getEmailTemplates, getEmailTemplate } from '@/app/lib/emailTemplates';
+import { getEmailTemplates, getEmailTemplate, deleteEmailTemplate } from '@/app/lib/emailTemplates';
 import { IEmailTemplate } from '@/app/models/EmailTemplate';
+import EMPTY_EMAIL_MESSAGE from '../../getConfiguration/sample/empty-email-message';
 
 import validateTextAreaValue from './validateJsonStringValue';
 
@@ -26,6 +36,12 @@ export default function TemplatesDrawer() {
   const [loading, setLoading] = useState(true);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+  // State for delete confirm dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<{id: string, name: string} | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Function to fetch templates from database
   const fetchTemplates = async () => {
@@ -48,19 +64,68 @@ export default function TemplatesDrawer() {
     }
   };
 
+  // Function to handle opening delete confirm dialog
+  const handleOpenDeleteDialog = (e: React.MouseEvent, templateId: string, templateName: string) => {
+    // Stop event propagation to prevent template selection
+    e.stopPropagation();
+    e.preventDefault();
+    
+    setTemplateToDelete({ id: templateId, name: templateName });
+    setDeleteDialogOpen(true);
+  };
+
+  // Function to handle closing delete confirmation dialog
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setTemplateToDelete(null);
+  };
+
+   // Function to handle delete template
+  const handleDeleteTemplate = async () => {
+    if (!templateToDelete) return;
+    
+    setDeleteLoading(true);
+    
+    try {
+      // Check if we're currently viewing the deleted template
+      const currentHash = window.location.hash;
+      const deletedTemplateHash = `#template/${templateToDelete.id}`;
+      const isCurrentTemplate = currentHash === deletedTemplateHash;
+      
+      // If we're deleting the current template, clear the editor first before deletion
+      if (isCurrentTemplate) {
+        try {
+          // Reset document to an empty state before deleting the template
+          resetDocument(EMPTY_EMAIL_MESSAGE);
+          // Change the hash without triggering a page reload
+          window.history.pushState(null, '', window.location.pathname);
+        } catch (err) {
+          console.error('Error resetting editor before template deletion:', err);
+        }
+      }
+      
+      // Now delete the template from the database
+      const response = await deleteEmailTemplate(templateToDelete.id);
+      
+      if (response.success) {
+        // Remove deleted template from state
+        setTemplates(prev => prev.filter(template => String(template._id) !== templateToDelete.id));
+        handleCloseDeleteDialog();
+      } else {
+        throw new Error(response.error || 'Failed to delete template');
+      }
+    } catch (err: any) {
+      console.error('Error deleting template:', err);
+      // You could add an error state here to show in the UI
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   // Load templates on component mount
   useEffect(() => {
     fetchTemplates();
   }, []);
-
-  // Function to create a new empty document
-  const handleCreateNew = () => {
-    // Reset document to empty state - using your existing resetDocument function
-    resetDocument({});
-    
-    // Update the URL hash
-    window.location.hash = '';
-  };
 
   // Function to load a template when clicked
   const handleTemplateSelect = async (templateId: string) => {
@@ -167,17 +232,74 @@ export default function TemplatesDrawer() {
               
               {/* Dynamically render templates from database */}
               {templates.map((template) => (
-                <SidebarButton 
-                  key={String(template._id)}
-                  // Using href="#template/[id]" pattern
-                  href={`#template/${template._id}`}
+                <Box 
+                  key={String(template._id)} 
+                  sx={{ 
+                    display: 'flex', 
+                    width: '100%', 
+                    alignItems: 'center',
+                    '&:hover .delete-button': {
+                      visibility: 'visible',
+                    }
+                  }}
                 >
-                  {template.name}
-                </SidebarButton>
+                  <div style={{ width: '100%' }}>
+                    <SidebarButton 
+                      href={`#template/${template._id}`}
+                    >
+                      {template.name}
+                    </SidebarButton>
+                  </div>
+                  <Tooltip title="Delete template">
+                    <IconButton
+                      size="small"
+                      className="delete-button"
+                      onClick={(e) => handleOpenDeleteDialog(e, String(template._id), template.name)}
+                      sx={{ 
+                        visibility: 'hidden',
+                        minWidth: 'auto',
+                        maxWidth: '2px',
+                        padding: '4px',
+                        color: 'error.main',
+                        backgroundColor: 'background.paper',
+                        '&:hover': {
+                          backgroundColor: 'rgba(244, 67, 54, 0.04)'
+                        }
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               ))}
             </Stack>
           )}
         </Stack>
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleCloseDeleteDialog}
+        >
+          <DialogTitle>Delete Template</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete the template "{templateToDelete?.name}"? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} disabled={deleteLoading}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeleteTemplate} 
+              color="error" 
+              disabled={deleteLoading}
+              startIcon={deleteLoading ? <CircularProgress size={16} /> : null}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Stack>
     </Drawer>
   );
