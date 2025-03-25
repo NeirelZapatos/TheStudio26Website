@@ -4,66 +4,56 @@ import Order from "@/app/models/Order";
 import Item from "@/app/models/Item";
 import Course from "@/app/models/Course";
 
-function generateSalesTrend(
-  startDate: string,
-  endDate: string,
-  timeframe: string
-) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const delta =
-    timeframe === "Yearly"
-      ? 365
-      : timeframe === "Quarterly"
-      ? 90
-      : timeframe === "Monthly"
-      ? 30
-      : 1;
-
-  const salesData: Record<string, { date: string; revenue: number }[]> = {
-    Courses: [],
-    Jewelry: [],
-    Stones: [],
-    Supplies: [],
-  };
-
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + delta)) {
-    const formattedDate = d.toISOString().split("T")[0];
-    for (const category in salesData) {
-      salesData[category].push({
-        date: formattedDate,
-        revenue: parseFloat(
-          (Math.random() * 1000 + 100).toFixed(2)
-        ), // Mock revenue
-      });
-    }
-  }
-
-  return salesData;
-}
-
-// API Route
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const startDate = searchParams.get("startDate");
-  const endDate = searchParams.get("endDate");
-  const timeframe = searchParams.get("timeFrame") || "Daily";
+  const startDateString = searchParams.get("startDate");
+  const endDateString = searchParams.get("endDate");
 
-  if (!startDate || !endDate) {
-    return NextResponse.json(
-      { error: "Missing startDate or endDate" },
-      { status: 400 }
-    );
-  }
+  const startDate = startDateString ? new Date(startDateString) : new Date("1970-01-01");
+  const endDate = endDateString ? new Date(endDateString) : new Date();
 
   try {
-    const data = generateSalesTrend(startDate, endDate, timeframe);
+    await dbConnect();
 
-    return NextResponse.json({ salesTrends: data }, { status: 200 });
+    const orders = await Order.find({
+      order_date: { $gte: startDate, $lte: endDate },
+    });
+
+    const categorySales: Record<string, Record<string, number>> = {
+      Courses: {},
+      Jewelry: {},
+      Stones: {},
+      Supplies: {},
+    };
+
+    for (const order of orders) {
+      const month = new Date(order.order_date).toISOString().slice(0, 7); // "YYYY-MM"
+
+      // Courses
+      for (const courseId of order.course_items) {
+        const course = await Course.findById(courseId);
+        if (!course) continue;
+
+        categorySales["Courses"][month] = (categorySales["Courses"][month] || 0) + course.price;
+      }
+
+      // Products
+      for (const productId of order.product_items) {
+        const item = await Item.findById(productId);
+        if (!item) continue;
+
+        const category = item.category;
+        if (!categorySales[category]) categorySales[category] = {};
+
+        categorySales[category][month] = (categorySales[category][month] || 0) + item.price;
+      }
+    }
+
+    return NextResponse.json({ categorySales }, { status: 200 });
   } catch (err) {
-    console.error("Error generating sales trend:", err);
+    console.error(err);
     return NextResponse.json(
-      { error: "Failed to generate sales trend" },
+      { error: err instanceof Error ? err.message : "An unknown error occurred" },
       { status: 500 }
     );
   }
