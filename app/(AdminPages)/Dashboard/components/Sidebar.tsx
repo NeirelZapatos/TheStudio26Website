@@ -6,8 +6,6 @@ interface SidebarProps {
   setActiveSection: (section: string) => void;
   showGettingPaid: boolean;
   setShowGettingPaid: (show: boolean) => void;
-  showCalendar: boolean;
-  setShowCalendar: (show: boolean) => void;
   showProducts: boolean;
   setShowProducts: (show: boolean) => void;
 }
@@ -17,8 +15,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   setActiveSection,
   showGettingPaid,
   setShowGettingPaid,
-  showCalendar,
-  setShowCalendar,
   showProducts,
   setShowProducts,
 }) => {
@@ -46,17 +42,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           {showGettingPaid && (
             <div className="pl-4 space-y-1">
               <button
-                onClick={() => setActiveSection("connect")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "connect"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
-                }`}
-              >
-                Connect & Setup
-              </button>
-
-              <button
                 onClick={() => setActiveSection("financialAnalytics")}
                 className={`block w-full text-left p-2 rounded-lg ${
                   activeSection === "financialAnalytics"
@@ -66,59 +51,28 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Financial Analytics
               </button>
-
               <button
-                onClick={() => setActiveSection("invoices")}
+                onClick={() => setActiveSection("finances")}
                 className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "invoices"
+                  activeSection === "finances"
                     ? "bg-gray-700"
                     : "hover:bg-gray-600"
                 }`}
               >
-                Invoices
-              </button>
-              <button
-                onClick={() => setActiveSection("pos")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "pos" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
-              >
-                Point of Sale
+                Finances
               </button>
             </div>
           )}
         </div>
         {/* ------------------------ Booking Calendar Section ------------------------ */}
-        <div>
-          <button
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="block w-full text-left p-2 rounded-lg hover:bg-gray-600"
-          >
-            Booking Calendar
-          </button>
-          {showCalendar && (
-            <div className="pl-4 space-y-1">
-              <button
-                onClick={() => setActiveSection("calendar")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "calendar"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
-                }`}
-              >
-                Calendar
-              </button>
-              <button
-                onClick={() => setActiveSection("work")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "work" ? "bg-gray-700" : "hover:bg-gray-600"
-                }`}
-              >
-                Work Schedule
-              </button>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setActiveSection("calendar")}
+          className={`block w-full text-left p-2 rounded-lg ${
+            activeSection === "calendar" ? "bg-gray-700" : "hover:bg-gray-600"
+          }`}
+        >
+          Booking Calendar
+        </button>
         {/* ------------------------ Product Section ------------------------ */}
         <div>
           <button
@@ -181,7 +135,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Customer Management
         </button>
-
         <button
           onClick={() => setActiveSection("newsletter")}
           className={`block w-full text-left p-2 rounded-lg ${
@@ -190,11 +143,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Newsletter
         </button>
-
-        {/* Added Manage Orders Button */}
+        {/* ------------------------ Manage Orders Section ------------------------ */}
         <button
           onClick={() => setActiveSection("manageOrders")}
-          className={`block w-full text-left p-2 rounded-lg ${activeSection === "ManageOrders" ? "bg-gray-700" : "hover:bg-gray-600"}`}
+          className={`block w-full text-left p-2 rounded-lg ${
+            activeSection === "manageOrders" ? "bg-gray-700" : "hover:bg-gray-600"
+          }`}
         >
           Manage Orders
         </button>

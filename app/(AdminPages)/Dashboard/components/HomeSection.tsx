@@ -8,19 +8,27 @@ import {
   deleteS3Object,
 } from "../../../../utils/s3";
 
+// Simple pencil icon (Unicode). Replace with your preferred icon if needed.
+const PencilIcon = () => (
+  <span role="img" aria-label="edit">
+    ✏️
+  </span>
+);
+
 interface ImageEntry {
   url: string;
   key: string;
 }
 
 const HomeSection: React.FC = () => {
-  // About Us Title (e.g. "Ever since 2010..." or any custom title)
+  // Toggle for enabling/disabling edits
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Text content states
   const [aboutTitle, setAboutTitle] = useState("");
-  // Existing text fields
   const [aboutText, setAboutText] = useState("");
   const [jewelryTitle, setJewelryTitle] = useState("");
   const [jewelryDescription, setJewelryDescription] = useState("");
-  // For the button we now use two fields: one for the URL and one for the label
   const [buttonUrl, setButtonUrl] = useState("");
   const [buttonLabel, setButtonLabel] = useState("");
   const [callToActionText, setCallToActionText] = useState("");
@@ -71,8 +79,9 @@ const HomeSection: React.FC = () => {
     }
   };
 
-  // Upload image to S3 and update state
+  // Upload image to S3 and update image state
   const handleUpload = async () => {
+    if (!isEditing) return; // Prevent upload if not editing
     if (selectedFile) {
       const fileName = `${Date.now()}-${selectedFile.name}`;
       try {
@@ -90,7 +99,7 @@ const HomeSection: React.FC = () => {
 
   // Image rearrangement functions
   const moveImageLeft = (index: number) => {
-    if (index === 0) return;
+    if (!isEditing || index === 0) return;
     const newImages = [...images];
     [newImages[index - 1], newImages[index]] = [
       newImages[index],
@@ -100,7 +109,7 @@ const HomeSection: React.FC = () => {
   };
 
   const moveImageRight = (index: number) => {
-    if (index === images.length - 1) return;
+    if (!isEditing || index === images.length - 1) return;
     const newImages = [...images];
     [newImages[index], newImages[index + 1]] = [
       newImages[index + 1],
@@ -110,6 +119,7 @@ const HomeSection: React.FC = () => {
   };
 
   const handleDelete = async (key: string) => {
+    if (!isEditing) return;
     try {
       await deleteS3Object(key);
       const updatedImages = images.filter((img) => img.key !== key);
@@ -123,8 +133,10 @@ const HomeSection: React.FC = () => {
 
   // Save settings with validation
   const handleSave = async () => {
+    if (!isEditing) return;
+
     if (!aboutTitle.trim()) {
-      setSaveMessage("About Us title cannot be empty.");
+      setSaveMessage("About Us Title cannot be empty.");
       return;
     }
     if (!aboutText.trim()) {
@@ -181,51 +193,93 @@ const HomeSection: React.FC = () => {
     }
   };
 
+  // Toggle the editing mode
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
   return (
     <section className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-4">Home Page Management</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Home Page Management</h2>
+        <button
+          onClick={toggleEdit}
+          className="bg-gray-100 hover:bg-gray-200 text-black px-3 py-1 rounded flex items-center gap-1"
+        >
+          <PencilIcon />
+          {isEditing ? "Disable Editing" : "Enable Editing"}
+        </button>
+      </div>
 
       {/* About Us Title */}
       <div className="mb-4">
         <label className="block font-medium">About Us Title</label>
-        <ReactQuill
-          value={aboutTitle}
-          onChange={setAboutTitle}
-          placeholder="Enter About Us title (e.g., 'Ever since 2010...')"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={aboutTitle}
+            onChange={setAboutTitle}
+            placeholder="Enter About Us Title (e.g., 'Ever since 2010...')"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: aboutTitle }}
+          />
+        )}
       </div>
 
       {/* About Us Description */}
       <div className="mb-4">
         <label className="block font-medium">About Us Description</label>
-        <ReactQuill
-          value={aboutText}
-          onChange={setAboutText}
-          placeholder="Enter About Us text"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={aboutText}
+            onChange={setAboutText}
+            placeholder="Enter About Us text"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: aboutText }}
+          />
+        )}
       </div>
 
       {/* Jewelry Class Title */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Title</label>
-        <ReactQuill
-          value={jewelryTitle}
-          onChange={setJewelryTitle}
-          placeholder="Enter Jewelry Class Title"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={jewelryTitle}
+            onChange={setJewelryTitle}
+            placeholder="Enter Jewelry Class Title"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: jewelryTitle }}
+          />
+        )}
       </div>
 
       {/* Jewelry Class Description */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Description</label>
-        <ReactQuill
-          value={jewelryDescription}
-          onChange={setJewelryDescription}
-          placeholder="Enter Jewelry Class Description"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={jewelryDescription}
+            onChange={setJewelryDescription}
+            placeholder="Enter Jewelry Class Description"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: jewelryDescription }}
+          />
+        )}
       </div>
 
-      {/* Button URL */}
+      {/* Button Link (URL) */}
       <div className="mb-4">
         <label className="block font-medium">Button Link (URL)</label>
         <input
@@ -234,37 +288,59 @@ const HomeSection: React.FC = () => {
           onChange={(e) => setButtonUrl(e.target.value)}
           className="w-full border p-2 mt-1"
           placeholder="Enter valid URL"
+          disabled={!isEditing}
         />
       </div>
 
-      {/* Button Label */}
+      {/* Button Label (HTML) */}
       <div className="mb-4">
-        <label className="block font-medium">Button Label (HTML)</label>
-        <ReactQuill
-          value={buttonLabel}
-          onChange={setButtonLabel}
-          placeholder='e.g., "Beginning Jewelry Making Class" (you can style it)'
-        />
+        <label className="block font-medium">Button Label</label>
+        {isEditing ? (
+          <ReactQuill
+            value={buttonLabel}
+            onChange={setButtonLabel}
+            placeholder='e.g., "Beginning Jewelry Making Class" (you can style it)'
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: buttonLabel }}
+          />
+        )}
       </div>
 
       {/* Call-to-Action Text */}
       <div className="mb-4">
         <label className="block font-medium">Call-to-Action Text</label>
-        <ReactQuill
-          value={callToActionText}
-          onChange={setCallToActionText}
-          placeholder="Enter call-to-action text"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={callToActionText}
+            onChange={setCallToActionText}
+            placeholder="Enter call-to-action text"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: callToActionText }}
+          />
+        )}
       </div>
 
       {/* Projects Section Title */}
       <div className="mb-4">
         <label className="block font-medium">Projects Section Title</label>
-        <ReactQuill
-          value={projectsSectionTitle}
-          onChange={setProjectsSectionTitle}
-          placeholder="Enter projects section title"
-        />
+        {isEditing ? (
+          <ReactQuill
+            value={projectsSectionTitle}
+            onChange={setProjectsSectionTitle}
+            placeholder="Enter projects section title"
+          />
+        ) : (
+          <div
+            className="p-2 border rounded"
+            dangerouslySetInnerHTML={{ __html: projectsSectionTitle }}
+          />
+        )}
       </div>
 
       {/* Image Management */}
@@ -275,10 +351,12 @@ const HomeSection: React.FC = () => {
             type="file"
             accept="image/jpeg, image/png"
             onChange={handleFileChange}
+            disabled={!isEditing}
           />
           <button
             onClick={handleUpload}
-            className="ml-2 bg-blue-500 text-white p-2 rounded"
+            className="ml-2 bg-blue-500 text-white p-2 rounded disabled:opacity-50"
+            disabled={!isEditing}
           >
             Upload Image
           </button>
@@ -295,20 +373,21 @@ const HomeSection: React.FC = () => {
                 <button
                   onClick={() => moveImageLeft(idx)}
                   className="bg-gray-300 text-xs p-1 rounded disabled:opacity-50"
-                  disabled={idx === 0}
+                  disabled={!isEditing || idx === 0}
                 >
                   &larr;
                 </button>
                 <button
                   onClick={() => moveImageRight(idx)}
                   className="bg-gray-300 text-xs p-1 rounded disabled:opacity-50"
-                  disabled={idx === images.length - 1}
+                  disabled={!isEditing || idx === images.length - 1}
                 >
                   &rarr;
                 </button>
                 <button
                   onClick={() => handleDelete(img.key)}
-                  className="bg-red-500 text-white text-xs p-1 rounded"
+                  className="bg-red-500 text-white text-xs p-1 rounded disabled:opacity-50"
+                  disabled={!isEditing}
                 >
                   X
                 </button>
@@ -321,9 +400,11 @@ const HomeSection: React.FC = () => {
         </p>
       </div>
 
+      {/* Save Changes Button */}
       <button
         onClick={handleSave}
-        className="bg-green-500 text-white p-2 rounded"
+        className="bg-green-500 text-white p-2 rounded disabled:opacity-50"
+        disabled={!isEditing}
       >
         Save Changes
       </button>

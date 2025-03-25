@@ -3,12 +3,12 @@
   "buttonLink": "https://example.com",
   "images": [
     {
-      "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741741015784-jewel-3-1422765.jpg",
-      "key": "homepage/1741741015784-jewel-3-1422765.jpg"
-    },
-    {
       "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741741026774-testimage1.jpg",
       "key": "homepage/1741741026774-testimage1.jpg"
+    },
+    {
+      "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741741015784-jewel-3-1422765.jpg",
+      "key": "homepage/1741741015784-jewel-3-1422765.jpg"
     },
     {
       "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741743244467-jewelry-bench.jpg",
@@ -19,12 +19,12 @@
       "key": "homepage/1741743249886-testimage1.jpg"
     },
     {
-      "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741746410417-jewelry-bench.jpg",
-      "key": "homepage/1741746410417-jewelry-bench.jpg"
-    },
-    {
       "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741743256751-jewel-3-1422765.jpg",
       "key": "homepage/1741743256751-jewel-3-1422765.jpg"
+    },
+    {
+      "url": "https://tests26bucket.s3.us-east-2.amazonaws.com/homepage/1741746410417-jewelry-bench.jpg",
+      "key": "homepage/1741746410417-jewelry-bench.jpg"
     }
   ],
   "jewelryTitle": "<p>Are you interested in learning jewelry making?</p>",
@@ -32,6 +32,6 @@
   "callToActionText": "<p>Hurry, Limited Seats Available! Secure your spot today by clicking the button below.</p>",
   "projectsSectionTitle": "<p>Past Projects Created At The Studio 26, LLC</p>",
   "aboutTitle": "<p>About Us</p>",
-  "buttonUrl": "http://localhost:3000/",
+  "buttonUrl": "http://localhost:3000/class-catalog",
   "buttonLabel": "<p>Beginning Jewelry Making Class</p>"
 }
