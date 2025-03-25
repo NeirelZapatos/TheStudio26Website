@@ -193,12 +193,6 @@ const useFinancialData = () => {
       const bestSellingData = await bestSellingResponse.json();
       setBestSellingItems(bestSellingData.bestSellingItems);
 
-
-      const bestSellingResponse = await fetch(`/api/best-selling-items?startDate=${startDate}&endDate=${endDate}`);
-      if (!bestSellingResponse.ok) throw new Error("Failed to fetch best-selling items");
-      const bestSellingData = await bestSellingResponse.json();
-      setBestSellingItems(bestSellingData.bestSellingItems);
-
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

@@ -96,7 +96,6 @@ const FinancialAnalytics: React.FC = () => {
         <div className="text-red-500">{error}</div>
       ) : (
         <>
-        <>
         <RevenueDetails
           financialData={financialData}
           timeFrame={timeFrame}
@@ -113,7 +112,6 @@ const FinancialAnalytics: React.FC = () => {
           <CategorySalesChart category="Supplies" salesData={categorySales.Supplies} timeFrame={timeFrame}/>
           <CategorySalesChart category="Courses" salesData={categorySales.Courses} timeFrame={timeFrame}/>
         </div>
-
         </>
       )}
     </section>
