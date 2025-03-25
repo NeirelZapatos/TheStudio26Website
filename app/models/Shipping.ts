@@ -14,6 +14,7 @@ export interface IShipping extends Document {
     country: string;
     phone?: string;
     email?: string;
+    metadata?: string;
   };
   address_to: {
     name: string;
@@ -26,6 +27,7 @@ export interface IShipping extends Document {
     country: string;
     phone?: string;
     email?: string;
+    metadata?: string;
   };
   parcel: {
     length: number;
@@ -38,8 +40,10 @@ export interface IShipping extends Document {
   shipment: {
     carrier_account: string;
     servicelevel_token: string;
+    servicelevel_name?: string;
     label_file_type: 'pdf' | 'png';
     metadata?: Record<string, any>;
+    shippo_shipment_id?: string;  // New field to store Shippo's shipment ID
   };
   transaction?: {
     shippo_id: string;
@@ -49,6 +53,7 @@ export interface IShipping extends Document {
     rate?: {
       currency: string;
       amount: number;
+      provider?: string;  // Added to store carrier information
     };
     status?: 'SUCCESS' | 'ERROR' | 'QUEUED' | 'WAITING' | 'REFUNDED' | 'REFUNDPENDING';
   };
@@ -57,6 +62,8 @@ export interface IShipping extends Document {
     message?: string;
     date: Date;
   }[];
+  estimated_delivery_date?: Date;  // Optional field for delivery estimation
+  insurance_amount?: number;       // Optional field for shipping insurance
 }
 
 const shippingSchema = new Schema({
@@ -127,5 +134,3 @@ const shippingSchema = new Schema({
 const Shipping = mongoose.models.Shipping || mongoose.model<IShipping>('Shipping', shippingSchema);
 
 export default Shipping;
-
-
