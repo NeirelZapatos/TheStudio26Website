@@ -1,5 +1,4 @@
 import { IOrder } from '@/app/models/Order'; // Import the IOrder interface from the Order model
-import { filterOrders } from '../app/(AdminPages)/Dashboard/components/ManageOrders/FilterOrders'; // Import the filterOrders utility function
 
 // SortOrders.ts
 export enum OrderFilter {
@@ -14,50 +13,50 @@ export enum OrderFilter {
 }
 
 export enum PriorityLevel {
-  PICKUP = 1, // Priority level for pickup orders
-  URGENT = 2, // Priority level for urgent orders
-  NEXT_DAY = 3, // Priority level for next-day orders
-  EXPRESS = 4, // Priority level for express orders
-  PRIORITY = 5, // Priority level for priority orders
-  STANDARD = 6, // Priority level for standard orders
-  SHIPPED = 7, // Priority level for shipped orders
-  HIGH = 8, // Priority level for high-priority orders
-  MEDIUM = 9, // Priority level for medium-priority orders
-  FULFILLED = 10, // Priority level for fulfilled orders
-  DELIVERED = 11 // Priority level for delivered orders
+  PICKUP = 1, // Priority level for pickup orders (highest priority)
+  URGENT_NEXT_DAY = 2, // Priority level for urgent next-day orders
+  URGENT_EXPRESS = 3, // Priority level for urgent express orders
+  URGENT_STANDARD = 4, // Priority level for urgent standard orders
+  NEXT_DAY = 5, // Priority level for next-day orders
+  EXPRESS = 6, // Priority level for express orders
+  STANDARD = 7, // Priority level for standard orders
+  SHIPPED = 8, // Priority level for shipped orders
+  FULFILLED = 9, // Priority level for fulfilled orders
+  DELIVERED = 10 // Priority level for delivered orders (lowest priority)
 }
 
 // Get the priority level for an order based on its status and shipping method
 export const getOrderPriority = (order: IOrder): number => {
   const orderAge = (Date.now() - new Date(order.order_date).getTime()) / (1000 * 60 * 60 * 24); // Calculate the age of the order in days
+  const isPending = order.order_status === 'pending';
+  const isUrgent = orderAge > 1; // Order is urgent if waiting more than 1 day
 
-  if (order.shipping_method === 'Pickup' && order.order_status === 'pending') {
-    return PriorityLevel.PICKUP; // Return pickup priority for pending pickup orders
+  // Always prioritize pickup orders at the top
+  if (order.shipping_method === 'Pickup' && isPending) {
+    return PriorityLevel.PICKUP;
   }
 
-  if (order.shipping_method === 'Express' && order.order_status === 'pending') {
-    return PriorityLevel.EXPRESS; // Return express priority for pending express orders
+  // For pending orders, prioritize based on shipping method and age
+  if (isPending) {
+    // Urgent orders (waiting more than 1 day) - maintain shipping method hierarchy
+    if (isUrgent) {
+      if (order.shipping_method === 'Next Day') return PriorityLevel.URGENT_NEXT_DAY;
+      if (order.shipping_method === 'Express') return PriorityLevel.URGENT_EXPRESS;
+      return PriorityLevel.URGENT_STANDARD; // Standard, Ground, or any other shipping method
+    }
+    
+    // Normal priority orders (less than 1 day old)
+    if (order.shipping_method === 'Next Day') return PriorityLevel.NEXT_DAY;
+    if (order.shipping_method === 'Express') return PriorityLevel.EXPRESS;
+    return PriorityLevel.STANDARD; // Standard, Ground, or any other shipping method
   }
 
-  if (order.shipping_method === 'Next Day' && order.order_status === 'pending') {
-    return PriorityLevel.NEXT_DAY; // Return next-day priority for pending next-day orders
-  }
-
-  if (order.shipping_method === 'Priority' && order.order_status === 'pending') {
-    return PriorityLevel.PRIORITY; // Return priority for pending priority orders
-  }
-
-  if (orderAge > 2 && 
-      (order.shipping_method === 'Standard' || order.shipping_method === 'Ground') && 
-      order.order_status === 'pending') {
-    return PriorityLevel.URGENT; // Return urgent priority for old pending standard/ground orders
-  }
-
+  // Non-pending orders go to the bottom with their own hierarchy
   switch (order.order_status ?? '') {
-    case 'shipped': return PriorityLevel.SHIPPED; // Return shipped priority for shipped orders
-    case 'fulfilled': return PriorityLevel.FULFILLED; // Return fulfilled priority for fulfilled orders
-    case 'delivered': return PriorityLevel.DELIVERED; // Return delivered priority for delivered orders
-    default: return PriorityLevel.MEDIUM; // Return medium priority for all other orders
+    case 'shipped': return PriorityLevel.SHIPPED;
+    case 'fulfilled': return PriorityLevel.FULFILLED;
+    case 'delivered': return PriorityLevel.DELIVERED;
+    default: return PriorityLevel.STANDARD; // Fallback for any other status
   }
 };
 
@@ -67,49 +66,48 @@ export const sortOrders = (
   activeFilter: OrderFilter
 ): IOrder[] => {
   return orders.sort((a, b) => {
+    // Special case for fulfilled filter
     if (activeFilter === OrderFilter.FULFILLED) {
       const statusPriority = {
-        shipped: 1, // Priority for shipped orders
-        fulfilled: 2, // Priority for fulfilled orders
-        delivered: 3 // Priority for delivered orders
+        shipped: 1,
+        fulfilled: 2,
+        delivered: 3
       } as const;
 
       const getPriority = (status: string) => status in statusPriority 
-      ? statusPriority[status as keyof typeof statusPriority]
-      : Number.MAX_SAFE_INTEGER; // Get priority for a given status
-    
-    const aPriority = getPriority(a.order_status ?? ''); // Get priority for order A
-    const bPriority = getPriority(b.order_status ?? ''); // Get priority for order B
+        ? statusPriority[status as keyof typeof statusPriority]
+        : Number.MAX_SAFE_INTEGER;
+      
+      const aPriority = getPriority(a.order_status ?? '');
+      const bPriority = getPriority(b.order_status ?? '');
 
-      if (aPriority !== bPriority) return aPriority - bPriority; // Sort by priority if priorities differ
+      if (aPriority !== bPriority) return aPriority - bPriority;
       
       // For shipped orders: newest first, others: oldest first
       if (a.order_status === 'shipped') {
-        return new Date(b.order_date).getTime() - new Date(a.order_date).getTime(); // Sort shipped orders by newest first
+        return new Date(b.order_date).getTime() - new Date(a.order_date).getTime();
       }
-      return new Date(a.order_date).getTime() - new Date(b.order_date).getTime(); // Sort other orders by oldest first
+      return new Date(a.order_date).getTime() - new Date(b.order_date).getTime();
     }
 
-    const aIsPickup = a.shipping_method === 'Pickup' && a.order_status === 'pending'; // Check if order A is a pending pickup order
-    const bIsPickup = b.shipping_method === 'Pickup' && b.order_status === 'pending'; // Check if order B is a pending pickup order
-    if (aIsPickup !== bIsPickup) return aIsPickup ? -1 : 1; // Sort pickup orders first
-
-    const priorityA = getOrderPriority(a); // Get priority for order A
-    const priorityB = getOrderPriority(b); // Get priority for order B
-    if (priorityA !== priorityB) return priorityA - priorityB; // Sort by priority if priorities differ
-
-    return new Date(a.order_date).getTime() - new Date(b.order_date).getTime(); // Sort by order date
+    // For all other filters, use the priority system
+    const priorityA = getOrderPriority(a);
+    const priorityB = getOrderPriority(b);
+    
+    // If priorities are different, sort by priority
+    if (priorityA !== priorityB) return priorityA - priorityB;
+    
+    // If priorities are the same, sort by age (oldest first)
+    return new Date(a.order_date).getTime() - new Date(b.order_date).getTime();
   });
 };
 
-// Sort orders based on the active filter and search query
+// Sort orders based on the active filter
 export const SortOrders = (
   orders: IOrder[],
-  activeFilter: OrderFilter,
-  searchQuery: string
+  activeFilter: OrderFilter
 ): IOrder[] => {
-  const filteredOrders = filterOrders(orders, activeFilter, searchQuery); // Filter orders based on the active filter and search query
-  return sortOrders(filteredOrders, activeFilter); // Sort the filtered orders
+  return sortOrders(orders, activeFilter); // Sort the orders based on the active filter
 };
 
 export default SortOrders; // Export the SortOrders function
