@@ -1,71 +1,79 @@
 import React from "react";
-import { Bar } from "react-chartjs-2";
-import { ChartOptions } from "chart.js";
-import "./chartjs-setup";
+import { Line } from "react-chartjs-2";
+import {
+    ChartOptions,
+    ChartTypeRegistry,
+    TickOptions,
+    Scriptable,
+    ScaleOptions,
+  } from "chart.js";  
 
-interface ChartProps {
-    category: string;
-    data: { name: string; sales: number }[];
+interface CategorySalesChartProps {
+  category: string;
+  salesData: Record<string, number>; // e.g., { "2025-01": 5000, "2025-02": 8000 }
 }
 
-const CategorySalesChart: React.FC<ChartProps> = ({ category, data }) => {
-    const chartData = {
-        labels: data.map((item) => item.name),
-        datasets: [
-            {
-                label: `${category} Sales`,
-                data: data.map((item) => item.sales),
-                backgroundColor: "rgba(75, 192, 192, 0.6)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 1
-            }
-        ]
-    };
+const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ category, salesData }) => {
+  const months = Object.keys(salesData).sort();
+  const values = months.map((month) => salesData[month]);
 
-    const chartOptions: any = {
-        responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: `Top 3 ${category} Items by Sales`,
-          },
-          legend: {
-            display: false,
-          },
-        },
-      
-        scales: {
-          y: {
-            type: "linear",
-            title: {
-              display: true,
-              text: "Sales Count",
-              font: {
-                size: 14,
-                weight: "bold",
-              },
-              padding: {
-                top: 10,
-              },
-            },
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-          x: {
-            ticks: {
-              autoSkip: false,
-            },
-          },
-        },
-      };
-      
+  // Determine trend color
+  const isUpwardTrend = values.length > 1 && values[values.length - 1] >= values[0];
+  const lineColor = isUpwardTrend ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)"; // green or red
 
-    return (
-        <div className = "bg-white p-4 rounded-lg shadow-md">
-            <Bar data={chartData} options={chartOptions} />
-        </div>
-    );
+  const chartData = {
+    labels: months,
+    datasets: [
+      {
+        label: `${category} Revenue`,
+        data: values,
+        fill: false,
+        backgroundColor: lineColor,
+        borderColor: lineColor,
+        tension: 0.3,
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions<"line"> = {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: `${category} Revenue Trend`,
+      },
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        type: "linear",
+        min: 0,
+        title: {
+          display: true,
+          text: "Revenue ($)",
+        },
+        ticks: {
+            callback: function (value) {
+              return `$${value}`;
+            },
+          },          
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Month",
+        },
+      },
+    },
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <Line data={chartData} options={chartOptions} />
+    </div>
+  );
 };
 
 export default CategorySalesChart;
