@@ -41,68 +41,43 @@ import sortCustomers from "@/utils/sortCustomers"; // Import utility function fo
  */
 
 const CustomerManagementSection: React.FC = () => {
-  // State for search query, date range, time interval, and order category
-  const [searchQuery, setSearchQuery] = useState(""); // Search query for filtering customers
-  const [dateRange, setDateRange] = useState({ start: "", end: "" }); // Date range for filtering
-  const [timeInterval, setTimeInterval] = useState(""); // Time interval for filtering
-  const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all"); // Order category filter
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [timeInterval, setTimeInterval] = useState("");
+  const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all");
 
-  // Fetch customers and orders using the `useFetchCustomers` hook
-  const { customers, orders, allOrders, loading, fetchCustomers, setCustomers, setOrders } = useFetchCustomers({
+  const { customers, orders, allOrders, loading, setCustomers, setOrders } = useFetchCustomers({
     searchQuery,
     dateRange,
     timeInterval,
   });
 
-  // Handle customer actions using the `useCustomerActions` hook
   const { addCustomer, deleteCustomer, handleShowOrders, loading: addCustomerLoading } = useCustomerActions({
     setCustomers,
     setOrders,
     dateRange,
-    allOrders, // Pass preloaded orders
+    allOrders,
   });
 
-  // Clear search and reset filters
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setDateRange({ start: "", end: "" });
-    setTimeInterval("");
-    setCustomers([]);
-  };
-
-  // Sort customers alphabetically using the utility function
   const sortedCustomers = useMemo(() => sortCustomers(customers), [customers]);
-
-  // Fetch customers and orders when the component mounts
-  useEffect(() => {
-    fetchCustomers();
-  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <section className="bg-white shadow rounded-lg p-2">
       <h2 className="text-xl font-semibold mb-4">Customer Management</h2>
 
-      {/* Add Customer Form */}
       <AddCustomerForm addCustomer={addCustomer} loading={addCustomerLoading} />
 
-      {/* Filter and Export Buttons */}
       <div className="flex items-center gap-4 mt-4">
+        {/* Only pass searchQuery and setSearchQuery */}
         <CustomerFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          timeInterval={timeInterval}
-          setTimeInterval={setTimeInterval}
-          fetchCustomers={fetchCustomers}
-          handleClearSearch={handleClearSearch}
         />
         <ExportButton customers={customers} orders={orders} />
       </div>
 
-      {/* Customer List */}
       <CustomerList
-        customers={sortedCustomers} // Pass the sorted customers array
+        customers={sortedCustomers}
         orders={orders}
         orderCategory={orderCategory}
         setOrderCategory={setOrderCategory}

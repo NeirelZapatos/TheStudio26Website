@@ -3,11 +3,12 @@ import nodemailer from 'nodemailer';
 import dbConnect from '@/app/lib/dbConnect';
 import Subscriber from '@/app/models/Subscriber';
 import Course from '@/app/models/Course';
+import NewsletterConfig from '@/app/models/NewsletterConfig';
 
 // Add Vercel Cron config
 export const config = {
   runtime: 'edge',
-  regions: ['iad1'], // Use the region closest to your database
+  regions: ['iad1'],
 };
 
 // Nodemailer transporter configuration
@@ -44,7 +45,7 @@ async function getUpcomingCourses(month: number, year: number) {
 }
 
 // This function will generate the newsletter content based on upcoming courses
-async function generateMonthlyNewsletter() {
+export async function generateMonthlyNewsletter() {
   // Get the current date information
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -104,6 +105,62 @@ export async function GET(request: Request) {
   try {
     await dbConnect();
     
+    // Get newsletter configuration
+    const config = await NewsletterConfig.findOne({ type: 'monthly' });
+    
+    // If no config exists or newsletter is not active, don't send
+    if (!config || !config.active) {
+      return NextResponse.json(
+        { message: 'Monthly newsletter is not active' },
+        { status: 200 }
+      );
+    }
+    
+    // Check if today is the configured day to send
+    const now = new Date();
+    
+    // Only send if today matches the configured day of month
+    if (now.getDate() !== config.dayOfMonth) {
+      return NextResponse.json(
+        { message: 'Not scheduled to send newsletter today' },
+        { status: 200 }
+      );
+    }
+    
+    // Check if the current hour matches the configured hour
+    if (now.getHours() !== config.hour) {
+      return NextResponse.json(
+        { message: 'Not the configured hour to send newsletter' },
+        { status: 200 }
+      );
+    }
+    
+    // Check if the current minute is within a reasonable range of the configured minute
+    // This allows for some flexibility in when the CRON job executes
+    const currentMinute = now.getMinutes();
+    if (Math.abs(currentMinute - config.minute) > 15) {
+      return NextResponse.json(
+        { message: 'Not the configured time to send newsletter' },
+        { status: 200 }
+      );
+    }
+    
+    // Check if we already sent the newsletter today
+    if (config.lastSent) {
+      const lastSent = new Date(config.lastSent);
+      // If already sent today, don't send again
+      if (
+        lastSent.getDate() === now.getDate() &&
+        lastSent.getMonth() === now.getMonth() &&
+        lastSent.getFullYear() === now.getFullYear()
+      ) {
+        return NextResponse.json(
+          { message: 'Newsletter already sent today' },
+          { status: 200 }
+        );
+      }
+    }
+    
     // Generate the newsletter content
     const { subject, content } = await generateMonthlyNewsletter();
     
@@ -138,6 +195,10 @@ export async function GET(request: Request) {
         html: emailContent,
       });
     }
+    
+    // Update the lastSent date in the config
+    config.lastSent = new Date();
+    await config.save();
     
     return NextResponse.json(
       { message: 'Monthly newsletter sent successfully to ' + subscribers.length + ' subscribers!' },

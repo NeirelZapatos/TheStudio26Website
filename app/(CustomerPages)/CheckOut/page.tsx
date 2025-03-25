@@ -1,7 +1,8 @@
-// app/(CustomerPages)/CheckOut/page.tsx
-"use client"; // Mark this as a Client Component
+"use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import CartSummary from "./Components/CartSummary";
 import CheckoutForm from "@/app/Components/CheckoutForm";
 
 interface CartItem {
@@ -29,6 +30,25 @@ export default function CheckoutPage() {
   // Calculate the total cost of the cart
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // Remove an item from the cart
+  const handleRemoveItem = (productId: string) => {
+    const updatedCart = cart.filter((item) => item.productId !== productId);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+  };
+
+  // Update the quantity of an item in the cart
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    const quantityCheck = Math.max(1, quantity);
+    
+    const updatedCart = cart.map((item) =>
+      item.productId === productId ? { ...item, quantity: quantityCheck } : item
+    );
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+  };
+  
+
   if (loading) {
     return <div className="text-center py-8">Loading cart...</div>;
   }
@@ -40,7 +60,7 @@ export default function CheckoutPage() {
         <div className="text-center">
           <p className="text-gray-600 mb-4">Your cart is empty.</p>
           <a
-            href="/class-catalog"
+            href="/StoreSearch"
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
           >
             Continue Shopping
@@ -48,30 +68,12 @@ export default function CheckoutPage() {
         </div>
       ) : (
         <>
-          <div className="space-y-6">
-            {cart.map((item) => (
-              <div key={item.productId} className="flex items-center justify-between border-b pb-4">
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                  <div>
-                    <h3 className="font-medium">{item.name}</h3>
-                    <p className="text-sm text-gray-600">${Number(item.price).toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="border-t pt-4">
-            <h3 className="text-xl font-bold">Total: ${total.toFixed(2)}</h3>
-          </div>
-          <div className="mt-6">
-            <CheckoutForm cartItems={cart} />
-          </div>
+          <CartSummary
+            cart={cart}
+            onRemoveItem={handleRemoveItem}
+            onQuantityChange={handleQuantityChange}
+          />
+          <CheckoutForm cartItems={cart} />
         </>
       )}
     </main>

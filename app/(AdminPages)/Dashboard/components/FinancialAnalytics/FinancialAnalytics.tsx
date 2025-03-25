@@ -96,6 +96,7 @@ const FinancialAnalytics: React.FC = () => {
         <div className="text-red-500">{error}</div>
       ) : (
         <>
+        <>
         <RevenueDetails
           financialData={financialData}
           timeFrame={timeFrame}
