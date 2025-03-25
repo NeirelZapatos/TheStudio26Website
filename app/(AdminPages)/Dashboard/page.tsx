@@ -14,7 +14,6 @@ import NewsletterSection from "./components/NewsletterSection";
 import ItemSection from "./components/ItemSection";
 import ClassSection from "./components/ClassSection";
 import FinancialAnalytics from "./components/FinancialAnalytics/FinancialAnalytics";
-import ProductList from "./components/ProductList";
 import CoursesListSection from "./components/CoursesListSection";
 import ItemsListSection from "./components/ItemsListSection";
 import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
