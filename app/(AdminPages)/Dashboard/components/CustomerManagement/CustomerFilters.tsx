@@ -1,6 +1,6 @@
 
 
-import React, { useState } from "react"; // Import React and useState hook
+import React, { useEffect, useState } from "react"; // Import React and useState hook
 
 /**
  * CustomerFilters Component:
@@ -20,24 +20,143 @@ import React, { useState } from "react"; // Import React and useState hook
 interface CustomerFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  dateRange: { start: string; end: string };
+  setDateRange: (range: { start: string; end: string }) => void;
+  timeInterval: string;
+  setTimeInterval: (interval: string) => void;
+  fetchCustomers: () => void;
+  handleClearSearch: () => void;
 }
 
 const CustomerFilters: React.FC<CustomerFiltersProps> = ({
   searchQuery,
   setSearchQuery,
+  dateRange,
+  setDateRange,
+  timeInterval,
+  setTimeInterval,
+  fetchCustomers,
+  handleClearSearch,
 }) => {
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
+
+  // Debounce effect for dynamic search
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      // Only update search query if it has changed
+      if (localSearchQuery !== searchQuery) {
+        setSearchQuery(localSearchQuery);
+      }
+    }, 300); // 300ms delay to prevent excessive re-renders
+
+    return () => clearTimeout(timerId);
+  }, [localSearchQuery, searchQuery, setSearchQuery]);
+
+  /**
+   * Validates and filters dates
+   * @param start Start date string
+   * @param end End date string
+   * @returns Filtered date range
+   */
+  const filterDateRange = (start: string, end: string) => {
+    // If no dates are provided, return empty range
+    if (!start && !end) return { start: '', end: '' };
+
+    // If only start date is provided, set end to today
+    if (start && !end) {
+      return { 
+        start, 
+        end: new Date().toISOString().split('T')[0] 
+      };
+    }
+
+    // If only end date is provided, set start to a default (e.g., 1 year ago)
+    if (!start && end) {
+      const defaultStart = new Date();
+      defaultStart.setFullYear(defaultStart.getFullYear() - 1);
+      return { 
+        start: defaultStart.toISOString().split('T')[0], 
+        end 
+      };
+    }
+
+    // If both dates are provided, ensure end is not before start
+    if (start && end) {
+      return start <= end 
+        ? { start, end }
+        : { start: end, end: start }; // Swap if start is after end
+    }
+
+    return { start: '', end: '' };
+  };
+
   return (
-    <div className="w-full">
-      <label className="block text-gray-700 text-sm mb-2">
-        Search Customers
-      </label>
-      <input
-        type="text"
-        placeholder="Search by name, email, or ID"
-        className="w-full p-2 border border-gray-300 rounded-lg"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Search by Name or Email */}
+        <div>
+          <label className="block text-gray-700 text-sm mb-2">
+            Search by Name or Email
+          </label>
+          <input
+            type="text"
+            placeholder="Enter name or email"
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={localSearchQuery}
+            onChange={(e) => setLocalSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {/* Date Range Filter */}
+        <div>
+          <label className="block text-gray-700 text-sm mb-2">
+            Date Range
+          </label>
+          <div className="space-y-2">
+            {/* Start Date Input */}
+            <input
+              type="date"
+              placeholder="mm/dd/yyyy"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={dateRange.start}
+              onChange={(e) => {
+                const filteredRange = filterDateRange(e.target.value, dateRange.end);
+                setDateRange(filteredRange);
+              }}
+            />
+            {/* End Date Input */}
+            <input
+              type="date"
+              placeholder="mm/dd/yyyy"
+              className="w-full p-2 border border-gray-300 rounded-lg"
+              value={dateRange.end}
+              onChange={(e) => {
+                const filteredRange = filterDateRange(dateRange.start, e.target.value);
+                setDateRange(filteredRange);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Apply and Clear Filters Buttons */}
+      <div className="flex items-center space-x-2">
+        {/* Apply Filters Button (Now only for date range) */}
+        <button
+          onClick={fetchCustomers}
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+        >
+          Apply Date Filters
+        </button>
+
+        {/* Clear Search Button */}
+        <button
+          onClick={handleClearSearch}
+          className="bg-gray-500 text-white py-2 px-4 rounded-lg"
+        >
+          Clear Search
+        </button>
+      </div>
     </div>
   );
 };
