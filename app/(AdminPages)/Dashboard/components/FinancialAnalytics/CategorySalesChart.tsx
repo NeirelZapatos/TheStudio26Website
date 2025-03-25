@@ -7,7 +7,7 @@ import {
     Scriptable,
     ScaleOptions,
   } from "chart.js";  
-
+import "./chartjs-setup";
 interface CategorySalesChartProps {
   category: string;
   salesData: Record<string, number>; // e.g., { "2025-01": 5000, "2025-02": 8000 }

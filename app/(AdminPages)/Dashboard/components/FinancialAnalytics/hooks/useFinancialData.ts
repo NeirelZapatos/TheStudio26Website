@@ -206,6 +206,7 @@ const useFinancialData = () => {
   return {
     financialData,
     bestSellingItems,
+    categorySales,
     selectedCategory,
     setSelectedCategory,
     timeFrame,

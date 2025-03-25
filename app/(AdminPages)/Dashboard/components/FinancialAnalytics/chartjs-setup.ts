@@ -1,19 +1,21 @@
 // chartjs-setup.ts
 import {
     Chart as ChartJS,
-    CategoryScale,
+    LineElement,
+    PointElement,
     LinearScale,
-    BarElement,
+    CategoryScale,
     Title,
     Tooltip,
     Legend,
   } from "chart.js";
   
   ChartJS.register(
-    CategoryScale,
+    LineElement,
+    PointElement,
     LinearScale,
-    BarElement,
+    CategoryScale,
     Title,
     Tooltip,
-    Legend
-  );  
+    Legend,
+  ); 
