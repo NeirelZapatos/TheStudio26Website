@@ -11,11 +11,8 @@ interface CartItem {
   quantity: number;
   image_url: string;
 }
-interface CartSummaryProps {
-  cart: CartItem[];
-}
 
-const Header2 = ({ cart }: CartSummaryProps) => {
+const Header2 = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
