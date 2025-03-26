@@ -128,91 +128,10 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
     setDateRange({ start, end });
   };
 
-  // Export customers and orders to CSV
-  const exportToCSV = () => {
-    // Combine customer and order data
-    const combinedData = customers.map(customer => {
-      const customerOrders = orders[customer._id] || [];
-      const totalOrders = customerOrders.length;
-      const totalOrderValue = customerOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-
-      return {
-        ...customer,
-        totalOrders,
-        totalOrderValue
-      };
-    });
-
-    // Create CSV content
-    const headers = [
-      'Name', 'Email', 'Phone', 'Total Orders', 'Total Order Value', 
-      'Created At', 'Last Active'
-    ];
-
-    const csvContent = [
-      headers.join(','),
-      ...combinedData.map(customer => [
-        customer.name?.replace(/,/g, ' ') || '',
-        customer.email?.replace(/,/g, ' ') || '',
-        customer.phone_number || '',
-        customer.totalOrders,
-        customer.totalOrderValue.toFixed(2),
-        customer.created_at || '',
-        customer.last_active || ''
-      ].join(','))
-    ].join('\n');
-
-    // Create and download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'customers_export.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-4">
-      {/* Search and Time Interval Row */}
+      {/* Date Range and Time Interval Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Search by Name or Email */}
-        <div className="col-span-1 md:col-span-2">
-          <label className="block text-gray-700 text-sm mb-2">
-            Search by Name or Email
-          </label>
-          <input
-            type="text"
-            placeholder="Enter name or email"
-            className="w-full p-2 border border-gray-300 rounded-lg"
-            value={localSearchQuery}
-            onChange={(e) => setLocalSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Time Interval Dropdown */}
-        <div>
-          <label className="block text-gray-700 text-sm mb-2">
-            Time Interval
-          </label>
-          <select
-            className="w-full p-2 border border-gray-300 rounded-lg"
-            value={timeInterval}
-            onChange={(e) => handleTimeIntervalChange(e.target.value)}
-          >
-            {timeIntervalOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Date Range Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Start Date Input */}
         <div>
           <label className="block text-gray-700 text-sm mb-2">
@@ -246,10 +165,28 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
             }}
           />
         </div>
+
+        {/* Time Interval Dropdown */}
+        <div>
+          <label className="block text-gray-700 text-sm mb-2">
+            Time Interval
+          </label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={timeInterval}
+            onChange={(e) => handleTimeIntervalChange(e.target.value)}
+          >
+            {timeIntervalOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Action Buttons Row */}
-      <div className="flex justify-between items-center space-x-4">
+      <div className="flex justify-between items-center mt-4">
         {/* Left-side Filter Buttons */}
         <div className="flex items-center space-x-2">
           <button
@@ -268,9 +205,23 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
 
         {/* Export Orders Button */}
         <ExportButton 
-            customers={customers} 
-            orders={orders} 
-          />
+          customers={customers} 
+          orders={orders} 
+        />
+      </div>
+
+      {/* Search Bar Row */}
+      <div className="mt-4">
+        <label className="block text-gray-700 text-sm mb-2">
+          Search by Name or Email
+        </label>
+        <input
+          type="text"
+          placeholder="Enter name or email"
+          className="w-full p-2 border border-gray-300 rounded-lg"
+          value={localSearchQuery}
+          onChange={(e) => setLocalSearchQuery(e.target.value)}
+        />
       </div>
     </div>
   );
