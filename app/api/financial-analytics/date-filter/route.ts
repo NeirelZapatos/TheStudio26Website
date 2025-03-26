@@ -39,8 +39,12 @@ export async function GET(request: NextRequest) {
         let stonesRevenue = 0;
         let courseRevenue = 0;
 
+        // console.log(allCategoriesData);
+
         for (const catData of allCategoriesData) {
-            totalRevenue += catData.total_amount;
+            // totalRevenue += catData.total_amount;
+
+            // console.log(catData.product_items);
             
             // Handle product items
             for (const productId of catData.product_items) {
@@ -51,15 +55,20 @@ export async function GET(request: NextRequest) {
                     continue;
                 }
 
+                console.log(product.category);
+
                 switch (product.category) {
                     case "Jewelry":
-                        jewelryRevenue += product.price;
+                        jewelryRevenue += Number(product.price);
+                        totalRevenue += Number(product.price);
                         break;
                     case "Stones":
-                        stonesRevenue += product.price;
+                        stonesRevenue += Number(product.price);
+                        totalRevenue += Number(product.price);
                         break;
                     case "Supplies":
-                        suppliesRevenue += product.price;
+                        suppliesRevenue += Number(product.price);
+                        totalRevenue += Number(product.price);
                         break;
                 }
             }
@@ -73,7 +82,8 @@ export async function GET(request: NextRequest) {
                     continue;
                 }
 
-                courseRevenue += course.price;
+                courseRevenue += Number(course.price);
+                totalRevenue += Number(course.price);
             }
         }
 
