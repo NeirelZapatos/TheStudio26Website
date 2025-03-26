@@ -4,6 +4,7 @@ import RevenueOptions from "./RevenueOptions"; // Import RevenueOptions componen
 import RevenueDetails from "./RevenueDetails"; // Import RevenueDetails component
 import useFinancialData from "./hooks/useFinancialData"; // Import custom hook for financial data
 import BestSellingItems from "./BestSellingItems"; // Import Best-Selling Items component
+import CategorySalesChart from "./CategorySalesChart" // Import Revenue trends in graphical format
 import useOrderData from "./hooks/useOrderData"; // Import custom hook for order data
 
 /**
@@ -43,6 +44,7 @@ const FinancialAnalytics: React.FC = () => {
   const { 
     financialData, // Financial data (revenue and category revenue)
     bestSellingItems, // Revenue Trends (or) Best-selling items per category
+    categorySales, // Data Visualization in graphical format
     timeFrame, // Selected time frame (e.g., "Daily", "Monthly")
     setTimeFrame, // Function to update the time frame
     isLoading, // Loading state
@@ -103,6 +105,13 @@ const FinancialAnalytics: React.FC = () => {
         {/* Best Selling Items Section */}
         <BestSellingItems bestSellingItems={bestSellingItems} />
 
+        {/* Sales Trend Graphs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <CategorySalesChart category="Jewelry" salesData={categorySales.Jewelry} timeFrame={timeFrame}/>
+          <CategorySalesChart category="Stones" salesData={categorySales.Stones} timeFrame={timeFrame}/>
+          <CategorySalesChart category="Supplies" salesData={categorySales.Supplies} timeFrame={timeFrame}/>
+          <CategorySalesChart category="Courses" salesData={categorySales.Courses} timeFrame={timeFrame}/>
+        </div>
         </>
       )}
     </section>
