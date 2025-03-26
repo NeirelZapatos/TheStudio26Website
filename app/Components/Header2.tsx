@@ -163,7 +163,7 @@ const Header2 = () => {
                   <h3 className="text-xl font-semibold">Subtotal: ${total.toFixed(2)}</h3>
                   
                   <div className="card-actions">
-                    <Link href="/checkout">
+                    <Link href="/check-out">
                       <button className="btn btn-primary btn-block" onClick={closeCart}>
                         View cart
                       </button>

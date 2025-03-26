@@ -19,7 +19,7 @@ export default function SuccessPage() {
         }
 
         // Call your GET endpoint to process the order
-        const response = await fetch(`/api/checkout/create-checkout-session?session_id=${sessionId}`);
+        const response = await fetch(`/api/check-out/create-checkout-session?session_id=${sessionId}`);
         const data = await response.json();
         
         if (data.success) {

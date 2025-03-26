@@ -14,7 +14,7 @@ interface CartItem {
 const CheckoutForm = ({ cartItems }: { cartItems: CartItem[] }) => {
   const handleCheckout = async () => {
     // Create a Checkout Session with the cart items
-    const response = await fetch("/api/checkout/create-checkout-session", {
+    const response = await fetch("/api/check-out/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cartItems }), // Pass the cart items to the API
