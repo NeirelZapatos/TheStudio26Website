@@ -89,7 +89,7 @@ const useFetchCustomers = ({ searchQuery, dateRange, timeInterval }: UseFetchCus
           })
         : searchFilteredCustomers;
 
-      // Group orders by customer ID
+      // Group orders by customer ID, preserving existing order visibility
       const ordersByCustomer = processedOrders.reduce<{ [key: string]: any[] }>((acc, order) => {
         const customerId = order.customer_id?.toString();
         const isWithinDateRange = 
@@ -98,7 +98,13 @@ const useFetchCustomers = ({ searchQuery, dateRange, timeInterval }: UseFetchCus
            order.order_date <= getUTCDate(dateRange.end));
 
         if (customerId && isWithinDateRange) {
-          (acc[customerId] ||= []).push(order);
+          // Preserve existing orders if they were previously visible
+          if (acc[customerId]) {
+            acc[customerId].push(order);
+          } else if (orders[customerId]) {
+            // If orders were previously visible, keep them
+            acc[customerId] = [order];
+          }
         }
         return acc;
       }, {});

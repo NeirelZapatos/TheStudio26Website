@@ -64,7 +64,7 @@ const CustomerManagementSection: React.FC = () => {
     setSearchQuery("");
     setDateRange({ start: "", end: "" });
     setTimeInterval("");
-    setCustomers([]);
+    fetchCustomers(); // Fetch all customers after clearing filters
   };
 
   const sortedCustomers = useMemo(() => sortCustomers(customers), [customers]);
