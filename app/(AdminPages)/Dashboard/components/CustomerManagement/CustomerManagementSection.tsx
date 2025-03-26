@@ -77,11 +77,12 @@ const CustomerManagementSection: React.FC = () => {
     <section className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">Customer Management</h2>
 
-      {/* Add Customer Form */}
-      <AddCustomerForm addCustomer={addCustomer} loading={addCustomerLoading} />
-
-      {/* Filters and Export Section */}
-      <div className="mt-6 flex items-center justify-between">
+      {/* Add Customer and Filters Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <AddCustomerForm 
+          addCustomer={addCustomer} 
+          loading={addCustomerLoading} 
+        />
         <CustomerFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -94,7 +95,6 @@ const CustomerManagementSection: React.FC = () => {
           customers={customers}
           orders={orders}
         />
-        
       </div>
 
       {/* Customer List */}

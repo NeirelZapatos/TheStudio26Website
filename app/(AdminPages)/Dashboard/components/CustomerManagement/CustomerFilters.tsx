@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react"; // Import React and useState hook
 import ExportButton from "./ExportButton";
+import { Filter, RefreshCw } from "lucide-react";
 
 /**
  * CustomerFilters Component:
@@ -191,39 +192,46 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={fetchCustomers}
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
           >
+            <Filter className="mr-2" size={18} />
             Apply Filters
           </button>
           <button
             onClick={handleClearSearch}
-            className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+            className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
           >
+            <RefreshCw className="mr-2" size={18} />
             Clear Search
           </button>
+          <ExportButton 
+            customers={customers} 
+            orders={orders} 
+          />
         </div>
-
-        {/* Export Orders Button */}
-        <ExportButton 
-          customers={customers} 
-          orders={orders} 
-        />
       </div>
 
       {/* Search Bar Row */}
-      <div className="mt-4">
-        <label className="block text-gray-700 text-sm mb-2">
-          Search by Name or Email
-        </label>
-        <input
-          type="text"
-          placeholder="Enter name or email"
-          className="w-full p-2 border border-gray-300 rounded-lg"
-          value={localSearchQuery}
-          onChange={(e) => setLocalSearchQuery(e.target.value)}
-        />
-      </div>
+      <div className="mt-4 relative">
+  <label className="block text-gray-700 text-sm mb-2">
+    Search by Name or Email
+  </label>
+  <div className="relative">
+    <input
+      type="text"
+      placeholder="Enter name or email"
+      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      value={localSearchQuery}
+      onChange={(e) => setLocalSearchQuery(e.target.value)}
+    />
+    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
     </div>
+  </div>
+</div>
+</div>
   );
 };
 
