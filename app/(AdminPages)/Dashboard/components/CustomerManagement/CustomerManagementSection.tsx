@@ -69,6 +69,17 @@ const CustomerManagementSection: React.FC = () => {
 
   const sortedCustomers = useMemo(() => sortCustomers(customers), [customers]);
 
+  // Modify useEffect to handle empty search query
+  useEffect(() => {
+    if (searchQuery !== "") {
+      fetchCustomers();
+    } else {
+      // Fetch all customers when search query is empty
+      fetchCustomers();
+    }
+  }, [searchQuery]);
+
+  // Initial fetch when component mounts
   useEffect(() => {
     fetchCustomers();
   }, []);
