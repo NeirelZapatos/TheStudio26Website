@@ -39,6 +39,12 @@ interface BestSellingItems {
   Courses: BestSellingItem[]; 
 }
 
+interface CategorySales {
+  [category: string]: {
+    [month: string]: number;
+  };
+}
+
 const useFinancialData = () => {
   const [financialData, setFinancialData] = useState<FinancialData>({
     revenue: 0,
@@ -51,6 +57,13 @@ const useFinancialData = () => {
     Supplies: [],
     Courses: [],
   });
+
+   const [categorySales, setCategorySales] = useState<CategorySales>({
+    Jewelry: {},
+    Stones: {},
+    Supplies: {},
+    Courses: {},
+   })
 
   const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
   const [timeFrame, setTimeFrame] = useState<string>("Daily");
@@ -123,6 +136,28 @@ const useFinancialData = () => {
       }
     };
 
+    const fetchCategorySales = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/category-sales-trend?startDate=${startDate}&endDate=${endDate}`);
+        if (!res.ok) throw new Error("Failed to fetch category sales");
+        const data = await res.json();
+        setCategorySales(data.categorySales);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+    fetchCategorySales();
+  }, [selectedCategory, timeFrame]);
+
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+
     const fetchBestSellingItems = async () => {
       setIsLoading(true);
       setError(null);
@@ -138,9 +173,8 @@ const useFinancialData = () => {
       }
     };
 
-    fetchData();
     fetchBestSellingItems();
-  }, [selectedCategory, timeFrame]);
+  }, [startDate, endDate]);
 
   // Fetch financial data based on a custom date range
   const fetchDataByDateRange = async () => {
@@ -177,6 +211,7 @@ const useFinancialData = () => {
   return {
     financialData,
     bestSellingItems,
+    categorySales,
     selectedCategory,
     setSelectedCategory,
     timeFrame,
