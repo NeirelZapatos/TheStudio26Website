@@ -41,15 +41,18 @@ const RevenueDetails: React.FC<RevenueDetailsProps> = ({
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-4">Product Revenue</h3>
         <div className="space-y-2">
-          {Object.entries(financialData.categoryRevenue).map(([category, { revenue }]) => (
-            <div
-              key={category}
-              className="bg-gray-200 p-4 rounded-lg flex justify-between items-center"
-            >
-              <strong>{category}</strong>
-              <span>{formatRevenue(revenue)}</span>
-            </div>
-          ))}
+          {Object.entries(financialData.categoryRevenue).map(([category, { revenue }]) => {
+            const categoryRevenue = Number(revenue) || 0;
+            return (
+              <div
+                key={category}
+                className="bg-gray-200 p-4 rounded-lg flex justify-between items-center"
+              >
+                <strong>{category}</strong>
+                <span>{formatRevenue(categoryRevenue)}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>
