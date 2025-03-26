@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 
 /**
@@ -53,8 +54,9 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
   };
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg mb-6">
-      <h3 className="text-lg font-semibold mb-4">Add New Customer</h3>
+    <div className="bg-white shadow-lg rounded-lg p-6">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Add New Customer</h3>
+      
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Input for first name */}
         <input
@@ -62,7 +64,7 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
           placeholder="First Name"
           value={newCustomer.first_name}
           onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
-          className="p-2 border border-gray-300 rounded-lg"
+          className="p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
           required
         />
         {/* Input for last name */}
@@ -71,7 +73,7 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
           placeholder="Last Name"
           value={newCustomer.last_name}
           onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
-          className="p-2 border border-gray-300 rounded-lg"
+          className="p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
           required
         />
         {/* Input for email */}
@@ -80,7 +82,7 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
           placeholder="Email"
           value={newCustomer.email}
           onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-          className="p-2 border border-gray-300 rounded-lg"
+          className="p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
           required
         />
         {/* Input for phone number (optional) */}
@@ -89,14 +91,15 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
           placeholder="Phone Number (Optional)"
           value={newCustomer.phone_number}
           onChange={(e) => setNewCustomer({ ...newCustomer, phone_number: e.target.value })}
-          className="p-2 border border-gray-300 rounded-lg"
+          className="p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
         />
         {/* Submit button */}
         <button
           type="submit"
-          className="w-auto bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+          className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors col-span-1 md:col-span-2"
           disabled={loading} // Disable button when loading
         >
+          <Plus className="mr-2" size={18} />
           {loading ? "Adding..." : "Add Customer"}
         </button>
       </form>

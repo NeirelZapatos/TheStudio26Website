@@ -90,10 +90,7 @@ const CustomerManagementSection: React.FC = () => {
 
       {/* Add Customer and Filters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <AddCustomerForm 
-          addCustomer={addCustomer} 
-          loading={addCustomerLoading} 
-        />
+        {/* Swapped the order of these two components */}
         <CustomerFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -105,6 +102,10 @@ const CustomerManagementSection: React.FC = () => {
           handleClearSearch={handleClearSearch}
           customers={customers}
           orders={orders}
+        />
+        <AddCustomerForm 
+          addCustomer={addCustomer} 
+          loading={addCustomerLoading} 
         />
       </div>
 

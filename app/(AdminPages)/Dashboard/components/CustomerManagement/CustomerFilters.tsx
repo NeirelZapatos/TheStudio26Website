@@ -130,9 +130,11 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Customer Management</h3>
+      
       {/* Date Range and Time Interval Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         {/* Start Date Input */}
         <div>
           <label className="block text-gray-700 text-sm mb-2">
@@ -140,7 +142,7 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
           </label>
           <input
             type="date"
-            className="w-full p-2 border border-gray-300 rounded-lg"
+            className="w-full p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
             value={dateRange.start}
             onChange={(e) => {
               const filteredRange = filterDateRange(e.target.value, dateRange.end);
@@ -157,7 +159,7 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
           </label>
           <input
             type="date"
-            className="w-full p-2 border border-gray-300 rounded-lg"
+            className="w-full p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
             value={dateRange.end}
             onChange={(e) => {
               const filteredRange = filterDateRange(dateRange.start, e.target.value);
@@ -173,7 +175,7 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
             Time Interval
           </label>
           <select
-            className="w-full p-2 border border-gray-300 rounded-lg"
+            className="w-full p-2 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-200"
             value={timeInterval}
             onChange={(e) => handleTimeIntervalChange(e.target.value)}
           >
@@ -187,19 +189,18 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
       </div>
 
       {/* Action Buttons Row */}
-      <div className="flex justify-between items-center mt-4">
-        {/* Left-side Filter Buttons */}
+      <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
           <button
             onClick={fetchCustomers}
-            className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors"
           >
             <Filter className="mr-2" size={18} />
             Apply Filters
           </button>
           <button
             onClick={handleClearSearch}
-            className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+            className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-xl hover:bg-gray-600 transition-colors"
           >
             <RefreshCw className="mr-2" size={18} />
             Clear Search
@@ -212,26 +213,26 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
       </div>
 
       {/* Search Bar Row */}
-      <div className="mt-4 relative">
-  <label className="block text-gray-700 text-sm mb-2">
-    Search by Name or Email
-  </label>
-  <div className="relative">
-    <input
-      type="text"
-      placeholder="Enter name or email"
-      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={localSearchQuery}
-      onChange={(e) => setLocalSearchQuery(e.target.value)}
-    />
-    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+      <div className="relative">
+        <label className="block text-gray-700 text-sm mb-2">
+          Search by Name or Email
+        </label>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Enter name or email"
+            className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={localSearchQuery}
+            onChange={(e) => setLocalSearchQuery(e.target.value)}
+          />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-</div>
   );
 };
 

@@ -15,6 +15,20 @@ import { User, Mail, Phone, Archive, Trash2 } from 'lucide-react';
  * - handleShowOrders: Function to toggle the visibility of orders for a specific customer.
  * - deleteCustomer: Function to delete a customer by their ID.
  */
+import { searchCustomers } from '@/utils/searchUtils';
+import { useState, useEffect } from 'react';
+
+const formatPhoneNumber = (phoneNumber: string) => {
+  const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  
+  if (match) {
+    return `(${match[1]})${match[2]}-${match[3]}`;
+  }
+  
+  return phoneNumber;
+};
+
 interface CustomerListProps {
   customers: any[]; // Array of customer objects
   orders: { [key: string]: any[] }; // Object mapping customer IDs to their orders
@@ -24,22 +38,51 @@ interface CustomerListProps {
   deleteCustomer: (customerId: string) => void; // Function to delete a customer
 }
 
-
 const CustomerList: React.FC<CustomerListProps> = ({
-  customers,
+  customers: initialCustomers,
   orders,
   orderCategory,
   setOrderCategory,
   handleShowOrders,
   deleteCustomer,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCustomers, setFilteredCustomers] = useState(initialCustomers);
+
+  // Update filtered customers when search query or initial customers change
+  useEffect(() => {
+    const normalizedQuery = searchQuery.trim();
+    const filtered = searchCustomers(initialCustomers, normalizedQuery);
+    setFilteredCustomers(filtered);
+  }, [searchQuery, initialCustomers]);
+
   return (
     <div className="bg-white shadow-lg rounded-lg p-6">
       <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Customer List</h3>
 
-      {customers.length > 0 ? (
+      {/* Search Bar - Now with functional search */}
+      <div className="relative mb-4">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search by name or email"
+          className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          value={searchQuery}
+          onChange={(e) => {
+            const sanitizedQuery = e.target.value.replace(/\s+/g, ' ');
+            setSearchQuery(sanitizedQuery);
+          }}
+          autoComplete="off"
+        />
+      </div>
+
+      {filteredCustomers.length > 0 ? (
         <div className="space-y-4">
-          {customers.map((customer) => (
+          {filteredCustomers.map((customer) => (
             <div 
               key={customer._id} 
               className="bg-gray-50 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-5"
@@ -53,14 +96,18 @@ const CustomerList: React.FC<CustomerListProps> = ({
                     <h4 className="text-lg font-semibold text-gray-800">
                       {customer.first_name} {customer.last_name}
                     </h4>
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Mail className="w-4 h-4" />
-                      <span className="text-sm">{customer.email}</span>
+                    <div className="flex flex-col text-gray-600 space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4" />
+                        <span className="text-sm">{customer.email}</span>
+                      </div>
                       {customer.phone_number && (
-                        <>
-                          <Phone className="w-4 h-4 ml-3" />
-                          <span className="text-sm">{customer.phone_number}</span>
-                        </>
+                        <div className="flex items-center space-x-2">
+                          <Phone className="w-4 h-4" />
+                          <span className="text-sm">
+                            {formatPhoneNumber(customer.phone_number)}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -94,7 +141,9 @@ const CustomerList: React.FC<CustomerListProps> = ({
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500 italic">No customers found.</p>
+        <p className="text-center text-gray-500 italic">
+          {searchQuery ? "No matching customers found." : "No customers found."}
+        </p>
       )}
     </div>
   );
