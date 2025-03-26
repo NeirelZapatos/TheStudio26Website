@@ -1,12 +1,22 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import dynamic from 'next/dynamic';
+import "react-quill/dist/quill.snow.css"; // Keep this import
 import {
   uploadHomepageFileToS3,
   listHomepageImages,
   deleteS3Object,
 } from "../../../../utils/s3";
+
+// Dynamically import ReactQuill with SSR disabled
+const ReactQuill = dynamic(
+  () => import('react-quill'),
+  { 
+    ssr: false,
+    loading: () => <p>Loading...</p>
+  }
+);
+
 
 interface ImageEntry {
   url: string;

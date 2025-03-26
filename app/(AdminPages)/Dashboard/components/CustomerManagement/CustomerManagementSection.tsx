@@ -40,29 +40,26 @@ import sortCustomers from "@/utils/sortCustomers"; // Import utility function fo
  *   `AddCustomerForm` and `CustomerList` components.
  */
 
-const CustomerManagementSection: React.FC = () => {
-  // State for search query, date range, time interval, and order category
-  const [searchQuery, setSearchQuery] = useState(""); // Search query for filtering customers
-  const [dateRange, setDateRange] = useState({ start: "", end: "" }); // Date range for filtering
-  const [timeInterval, setTimeInterval] = useState(""); // Time interval for filtering
-  const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all"); // Order category filter
 
-  // Fetch customers and orders using the `useFetchCustomers` hook
+const CustomerManagementSection: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [timeInterval, setTimeInterval] = useState("");
+  const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all");
+
   const { customers, orders, allOrders, loading, fetchCustomers, setCustomers, setOrders } = useFetchCustomers({
     searchQuery,
     dateRange,
     timeInterval,
   });
 
-  // Handle customer actions using the `useCustomerActions` hook
   const { addCustomer, deleteCustomer, handleShowOrders, loading: addCustomerLoading } = useCustomerActions({
     setCustomers,
     setOrders,
     dateRange,
-    allOrders, // Pass preloaded orders
+    allOrders,
   });
 
-  // Clear search and reset filters
   const handleClearSearch = () => {
     setSearchQuery("");
     setDateRange({ start: "", end: "" });
@@ -70,23 +67,21 @@ const CustomerManagementSection: React.FC = () => {
     setCustomers([]);
   };
 
-  // Sort customers alphabetically using the utility function
   const sortedCustomers = useMemo(() => sortCustomers(customers), [customers]);
 
-  // Fetch customers and orders when the component mounts
   useEffect(() => {
     fetchCustomers();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
   return (
-    <section className="bg-white shadow rounded-lg p-2">
-      <h2 className="text-xl font-semibold mb-4">Customer Management</h2>
+    <section className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-semibold mb-6">Customer Management</h2>
 
       {/* Add Customer Form */}
       <AddCustomerForm addCustomer={addCustomer} loading={addCustomerLoading} />
 
-      {/* Filter and Export Buttons */}
-      <div className="flex items-center gap-4 mt-4">
+      {/* Filters and Export Section */}
+      <div className="mt-6 flex items-center justify-between">
         <CustomerFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -96,13 +91,15 @@ const CustomerManagementSection: React.FC = () => {
           setTimeInterval={setTimeInterval}
           fetchCustomers={fetchCustomers}
           handleClearSearch={handleClearSearch}
+          customers={customers}
+          orders={orders}
         />
-        <ExportButton customers={customers} orders={orders} />
+        
       </div>
 
       {/* Customer List */}
       <CustomerList
-        customers={sortedCustomers} // Pass the sorted customers array
+        customers={sortedCustomers}
         orders={orders}
         orderCategory={orderCategory}
         setOrderCategory={setOrderCategory}

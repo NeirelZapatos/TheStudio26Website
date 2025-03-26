@@ -1,6 +1,7 @@
 
 
 import React, { useEffect, useState } from "react"; // Import React and useState hook
+import ExportButton from "./ExportButton";
 
 /**
  * CustomerFilters Component:
@@ -26,6 +27,8 @@ interface CustomerFiltersProps {
   setTimeInterval: (interval: string) => void;
   fetchCustomers: () => void;
   handleClearSearch: () => void;
+  customers: any[];
+  orders: { [key: string]: any[] };
 }
 
 const CustomerFilters: React.FC<CustomerFiltersProps> = ({
@@ -37,17 +40,18 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
   setTimeInterval,
   fetchCustomers,
   handleClearSearch,
+  customers,
+  orders,
 }) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
   // Debounce effect for dynamic search
   useEffect(() => {
     const timerId = setTimeout(() => {
-      // Only update search query if it has changed
       if (localSearchQuery !== searchQuery) {
         setSearchQuery(localSearchQuery);
       }
-    }, 300); // 300ms delay to prevent excessive re-renders
+    }, 300);
 
     return () => clearTimeout(timerId);
   }, [localSearchQuery, searchQuery, setSearchQuery]);
@@ -59,10 +63,8 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
    * @returns Filtered date range
    */
   const filterDateRange = (start: string, end: string) => {
-    // If no dates are provided, return empty range
     if (!start && !end) return { start: '', end: '' };
 
-    // If only start date is provided, set end to today
     if (start && !end) {
       return { 
         start, 
@@ -70,7 +72,6 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
       };
     }
 
-    // If only end date is provided, set start to a default (e.g., 1 year ago)
     if (!start && end) {
       const defaultStart = new Date();
       defaultStart.setFullYear(defaultStart.getFullYear() - 1);
@@ -80,21 +81,105 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
       };
     }
 
-    // If both dates are provided, ensure end is not before start
     if (start && end) {
       return start <= end 
         ? { start, end }
-        : { start: end, end: start }; // Swap if start is after end
+        : { start: end, end: start };
     }
 
     return { start: '', end: '' };
   };
 
+  // Time interval options
+  const timeIntervalOptions = [
+    { value: '', label: 'All Time' },
+    { value: 'last7days', label: 'Last 7 Days' },
+    { value: 'last30days', label: 'Last 30 Days' },
+    { value: 'last90days', label: 'Last 90 Days' },
+    { value: 'thisYear', label: 'This Year' }
+  ];
+
+  // Handle time interval change
+  const handleTimeIntervalChange = (interval: string) => {
+    setTimeInterval(interval);
+
+    const now = new Date();
+    let start = '';
+    let end = now.toISOString().split('T')[0];
+
+    switch(interval) {
+      case 'last7days':
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case 'last30days':
+        start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case 'last90days':
+        start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case 'thisYear':
+        start = `${now.getFullYear()}-01-01`;
+        break;
+      default:
+        start = '';
+        end = '';
+    }
+
+    setDateRange({ start, end });
+  };
+
+  // Export customers and orders to CSV
+  const exportToCSV = () => {
+    // Combine customer and order data
+    const combinedData = customers.map(customer => {
+      const customerOrders = orders[customer._id] || [];
+      const totalOrders = customerOrders.length;
+      const totalOrderValue = customerOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+      return {
+        ...customer,
+        totalOrders,
+        totalOrderValue
+      };
+    });
+
+    // Create CSV content
+    const headers = [
+      'Name', 'Email', 'Phone', 'Total Orders', 'Total Order Value', 
+      'Created At', 'Last Active'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...combinedData.map(customer => [
+        customer.name?.replace(/,/g, ' ') || '',
+        customer.email?.replace(/,/g, ' ') || '',
+        customer.phone_number || '',
+        customer.totalOrders,
+        customer.totalOrderValue.toFixed(2),
+        customer.created_at || '',
+        customer.last_active || ''
+      ].join(','))
+    ].join('\n');
+
+    // Create and download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'customers_export.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div className="space-y-4">
+      {/* Search and Time Interval Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Search by Name or Email */}
-        <div>
+        <div className="col-span-1 md:col-span-2">
           <label className="block text-gray-700 text-sm mb-2">
             Search by Name or Email
           </label>
@@ -107,179 +192,88 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
           />
         </div>
 
-        {/* Date Range Filter */}
+        {/* Time Interval Dropdown */}
         <div>
           <label className="block text-gray-700 text-sm mb-2">
-            Date Range
+            Time Interval
           </label>
-          <div className="space-y-2">
-            {/* Start Date Input */}
-            <input
-              type="date"
-              placeholder="mm/dd/yyyy"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={dateRange.start}
-              onChange={(e) => {
-                const filteredRange = filterDateRange(e.target.value, dateRange.end);
-                setDateRange(filteredRange);
-              }}
-            />
-            {/* End Date Input */}
-            <input
-              type="date"
-              placeholder="mm/dd/yyyy"
-              className="w-full p-2 border border-gray-300 rounded-lg"
-              value={dateRange.end}
-              onChange={(e) => {
-                const filteredRange = filterDateRange(dateRange.start, e.target.value);
-                setDateRange(filteredRange);
-              }}
-            />
-          </div>
+          <select
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={timeInterval}
+            onChange={(e) => handleTimeIntervalChange(e.target.value)}
+          >
+            {timeIntervalOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Apply and Clear Filters Buttons */}
-      <div className="flex items-center space-x-2">
-        {/* Apply Filters Button (Now only for date range) */}
-        <button
-          onClick={fetchCustomers}
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-        >
-          Apply Date Filters
-        </button>
+      {/* Date Range Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Start Date Input */}
+        <div>
+          <label className="block text-gray-700 text-sm mb-2">
+            Start Date
+          </label>
+          <input
+            type="date"
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={dateRange.start}
+            onChange={(e) => {
+              const filteredRange = filterDateRange(e.target.value, dateRange.end);
+              setDateRange(filteredRange);
+              setTimeInterval('');
+            }}
+          />
+        </div>
 
-        {/* Clear Search Button */}
-        <button
-          onClick={handleClearSearch}
-          className="bg-gray-500 text-white py-2 px-4 rounded-lg"
-        >
-          Clear Search
-        </button>
+        {/* End Date Input */}
+        <div>
+          <label className="block text-gray-700 text-sm mb-2">
+            End Date
+          </label>
+          <input
+            type="date"
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={dateRange.end}
+            onChange={(e) => {
+              const filteredRange = filterDateRange(dateRange.start, e.target.value);
+              setDateRange(filteredRange);
+              setTimeInterval('');
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons Row */}
+      <div className="flex justify-between items-center space-x-4">
+        {/* Left-side Filter Buttons */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={fetchCustomers}
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Apply Filters
+          </button>
+          <button
+            onClick={handleClearSearch}
+            className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Clear Search
+          </button>
+        </div>
+
+        {/* Export Orders Button */}
+        <ExportButton 
+            customers={customers} 
+            orders={orders} 
+          />
       </div>
     </div>
   );
 };
 
 export default CustomerFilters;
-
-//Working on this for the date filtering
-
-
-/**
- * CustomerFilters Component:
- * Provides a user interface for filtering customers based on search queries, date ranges, and time intervals.
- * 
- * Props:
- * - searchQuery: The current search query string used to filter customers by name or email.
- * - setSearchQuery: A function to update the search query state.
- * - dateRange: An object containing the start and end dates for filtering customers by date range.
- * - setDateRange: A function to update the date range state.
- * - timeInterval: The current time interval filter (e.g., "Daily", "Monthly").
- * - setTimeInterval: A function to update the time interval state.
- * - fetchCustomers: A function to fetch customers based on the applied filters.
- * - handleClearSearch: A function to clear all filters and reset the search state.
- */
-
-/*
-interface CustomerFiltersProps {
-  searchQuery: string; // Current search query for filtering customers by name or email
-  setSearchQuery: (query: string) => void; // Function to update the search query
-  dateRange: { start: string; end: string }; // Current date range for filtering customers
-  setDateRange: (range: { start: string; end: string }) => void; // Function to update the date range
-  timeInterval: string; // Current time interval for filtering customers
-  setTimeInterval: (interval: string) => void; // Function to update the time interval
-  fetchCustomers: () => void; // Function to fetch customers based on the applied filters
-  handleClearSearch: () => void; // Function to clear all filters and reset the search state
-}
-
-/**
- * CustomerFilters Functional Component:
- * Renders a form with input fields for filtering customers and buttons to apply or clear filters.
- 
-const CustomerFilters: React.FC<CustomerFiltersProps> = ({
-  searchQuery,
-  setSearchQuery,
-  dateRange,
-  setDateRange,
-  timeInterval,
-  setTimeInterval,
-  fetchCustomers,
-  handleClearSearch,
-}) => {
-  return (
-    //<div>
-     // {/* Grid layout for search and date range inputs */
-     // <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-      //  {/* Search by Name or Email */}
-      //  <div>
-    //      {/* Label for the search input */}
-       //   <label className="block text-gray-700 text-sm mb-2">
-      //      Search by Name or Email
-      //    </label>
-        //  {/* Input field for searching customers by name or email */}
-      //    <input
-      //      type="text" // Text input type
-       //     placeholder="Enter name or email" // Placeholder text
-       //     className="w-full p-2 border border-gray-300 rounded-lg" // Styling for the input field
-       //     value={searchQuery} // Bind the input value to the searchQuery state
-       //     onChange={(e) => setSearchQuery(e.target.value)} // Update searchQuery state on input change
-       //   />
-       // </div>
-
-       // {/* Date Range Filter */}
-       // <div>
-       //   {/* Label for the date range inputs */}
-       ////   <label className="block text-gray-700 text-sm mb-2">
-      //      Date Range
-       //   </label>
-       //   {/* Container for the start and end date inputs */}
-       //   <div className="space-y-2">
-       //     {/* Start Date Input */}
-       //     <input
-        //      type="date" // Date input type
-       //       placeholder="mm/dd/yyyy" // Placeholder text
-         //     className="w-full p-2 border border-gray-300 rounded-lg" // Styling for the input field
-          //    value={dateRange.start} // Bind the input value to the start date state
-          //    onChange={(e) =>
-          //      setDateRange({ ...dateRange, start: e.target.value }) // Update start date state on input change
-           //   }
-          //  />
-           // {/* End Date Input */}
-          //  <input
-            //  type="date" // Date input type
-           //   placeholder="mm/dd/yyyy" // Placeholder text
-           //   className="w-full p-2 border border-gray-300 rounded-lg" // Styling for the input field
-           //   value={dateRange.end} // Bind the input value to the end date state
-           //   onChange={(e) =>
-           //     setDateRange({ ...dateRange, end: e.target.value }) // Update end date state on input change
-           //   }
-          //  />
-       //   </div>
-       // </div>
-   //   </div>
-
-      //{/* Apply and Clear Filters Buttons */}
-     // <div className="flex items-center space-x-2">
-      //  {/* Apply Filters Button */}
-      //  <button
-      //    onClick={fetchCustomers} // Trigger fetchCustomers function on click
-    //      className="bg-blue-500 text-white py-2 px-4 rounded-lg" // Styling for the button
-     //   >
-       //   Apply Filters
-       // </button>
-
-      //  {/* Clear Search Button */}
-       // <button
-      //    onClick={handleClearSearch} // Trigger handleClearSearch function on click
-      //    className="bg-gray-500 text-white py-2 px-4 rounded-lg" // Styling for the button
-    //    >
-    //      Clear Search
-   //     </button>
-   //   </div>
- //   </div>
- // );
-//};
-
-//export default CustomerFilters; // Export the CustomerFilters component
-
