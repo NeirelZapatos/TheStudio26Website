@@ -41,9 +41,7 @@ function DashboardPage() {
         <Header />
         {activeSection === "home" && <HomeSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
-        {activeSection === "finances" && <FinancesSection />}
         {activeSection === "calendar" && <BookingCalendarSection />}
-        {activeSection === "work" && <WorkScheduleSection />}
         {activeSection === "item" && <ItemSection />}
         {activeSection === "class" && <ClassSection />}
         {activeSection === "customerManagement" && (
@@ -51,7 +49,6 @@ function DashboardPage() {
         )}
         {activeSection === "newsletter" && <NewsletterSection />}
         {activeSection === "financialAnalytics" && <FinancialAnalytics />}
-        {/* {activeSection === "productList" && <ProductList />} */}
         {activeSection === "coursesList" && <CoursesListSection />}
         {activeSection === "itemsList" && <ItemsListSection />}
         {activeSection === "manageOrders" && <ManageOrders />}
