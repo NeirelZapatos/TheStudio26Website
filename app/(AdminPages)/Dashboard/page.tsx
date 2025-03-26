@@ -48,7 +48,8 @@ function DashboardPage() {
           <CustomerManagementSection />
         )}
         {activeSection === "newsletter" && <NewsletterSection />}
-        {activeSection === "financialAnalytics" && <FinancialAnalytics />}
+        {/* {activeSection === "financialAnalytics" && <FinancialAnalytics />} */}
+        {/* {activeSection === "productList" && <ProductList />} */}
         {activeSection === "coursesList" && <CoursesListSection />}
         {activeSection === "itemsList" && <ItemsListSection />}
         {activeSection === "manageOrders" && <ManageOrders />}
