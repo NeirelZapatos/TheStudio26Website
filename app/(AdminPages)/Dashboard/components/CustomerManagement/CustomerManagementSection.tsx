@@ -2,10 +2,9 @@ import React, { useState, useMemo, useEffect } from "react"; // Import React and
 import AddCustomerForm from './AddCustomerForm'; // Import AddCustomerForm component
 import CustomerFilters from "./CustomerFilters"; // Import CustomerFilters component
 import CustomerList from "./CustomerList"; // Import CustomerList component
-import ExportButton from "./ExportButton"; // Import ExportButton component
 import useFetchCustomers from "./hooks/useFetchCustomers"; // Import custom hook for fetching customers
 import useCustomerActions from "./hooks/useCustomerActions"; // Import custom hook for customer actions
-import sortCustomers from "@/utils/sortCustomers"; // Import utility function for sorting customers
+import sortCustomers from "@/utils/sortUtils/sortCustomers"; // Import utility function for sorting customers
 
 /**
  * CustomerManagementSection Component:
@@ -40,13 +39,14 @@ import sortCustomers from "@/utils/sortCustomers"; // Import utility function fo
  *   `AddCustomerForm` and `CustomerList` components.
  */
 
+
 const CustomerManagementSection: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [timeInterval, setTimeInterval] = useState("");
   const [orderCategory, setOrderCategory] = useState<"all" | "classes" | "products">("all");
 
-  const { customers, orders, allOrders, loading, setCustomers, setOrders } = useFetchCustomers({
+  const { customers, orders, allOrders, loading, fetchCustomers, setCustomers, setOrders } = useFetchCustomers({
     searchQuery,
     dateRange,
     timeInterval,
@@ -59,23 +59,56 @@ const CustomerManagementSection: React.FC = () => {
     allOrders,
   });
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setDateRange({ start: "", end: "" });
+    setTimeInterval("");
+    fetchCustomers(); // Fetch all customers after clearing filters
+  };
+
   const sortedCustomers = useMemo(() => sortCustomers(customers), [customers]);
 
+  // Modify useEffect to handle empty search query
+  useEffect(() => {
+    if (searchQuery !== "") {
+      fetchCustomers();
+    } else {
+      // Fetch all customers when search query is empty
+      fetchCustomers();
+    }
+  }, [searchQuery]);
+
+  // Initial fetch when component mounts
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
   return (
-    <section className="bg-white shadow rounded-lg p-2">
-      <h2 className="text-xl font-semibold mb-4">Customer Management</h2>
+    <section className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-semibold mb-6">Customer Management</h2>
 
-      <AddCustomerForm addCustomer={addCustomer} loading={addCustomerLoading} />
-
-      <div className="flex items-center gap-4 mt-4">
-        {/* Only pass searchQuery and setSearchQuery */}
+      {/* Add Customer and Filters Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Swapped the order of these two components */}
         <CustomerFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          timeInterval={timeInterval}
+          setTimeInterval={setTimeInterval}
+          fetchCustomers={fetchCustomers}
+          handleClearSearch={handleClearSearch}
+          customers={customers}
+          orders={orders}
         />
-        <ExportButton customers={customers} orders={orders} />
+        <AddCustomerForm 
+          addCustomer={addCustomer} 
+          loading={addCustomerLoading} 
+        />
       </div>
 
+      {/* Customer List */}
       <CustomerList
         customers={sortedCustomers}
         orders={orders}

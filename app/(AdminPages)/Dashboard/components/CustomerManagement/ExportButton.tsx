@@ -1,3 +1,4 @@
+import { Download } from "lucide-react";
 import React from "react";
 
 /**
@@ -93,13 +94,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({ customers, orders }) => {
 
   return (
     <button
-      onClick={exportOrdersToCSV}
-      className="bg-green-500 text-white py-2 px-4 rounded-lg"
-    >
-      Export Orders
-    </button>
+    onClick={exportOrdersToCSV}
+    className="bg-green-500 text-white py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-green-600 transition-colors"
+  >
+    <Download size={18} />
+    Export Orders
+  </button>
   );
 };
 
 export default ExportButton;
-

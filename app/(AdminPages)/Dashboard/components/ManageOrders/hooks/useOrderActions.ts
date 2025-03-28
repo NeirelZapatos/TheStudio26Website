@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ProcessPickup } from '@/app/(AdminPages)/Dashboard/components/ManageOrders/ProcessPickup';
-import exportOrdersToCSV from '@/utils/ExportReport';
-import generateReceiptPDF from '@/utils/GenerateReceipt';
+import { ProcessPickup } from '@/utils/orderUtils/ProcessPickup';
+import exportOrdersToCSV from '@/utils/docUtils/ExportReport';
+import generateReceiptPDF from '@/utils/docUtils/GenerateReceipt';
 import { IOrder } from '@/app/models/Order'; // Updated import path
 
 type MutateFunction = () => Promise<any>;

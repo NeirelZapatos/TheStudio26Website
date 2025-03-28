@@ -3,6 +3,7 @@ import Order from '@/app/models/Order';
 import { ICustomer } from '@/app/models/Customer';
 import dbConnect from '@/app/lib/dbConnect';
 import { NextRequest, NextResponse } from 'next/server';
+import { parseAddressString } from '@/utils/stringUtils/addressStringSplit';
 
 interface ShippoInstance {
   transactions: {
@@ -223,92 +224,90 @@ export async function POST(request: NextRequest) {
       // Select the first rate (cheapest) by default
       const selectedRate = shipment.rates[0];
 
-// Create a transaction to purchase the label
-// Create a transaction to purchase the label
-let transaction;
-try {
-  transaction = await shippoClient.transactions.create({
-    rate: selectedRate.object_id,
-    labelFileType: 'PDF_4x6',
-    async: false,
-    metadata: `Order ID ${order._id}`,
-  });
+      // Create a transaction to purchase the label
+      let transaction;
+      try {
+        transaction = await shippoClient.transactions.create({
+          rate: selectedRate.object_id,
+          labelFileType: 'PDF_4x6',
+          async: false,
+          metadata: `Order ID ${order._id}`,
+        });
 
-  if (!transaction.label_url) {
-    throw new Error('No label URL returned from Shippo');
-  }
+        if (!transaction.label_url) {
+          throw new Error('No label URL returned from Shippo');
+        }
 
-  console.log('Transaction created successfully:', transaction);
-} catch (error: unknown) {
-  const transactionError = error as Error;
-  console.error('Shippo transaction error:', transactionError);
-  
-  // Create a placeholder transaction instead of throwing an error
-  transaction = {
-    object_id: `placeholder-${Date.now()}`,
-    status: 'SUCCESS',
-    label_url: 'https://example.com/test-label.pdf',
-    tracking_number: `TEST${Date.now()}`,
-    tracking_url_provider: 'https://example.com/track/TEST123456789',
-  };
-  
-  console.log('Using placeholder transaction data:', transaction);
-}
+        console.log('Transaction created successfully:', transaction);
+      } catch (error: unknown) {
+        const transactionError = error as Error;
+        console.error('Shippo transaction error:', transactionError);
+        
+        // Create a placeholder transaction instead of throwing an error
+        transaction = {
+          object_id: `placeholder-${Date.now()}`,
+          status: 'SUCCESS',
+          label_url: 'https://example.com/test-label.pdf',
+          tracking_number: `TEST${Date.now()}`,
+          tracking_url_provider: 'https://example.com/track/TEST123456789',
+        };
+        
+        console.log('Using placeholder transaction data:', transaction);
+      }
 
       // Create shipping record in MongoDB
-     // Create shipping record in MongoDB
-const shippingRecord = new Shipping({
-  order_id: order._id,
-  address_from: {
-    name: 'Studio 26',
-    company: 'Your Company Name',
-    street1: '123 Main St',
-    street2: '',
-    city: 'Your City',
-    state: 'CA',
-    zip: '94107',
-    country: 'US',
-    phone: '555-555-5555',
-    email: 'your@email.com',
-    is_residential: false,
-    metadata: 'Store Address',
-  },
-  address_to: {
-    name: `${customer.first_name} ${customer.last_name}`,
-    company: '',
-    street1: street1,
-    street2: '',
-    city: city,
-    state: state,
-    zip: zip,
-    country: 'US',
-    phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
-    email: customer.email || '',
-    is_residential: true,
-    metadata: `Customer ID ${customer._id}`,
-  },
-  parcel: {
-    length: package_details.length,
-    width: package_details.width,
-    height: package_details.height,
-    distance_unit: 'in',
-    weight: package_details.weight,
-    mass_unit: 'lb',
-  },
-  shipment: {
-    carrier_account: 'SHIPPO_CARRIER_ACCOUNT_ID',
-    servicelevel_token: 'SERVICE_LEVEL_TOKEN_PLACEHOLDER',
-    servicelevel_name: selectedRate.servicelevel_name,
-    label_file_type: 'pdf', // Change from 'PDF_4x6' to 'pdf' or another valid enum value
-  },
-  transaction: {
-    shippo_id: transaction.object_id,
-    status: transaction.status,
-    label_url: transaction.label_url,
-    tracking_number: transaction.tracking_number,
-    tracking_url: transaction.tracking_url_provider,
-  },
-});
+      const shippingRecord = new Shipping({
+        order_id: order._id,
+        address_from: {
+          name: 'Studio 26',
+          company: 'Your Company Name',
+          street1: '123 Main St',
+          street2: '',
+          city: 'Your City',
+          state: 'CA',
+          zip: '94107',
+          country: 'US',
+          phone: '555-555-5555',
+          email: 'your@email.com',
+          is_residential: false,
+          metadata: 'Store Address',
+        },
+        address_to: {
+          name: `${customer.first_name} ${customer.last_name}`,
+          company: '',
+          street1: street1,
+          street2: '',
+          city: city,
+          state: state,
+          zip: zip,
+          country: 'US',
+          phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
+          email: customer.email || '',
+          is_residential: true,
+          metadata: `Customer ID ${customer._id}`,
+        },
+        parcel: {
+          length: package_details.length,
+          width: package_details.width,
+          height: package_details.height,
+          distance_unit: 'in',
+          weight: package_details.weight,
+          mass_unit: 'lb',
+        },
+        shipment: {
+          carrier_account: 'SHIPPO_CARRIER_ACCOUNT_ID',
+          servicelevel_token: 'SERVICE_LEVEL_TOKEN_PLACEHOLDER',
+          servicelevel_name: selectedRate.servicelevel_name,
+          label_file_type: 'pdf', // Change from 'PDF_4x6' to 'pdf' or another valid enum value
+        },
+        transaction: {
+          shippo_id: transaction.object_id,
+          status: transaction.status,
+          label_url: transaction.label_url,
+          tracking_number: transaction.tracking_number,
+          tracking_url: transaction.tracking_url_provider,
+        },
+      });
 
       await shippingRecord.save();
 
@@ -337,38 +336,4 @@ const shippingRecord = new Shipping({
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-// Helper function to parse address from a string
-function parseAddressString(addressString: string) {
-  const result = {
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'US',
-  };
-
-  if (!addressString) return result;
-
-  const parts = addressString.split(',').map((part) => part.trim());
-
-  if (parts.length === 1) {
-    result.street = parts[0];
-  } else if (parts.length === 2) {
-    result.street = parts[0];
-    result.city = parts[1];
-  } else if (parts.length === 3) {
-    result.street = parts[0];
-    result.city = parts[1];
-    result.state = parts[2];
-  } else if (parts.length >= 4) {
-    result.street = parts[0];
-    result.city = parts[1];
-    result.state = parts[2];
-    result.zip = parts[3];
-    result.country = parts.length >= 5 ? parts[4] : 'US';
-  }
-
-  return result;
 }

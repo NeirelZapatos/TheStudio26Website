@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { IOrder } from '@/app/models/Order';
-import { OrderFilter, SortOrders } from '@/utils/sortOrders';
+import { SortOrders } from '@/utils/sortUtils/sortOrders';
 import { fetchOrders } from '@/utils/fetchUtils/fetchOrders';
-import { searchOrders } from '@/utils/searchUtils';
+import { searchOrders } from '@/utils/searchUtils/searchOrders';
+import { OrderFilter, filterOrders } from '@/utils/filterUtils/filterOrders';
 
 export const useOrderManagement = () => {
   const [activeFilter, setActiveFilter] = useState<OrderFilter>(OrderFilter.ALL);
@@ -19,8 +20,15 @@ export const useOrderManagement = () => {
   // First filter orders based on search query
   const searchFilteredOrders = orders ? searchOrders(orders, searchQuery) : [];
   
-  // Then sort the filtered orders based on priority
-  const filteredOrders = searchFilteredOrders ? SortOrders(searchFilteredOrders, activeFilter) : [];
+  // Then apply additional filtering based on active filter
+  const filteredByFilter = searchFilteredOrders 
+    ? filterOrders(searchFilteredOrders, activeFilter)
+    : [];
+  
+  // Finally, sort the filtered orders
+  const filteredOrders = filteredByFilter 
+    ? SortOrders(filteredByFilter, activeFilter)
+    : [];
   
   const validOrders = orders?.filter(order => order.customer?.first_name && order.customer?.last_name) || [];
 
@@ -62,7 +70,7 @@ export const useOrderManagement = () => {
     orders,
     error,
     mutate,
-    filteredOrders, // Return the filtered and sorted orders
+    filteredOrders, // Return the filtered, searched, and sorted orders
     validOrders,
     handleSelectOrder,
     handleSelectAll,
