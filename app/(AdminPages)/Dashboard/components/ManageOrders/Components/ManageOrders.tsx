@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'; // Import React and useState hook
+import React from 'react'; // Import React and useState hook
 import Buttons from './Buttons'; // Import Buttons component
 import OrderTables from './OrderTables'; // Import OrderTables component
 import SearchBar from './SearchBar'; // Import SearchBar component
-import PackageDetailsModal from './PackageDetailsModal';
-import { useOrderManagement } from './hooks/useOrderManagement';
-import { usePackageManagement } from './hooks/usePackageManagement';
-import { useOrderActions } from './hooks/useOrderActions'; // Import the hook
-import { useOrderFilters } from './hooks/useOrderFilters'; // Import the hook
+import PackageDetailsModal from '@/utils/shippingUtils/PackageDetailsModal'; // Import PackageDetailsModal component
+import { useOrderManagement } from '../hooks/useOrderManagement';
+import { usePackageManagement } from '../hooks/usePackageManagement';
+import { useOrderActions } from '../hooks/useOrderActions'; // Import the hook
+import { useOrderFilters } from '../hooks/useOrderFilters'; // Import the hook
 
 
 
@@ -75,7 +75,7 @@ const ManageOrders = () => {
     orders,
     error,
     mutate,
-    filteredOrders, // This is already filtered based on the searchQuery
+    filteredOrders,
     validOrders,
     handleSelectOrder,
     handleSelectAll,
@@ -117,7 +117,8 @@ const ManageOrders = () => {
         selectedOrders={selectedOrders}
         filterButtons={filterButtons}
         activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
+        // Wrap setActiveFilter to ensure correct type
+        setActiveFilter={(filter) => setActiveFilter(filter)}
         handlePrintShippingLabels={handlePrintShippingLabels}
         handlePrintReceipt={handlePrintReceipt}
         handleMarkAsFulfilled={handleMarkAsFulfilled}
@@ -133,7 +134,7 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders} // Pass the filtered orders to OrderTables
+        filteredOrders={filteredOrders}
         selectedOrders={selectedOrders}
         expandedOrder={expandedOrder}
         handleSelectAll={handleSelectAll}

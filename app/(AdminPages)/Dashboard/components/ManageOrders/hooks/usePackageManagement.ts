@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { printShippingLabels } from '@/app/(AdminPages)/Dashboard/components/ManageOrders/PrintShippingLabels';
+import { printShippingLabels } from '@/utils/shippingUtils/PrintShippingLabels';
 import { IOrder } from '@/app/models/Order';
 
 interface PackageDetails {

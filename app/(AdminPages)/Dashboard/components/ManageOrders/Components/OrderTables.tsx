@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { IOrder } from '@/app/models/Order';
-
 import { 
   Store, 
   Truck, 
@@ -53,7 +52,6 @@ import {
  * - Dynamically updates the table based on the active filter and search query.
  */
 
-// OrderTables Component: Displays filtered orders in a table with various actions
 const OrderTables: React.FC<{
   filteredOrders: IOrder[];
   selectedOrders: Set<string>;
@@ -106,7 +104,6 @@ const OrderTables: React.FC<{
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50">
-              {/* Header Checkbox */}
               <th className="p-4 w-[50px]">
                 <input
                   type="checkbox"
@@ -149,14 +146,14 @@ const OrderTables: React.FC<{
                   <td className="p-4">
                     <div className="space-y-1">
                       <div className="font-medium flex items-center gap-2">
-                        {getCustomerName(order)} {/* Plain text rendering */}
+                        {getCustomerName(order)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        ID: {order._id?.toString() ?? ''} {/* Plain text rendering */}
+                        ID: {order._id?.toString() ?? ''}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {getTimeElapsed(order.order_date.toString())} {/* Plain text rendering */}
+                        {getTimeElapsed(order.order_date.toString())}
                       </div>
                     </div>
                   </td>
@@ -170,7 +167,7 @@ const OrderTables: React.FC<{
                       ) : (
                         <Truck className="w-4 h-4" />
                       )}
-                      <span className="text-sm">{order?.shipping_method ?? ''}</span> {/* Plain text rendering */}
+                      <span className="text-sm">{order?.shipping_method ?? ''}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -187,7 +184,7 @@ const OrderTables: React.FC<{
                     </span>
                   </td>
                   <td className="p-4">
-                    {new Date(order.order_date).toLocaleDateString()} {/* Plain text rendering */}
+                    {new Date(order.order_date).toLocaleDateString()}
                   </td>
                   <td className="p-4">
                     <div className="flex space-x-2">
@@ -217,62 +214,54 @@ const OrderTables: React.FC<{
                           <div className="col-span-2"><strong>Total Amount:</strong> ${order.total_amount}</div>
                         </div>
                         
-                        {/* Items Section - Fixed Layout */}
-                        {/* Items Section - Fixed Layout */}
-{/* Items Section - Fixed Layout */}
-<div className="mt-6">
-  <h4 className="text-lg font-semibold mb-4">Items</h4>
-  {(order.products || []).length > 0 && (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {(() => {
-        // Define an interface for our unique products tracker
-        interface UniqueProductEntry {
-          product: any; // Use the actual type of product here if available
-          quantity: number;
-          displayData: any; // Use the actual type here
-        }
-        
-        // Create an object with index signature to track unique products
-        const uniqueProducts: Record<string, UniqueProductEntry> = {};
-        
-        // Count occurrences of each product
-        (order.products || []).forEach((product) => {
-          const productId = product.product?._id?.toString() || 'unknown';
-          
-          if (!uniqueProducts[productId]) {
-            uniqueProducts[productId] = {
-              product: product.product,
-              quantity: 0,
-              displayData: product
-            };
-          }
-          
-          uniqueProducts[productId].quantity += product.quantity || 0;
-        });
-        
-        // Convert to array and render
-        return Object.values(uniqueProducts).map((item, index) => (
-          <div key={index} className="bg-white p-4 rounded-lg shadow">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <img
-                src={item.product?.image_url}
-                alt={item.product?.name}
-                className="w-32 h-32 object-cover rounded"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-lg">{item.product?.name}</div>
-                <div className="text-sm text-gray-600 mt-1">{item.product?.description}</div>
-                <div className="mt-2 text-sm font-medium">Quantity: {item.quantity}</div>
-                <div className="text-sm text-gray-700">Price: ${item.product?.price}</div>
-              </div>
-            </div>
-          </div>
-        ));
-      })()}
-    </div>
-  )}
-</div>
-
+                        <div className="mt-6">
+                          <h4 className="text-lg font-semibold mb-4">Items</h4>
+                          {(order.products || []).length > 0 && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {(() => {
+                                interface UniqueProductEntry {
+                                  product: any;
+                                  quantity: number;
+                                  displayData: any;
+                                }
+                                
+                                const uniqueProducts: Record<string, UniqueProductEntry> = {};
+                                
+                                (order.products || []).forEach((product) => {
+                                  const productId = product.product?._id?.toString() || 'unknown';
+                                  
+                                  if (!uniqueProducts[productId]) {
+                                    uniqueProducts[productId] = {
+                                      product: product.product,
+                                      quantity: 0,
+                                      displayData: product
+                                    };
+                                  }
+                                  
+                                  uniqueProducts[productId].quantity += product.quantity || 0;
+                                });
+                                
+                                return Object.values(uniqueProducts).map((item, index) => (
+                                  <div key={index} className="bg-white p-4 rounded-lg shadow">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                      <img
+                                        src={item.product?.image_url}
+                                        alt={item.product?.name}
+                                        className="w-32 h-32 object-cover rounded"
+                                      />
+                                      <div className="flex-1">
+                                        <div className="font-medium text-lg">{item.product?.name}</div>
+                                        <div className="text-sm text-gray-600 mt-1">{item.product?.description}</div>
+                                        <div className="mt-2 text-sm font-medium">Quantity: {item.quantity}</div>
+                                        <div className="text-sm text-gray-700">Price: ${item.product?.price}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>

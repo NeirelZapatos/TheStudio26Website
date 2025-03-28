@@ -1,12 +1,20 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import dynamic from "next/dynamic";
 import {
   uploadHomepageFileToS3,
   listHomepageImages,
   deleteS3Object,
 } from "../../../../utils/s3";
+
+// Dynamically import ReactQuill with no SSR
+const ReactQuill = dynamic(
+  () => import("react-quill"),
+  { 
+    ssr: false,
+    loading: () => <p>Loading editor...</p>
+  }
+);
 
 // Simple pencil icon (Unicode). Replace with your preferred icon if needed.
 const PencilIcon = () => (

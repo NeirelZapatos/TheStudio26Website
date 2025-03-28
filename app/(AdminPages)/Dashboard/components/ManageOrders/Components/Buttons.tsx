@@ -1,7 +1,7 @@
 import { CheckCircle, CheckSquare, DownloadIcon, Receipt, ShoppingBag, Truck, Clock, AlertCircle, Store } from "lucide-react"; // Import icons
-import exportOrdersToCSV from '@/utils/ExportReport'; // Import exportOrdersToCSV utility
+import exportOrdersToCSV from '@/utils/docUtils/ExportReport'; // Import exportOrdersToCSV utility
 import { IOrder } from "@/app/models/Order"; // Import IOrder interface
-import { OrderFilter } from'@/utils/sortOrders'; // Import OrderFilter enum
+import { OrderFilter } from'@/utils/filterUtils/filterOrders'; // Import OrderFilter enum
 
 /**
  * Buttons Component:
@@ -46,8 +46,7 @@ const Buttons: React.FC<{
     [OrderFilter.PICKUP]: <Store size={24} />, // Pickup filter icon
     [OrderFilter.FULFILLED]: <CheckSquare size={24} />, // Fulfilled filter icon
     [OrderFilter.ALL]: <ShoppingBag size={24} />, // All orders filter icon
-    [OrderFilter.SHIPPED]: <Truck size={24} />, // Shipped filter icon
-    [OrderFilter.DELIVERED]: <CheckSquare size={24} />, // Delivered filter icon
+
   };
 
   return (
