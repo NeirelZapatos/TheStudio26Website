@@ -1,6 +1,6 @@
 import { ICustomer } from '@/app/models/Customer';
-import { searchCustomers } from '@/utils/searchUtils';
-import { useEffect, useState } from 'react';
+import { searchCustomers } from '@/utils/searchUtils/searchCustomers';
+import { useEffect } from 'react';
 
 interface CustomerSearchBarProps {
   customers: ICustomer[];

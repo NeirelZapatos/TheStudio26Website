@@ -44,7 +44,7 @@ export interface IOrder extends Document {
     total_amount?: number;
     shipping_method?: string;
     payment_method?: string;
-    order_status?: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled';
+    order_status?: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled' | 'deliveries';
     shipping_address?: string;
     billing_address?: string;
     customer?: ICustomer;

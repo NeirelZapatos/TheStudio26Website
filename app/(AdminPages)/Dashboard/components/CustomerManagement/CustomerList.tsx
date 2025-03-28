@@ -1,5 +1,7 @@
 import React from "react"; // Import React
 import OrderList from "./OrderList"; // Import OrderList component to display orders for each customer
+import { searchCustomers } from '@/utils/searchUtils/searchCustomers';
+import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Archive, Trash2 } from 'lucide-react';
 
 
@@ -15,8 +17,7 @@ import { User, Mail, Phone, Archive, Trash2 } from 'lucide-react';
  * - handleShowOrders: Function to toggle the visibility of orders for a specific customer.
  * - deleteCustomer: Function to delete a customer by their ID.
  */
-import { searchCustomers } from '@/utils/searchUtils';
-import { useState, useEffect } from 'react';
+
 
 const formatPhoneNumber = (phoneNumber: string) => {
   const cleaned = ('' + phoneNumber).replace(/\D/g, '');

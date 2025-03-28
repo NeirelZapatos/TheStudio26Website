@@ -2,10 +2,9 @@ import React, { useState, useMemo, useEffect } from "react"; // Import React and
 import AddCustomerForm from './AddCustomerForm'; // Import AddCustomerForm component
 import CustomerFilters from "./CustomerFilters"; // Import CustomerFilters component
 import CustomerList from "./CustomerList"; // Import CustomerList component
-import ExportButton from "./ExportButton"; // Import ExportButton component
 import useFetchCustomers from "./hooks/useFetchCustomers"; // Import custom hook for fetching customers
 import useCustomerActions from "./hooks/useCustomerActions"; // Import custom hook for customer actions
-import sortCustomers from "@/utils/sortCustomers"; // Import utility function for sorting customers
+import sortCustomers from "@/utils/sortUtils/sortCustomers"; // Import utility function for sorting customers
 
 /**
  * CustomerManagementSection Component:

@@ -1,14 +1,19 @@
-import { OrderFilter } from '@/utils/sortOrders';
-import { IOrder } from '@/app/models/Order'; // Updated import path
+import { OrderFilter } from '@/utils/filterUtils/filterOrders';
+import { IOrder } from '@/app/models/Order';
 
 export const useOrderFilters = (validOrders: IOrder[]) => {
   const filterButtons = [
-    { label: 'All Orders', value: OrderFilter.ALL, count: validOrders.length },
+    { 
+      label: 'All Orders', 
+      value: OrderFilter.ALL, 
+      count: validOrders.length 
+    },
     { 
       label: 'Pickup', 
       value: OrderFilter.PICKUP, 
       count: validOrders.filter((order: IOrder) => 
-        order.shipping_method === 'Pickup' && order.order_status !== 'fulfilled'
+        order.shipping_method === 'Pickup' && 
+        order.order_status !== 'fulfilled'
       ).length 
     },
     { 
@@ -29,13 +34,16 @@ export const useOrderFilters = (validOrders: IOrder[]) => {
     { 
       label: 'Pending', 
       value: OrderFilter.PENDING, 
-      count: validOrders.filter((order: IOrder) => order.order_status === 'pending').length 
+      count: validOrders.filter((order: IOrder) => 
+        order.order_status === 'pending'
+      ).length 
     },
     { 
       label: 'Deliveries', 
       value: OrderFilter.DELIVERIES, 
       count: validOrders.filter((order: IOrder) => 
-        order.shipping_method !== 'Pickup' && order.order_status === 'pending'
+        order.shipping_method !== 'Pickup' && 
+        order.order_status === 'pending'
       ).length 
     },
     { 
@@ -52,4 +60,4 @@ export const useOrderFilters = (validOrders: IOrder[]) => {
   };
 };
 
-export default useOrderFilters;
+export default OrderFilter;

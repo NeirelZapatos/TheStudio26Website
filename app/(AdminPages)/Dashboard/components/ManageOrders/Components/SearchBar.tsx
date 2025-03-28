@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { IOrder } from '@/app/models/Order';
-import { searchOrders } from '@/utils/searchUtils'; // Import the search function
+import { searchOrders } from '@/utils/searchUtils/searchOrders'; // Import the search function
 
 
 /**
