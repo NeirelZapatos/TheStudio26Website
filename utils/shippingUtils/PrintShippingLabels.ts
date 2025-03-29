@@ -24,6 +24,8 @@ interface ShippoLabelRequest {
   address_from: {
     name: string;
     street1: string;
+    street2?: string;
+    street3?: string;
     city: string;
     state: string;
     zip: string;
@@ -34,6 +36,8 @@ interface ShippoLabelRequest {
   address_to: {
     name: string;
     street1: string;
+    street2: string;
+    street3: string;
     city: string;
     state: string;
     zip: string;
@@ -45,9 +49,9 @@ interface ShippoLabelRequest {
     length: number;
     width: number;
     height: number;
-    distance_unit: 'in' | 'cm';
+    distanceUnit: 'in' | 'cm';
     weight: number;
-    mass_unit: 'lb' | 'kg';
+    massUnit: 'lb' | 'kg';
   };
   shipment: {
     carrier_account: string;

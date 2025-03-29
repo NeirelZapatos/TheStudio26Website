@@ -24,6 +24,7 @@ enum DistanceUnitEnum {
       company: z.string().optional(),
       street1: z.string().min(1, { message: "Street address is required" }),
       street2: z.string().optional(),
+      street3: z.string().optional(),
       city: z.string().min(1, { message: "City is required" }),
       state: z.string().length(2, { message: "State must be a 2-letter code" }),
       zip: z.string().min(1, { message: "ZIP code is required" }),
@@ -37,9 +38,9 @@ enum DistanceUnitEnum {
       length: z.number().or(z.string()).transform(Number).refine(val => val > 0, { message: "Length must be a positive number" }),
       width: z.number().or(z.string()).transform(Number).refine(val => val > 0, { message: "Width must be a positive number" }),
       height: z.number().or(z.string()).transform(Number).refine(val => val > 0, { message: "Height must be a positive number" }),
-      distance_unit: z.nativeEnum(DistanceUnitEnum),
+      distanceUnit: z.nativeEnum(DistanceUnitEnum),
       weight: z.number().or(z.string()).transform(Number).refine(val => val > 0, { message: "Weight must be a positive number" }),
-      mass_unit: z.nativeEnum(WeightUnitEnum),
+      massUnit: z.nativeEnum(WeightUnitEnum),
       metadata: z.string().optional()
   });
   

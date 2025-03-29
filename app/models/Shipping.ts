@@ -8,6 +8,7 @@ export interface IShipping extends Document {
     company?: string;
     street1: string;
     street2?: string;
+    street3?: string;
     city: string;
     state: string;
     zip: string;
@@ -21,6 +22,7 @@ export interface IShipping extends Document {
     company?: string;
     street1: string;
     street2?: string;
+    street3?: string;
     city: string;
     state: string;
     zip: string;
@@ -33,14 +35,14 @@ export interface IShipping extends Document {
     length: number;
     width: number;
     height: number;
-    distance_unit: 'in' | 'cm';
+    distanceUnit: 'in' | 'cm';
     weight: number;
-    mass_unit: 'lb' | 'kg';
+    massUnit: 'lb' | 'kg';
   };
   shipment: {
     carrier_account: string;
     servicelevel_token: string;
-    servicelevel_name?: string;
+    name?: string;
     label_file_type: 'pdf' | 'png';
     metadata?: Record<string, any>;
     shippo_shipment_id?: string;  // New field to store Shippo's shipment ID
@@ -75,6 +77,8 @@ const shippingSchema = new Schema({
   address_from: {
     name: { type: String, required: false },
     street1: { type: String, required: false },
+    street2: { type: String, required: false },
+    street3: { type: String, required: false },
     city: { type: String, required: false },
     state: { type: String, required: false },
     zip: { type: String, required: false },
@@ -87,6 +91,8 @@ const shippingSchema = new Schema({
     name: { type: String, required: true },
     street1: { type: String, required: true },
     // Make these optional for development
+    street2: { type: String, required: false},
+    street3: { type: String, required: false },
     city: { type: String, required: false },
     state: { type: String, required: false },
     zip: { type: String, required: false },
@@ -98,9 +104,9 @@ const shippingSchema = new Schema({
     length: { type: Number, required: true },
     width: { type: Number, required: true },
     height: { type: Number, required: true },
-    distance_unit: { type: String, default: 'in', enum: ['in', 'cm'] },
+    distanceUnit: { type: String, default: 'in', enum: ['in', 'cm'] },
     weight: { type: Number, required: true },
-    mass_unit: { type: String, default: 'lb', enum: ['lb', 'kg'] }
+    massUnit: { type: String, default: 'lb', enum: ['lb', 'kg'] }
   },
   shipment: {
     carrier_account: { type: String, required: true },
