@@ -30,10 +30,11 @@ export default function MiscForm({ onClose }: MiscFormProps) {
   const [price, setPrice] = useState<string>("");
   const [quantityInStock, setQuantityInStock] = useState<string>("");
 
-  // --------------- Basic Product Fields --------------- //
+  // --------------- Additional Product Fields --------------- //
   const [weight, setWeight] = useState<string>("");
   const [size, setSize] = useState<string>("");
   const [color, setColor] = useState("");
+  const [brand, setBrand] = useState("");
 
   // --------------- Template Search State --------------- //
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -98,6 +99,7 @@ export default function MiscForm({ onClose }: MiscFormProps) {
       setColor(template.color || "");
       setWeight(template.weight || "");
       setSize(template.size || "");
+      setBrand(template.brand || "");
       setPreviewUrls(template.images || [template.image_url || "https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]);
 
       // ! Log the previewUrls after update
@@ -135,6 +137,8 @@ export default function MiscForm({ onClose }: MiscFormProps) {
       images: imagesArray,
       color,
       size,
+      weight,
+      brand,
       category: "Miscellaneous"
     };
 
@@ -218,6 +222,8 @@ export default function MiscForm({ onClose }: MiscFormProps) {
       images: imagesArray,
       color,
       size,
+      weight,
+      brand,
       category: "Miscellaneous"
     };
 
@@ -348,10 +354,6 @@ export default function MiscForm({ onClose }: MiscFormProps) {
         </div>
 
         {/* --------------- REQUIRED FIELDS --------------- */}
-        {/* <div className="py-4">
-          <span className="text-xl font-semibold">Required</span>
-        </div> */}
-
         <div>
           <label className="label">
             <span className="label-text font-semibold">Product Name</span>
@@ -404,6 +406,42 @@ export default function MiscForm({ onClose }: MiscFormProps) {
             <span className="label-text font-semibold">Description</span>
           </label>
           <textarea rows={4} className="textarea textarea-bordered w-full" value={description} onChange={e => setDescription(e.target.value)} required></textarea>
+        </div>
+
+        <hr className="my-6 border-t border-gray-300" />
+
+        {/* --------------- ADDITIONAL FIELDS --------------- */}
+        <div className="py-4">
+          <span className="text-xl font-semibold">More Details</span>
+        </div>
+
+        <div>
+          <label className="label font-semibold">Size / Dimensions</label>
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            value={size}
+            onChange={e => setSize(e.target.value)}
+            placeholder="e.g., 10x20 mm or 4x8 inches"
+          />
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Weight</span>
+          </label>
+          <input type="string" className="input input-bordered w-full" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Enter weight" />
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Color</span>
+          </label>
+          <input type="string" className="input input-bordered w-full" value={color} onChange={e => setColor(e.target.value)} placeholder="Enter color" />
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Brand</span>
+          </label>
+          <input type="string" className="input input-bordered w-full" value={brand} onChange={e => setBrand(e.target.value)} placeholder="Enter brand" />
         </div>
 
         {/* Save as Template and Submite Button */}
