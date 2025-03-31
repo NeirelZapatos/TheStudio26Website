@@ -37,38 +37,18 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Home
         </button>
-        {/* ------------------------ Getting Paid Section ------------------------ */}
+        {/* ------------------------ Financial Analytics Section ------------------------ */}
         <div>
           <button
-            onClick={() => setShowGettingPaid(!showGettingPaid)}
-            className="block w-full text-left p-2 rounded-lg hover:bg-gray-600"
+            onClick={() => setActiveSection("financialAnalytics")}
+            className={`block w-full text-left p-2 rounded-lg ${
+              activeSection === "financialAnalytics"
+                ? "bg-gray-700"
+                : "hover:bg-gray-600"
+            }`}
           >
-            Getting Paid
+            Financial Analytics
           </button>
-          {showGettingPaid && (
-            <div className="pl-4 space-y-1">
-              <button
-                onClick={() => setActiveSection("financialAnalytics")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "financialAnalytics"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
-                }`}
-              >
-                Financial Analytics
-              </button>
-              <button
-                onClick={() => setActiveSection("finances")}
-                className={`block w-full text-left p-2 rounded-lg ${
-                  activeSection === "finances"
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-600"
-                }`}
-              >
-                Finances
-              </button>
-            </div>
-          )}
         </div>
         {/* ------------------------ Booking Calendar Section ------------------------ */}
         <button
