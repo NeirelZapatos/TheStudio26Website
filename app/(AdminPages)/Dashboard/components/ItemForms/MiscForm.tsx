@@ -439,13 +439,6 @@ export default function MiscForm({ onClose }: MiscFormProps) {
           </p>
         )}
       </form>
-
-      {/* Close Button
-      <div className="flex justify-end mt-4">
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
-          Change Item Type
-        </button>
-      </div> */}
     </div>
   )
 

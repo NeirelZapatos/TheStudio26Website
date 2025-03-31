@@ -47,7 +47,7 @@ export default function Page() {
                   <i className="fa-solid fa-ring text-white text-2xl"></i>
                 </div>
                 <h3 className="text-white text-lg font-semibold mb-2">Jewelry</h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-gray-300">
                   Create a listing for rings, necklaces, bracelets, and other jewelry items.
                 </p>
               </div>
@@ -60,8 +60,8 @@ export default function Page() {
                 <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="fa-regular fa-gem text-white text-2xl"></i>
                 </div>
-                <h3 className="text-white text-lg font-medium mb-2">Stone</h3>
-                <p className="text-gray-300 text-sm">
+                <h3 className="text-white text-lg font-semibold mb-2">Stone</h3>
+                <p className="text-gray-300">
                   Create a listing for gemstones, crystals, and other like items.
                 </p>
               </div>
@@ -74,8 +74,8 @@ export default function Page() {
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="fa-solid fa-toolbox text-white text-2xl"></i>
                 </div>
-                <h3 className="text-white text-lg font-medium mb-2">Jewelry Essentials</h3>
-                <p className="text-gray-300 text-sm">
+                <h3 className="text-white text-lg font-semibold mb-2">Jewelry Essentials</h3>
+                <p className="text-gray-300">
                   Add tools, supplies, and other essentials for jewelry making.
                 </p>
               </div>
@@ -88,8 +88,8 @@ export default function Page() {
                 <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="fa-solid fa-box text-white text-2xl"></i>
                 </div>
-                <h3 className="text-white text-lg font-medium mb-2">Miscellaneous</h3>
-                <p className="text-gray-300 text-sm">
+                <h3 className="text-white text-lg font-semibold mb-2">Miscellaneous</h3>
+                <p className="text-gray-300">
                   Add other products that don't fit in the categories above.
                 </p>
               </div>
