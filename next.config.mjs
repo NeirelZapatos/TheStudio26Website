@@ -1,14 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-      domains: [
-          process.env.S3_BUCKET_DOMAIN || 'fallback-domain.com',
-          "tests26bucket.s3.us-east-2.amazonaws.com", 
-          'picsum.photos', 
-          'www.stockvault.net', 
-          'images.freeimages.com', 
-          'media.istockphoto.com',
-          'example.com'
+      remotePatterns: [
+          {
+              protocol: 'https',
+              hostname: process.env.S3_BUCKET_DOMAIN || 'fallback-domain.com',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'tests26bucket.s3.us-east-2.amazonaws.com',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'picsum.photos',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'www.stockvault.net',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'images.freeimages.com',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'media.istockphoto.com',
+              pathname: '/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'example.com',
+              pathname: '/**',
+          },
       ],
   },
 };

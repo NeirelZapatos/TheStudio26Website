@@ -174,9 +174,6 @@ const Header2 = () => {
             )}
           </div>
         </div>
-        <button className="btn btn-ghost font-medium px-3">
-          <Link href="/Login">Login/Register</Link>
-        </button>
       </div>
     </div>
   );

@@ -281,41 +281,6 @@ const Page = () => {
               className="border p-2 rounded w-full"
             />
 
-            {showAdditionalInputs && (
-              <div className="mt-4">
-                <label className="block font-semibold">
-                  First Name: <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => {
-                    setFirstName(e.target.value);
-                    if (e.target.value.trim() && lastName.trim()) {
-                      setNameError("");
-                    }
-                  }}
-                  className="input input-bordered w-full"
-                />
-                <label className="block font-semibold mt-2">
-                  Last Name: <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => {
-                    setLastName(e.target.value);
-                    if (firstName.trim() && e.target.value.trim()) {
-                      setNameError("");
-                    }
-                  }}
-                  className="input input-bordered w-full"
-                />
-                {nameError && (
-                  <p className="text-red-500 text-sm mt-1">{nameError}</p>
-                )}
-              </div>
-            )}
 
             <p className="font-bold mt-2">
               Total: ${finalTotal.toFixed(2)}
@@ -326,6 +291,41 @@ const Page = () => {
               <p className="font-semibold">
                 You are responsible for bringing your own materials.
               </p>
+              {showAdditionalInputs && (
+                <div className="mt-4">
+                  <label className="block font-semibold">
+                    First Name: <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (e.target.value.trim() && lastName.trim()) {
+                        setNameError("");
+                      }
+                    }}
+                    className="input input-bordered w-full"
+                  />
+                  <label className="block font-semibold mt-2">
+                    Last Name: <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (firstName.trim() && e.target.value.trim()) {
+                        setNameError("");
+                      }
+                    }}
+                    className="input input-bordered w-full"
+                  />
+                  {nameError && (
+                    <p className="text-red-500 text-sm mt-1">{nameError}</p>
+                  )}
+                </div>
+              )}
               <p className="mt-2">
                 Do you need to rent additional equipment or leave special requests?
               </p>
