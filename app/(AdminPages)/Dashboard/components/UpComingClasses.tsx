@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Types for Upcoming Classes
 export interface UpcomingClass {
@@ -164,20 +166,22 @@ const UpcomingClasses: React.FC<UpcomingClassesProps> = () => {
         <div className="flex items-end space-x-4 mb-4">
           <div>
             <label className="block text-gray-700 font-bold mb-1">Start Date</label>
-            <input
-              type="date"
-              value={filterStartDate}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-              className="border rounded p-2"
+            <DatePicker
+              selected={filterStartDate ? new Date(filterStartDate) : null}
+              onChange={(date: Date | null) => setFilterStartDate(date ? date.toISOString().split("T")[0] : "")}
+              className="border rounded p-2 w-full"
+              placeholderText="Select start date"
+              dateFormat="yyyy-MM-dd"
             />
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-1">End Date</label>
-            <input
-              type="date"
-              value={filterEndDate}
-              onChange={(e) => setFilterEndDate(e.target.value)}
-              className="border rounded p-2"
+            <DatePicker
+              selected={filterEndDate ? new Date(filterEndDate) : null}
+              onChange={(date: Date | null) => setFilterEndDate(date ? date.toISOString().split("T")[0] : "")}
+              className="border rounded p-2 w-full"
+              placeholderText="Select end date"
+              dateFormat="yyyy-MM-dd"
             />
           </div>
           <div className="mb-1">
@@ -247,6 +251,11 @@ const UpcomingClasses: React.FC<UpcomingClassesProps> = () => {
                     {cls.duration && (
                       <p className="text-gray-600">
                         <span className="font-bold">Duration:</span> {formatDuration(cls.duration)}
+                      </p>
+                    )}
+                    {Array.isArray(cls.participants) && (
+                      <p className={`font-semibold ${cls.participants.length === 0 ? "text-red-600" : "text-green-600"}`}>
+                        Sign-ups: {cls.participants.length}
                       </p>
                     )}
                     {cls.description && (
