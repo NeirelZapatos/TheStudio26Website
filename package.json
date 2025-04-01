@@ -55,7 +55,6 @@
     "react-medium-image-zoom": "^5.2.14",
     "react-modal": "^3.16.3",
     "react-quill": "^0.0.2",
-    "selenium-webdriver": "^4.30.0",
     "stripe": "^17.7.0",
     "swr": "^2.3.2",
     "uuid": "^11.1.0",
@@ -77,6 +76,7 @@
     "eslint-config-next": "14.2.14",
     "mocha": "^11.1.0",
     "postcss": "^8",
+    "selenium-webdriver": "^4.30.0",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

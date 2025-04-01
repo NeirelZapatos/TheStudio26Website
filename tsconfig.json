@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["node", "selenium-webdriver"],
     "plugins": [
       {
         "name": "next"
@@ -21,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/newsletter/route.js", "tests/home.spec.cts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/newsletter/route.js", "tests/**/*.cts", "tests/home.spec.cts", "tests/customer-crud-ui.spec.cts"],
   "exclude": ["node_modules"]
 }
