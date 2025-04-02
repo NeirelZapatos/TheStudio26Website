@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { clearCart } from "@/services/cartService";
 
 export default function SuccessPage() {
   const [orderStatus, setOrderStatus] = useState('processing');
@@ -24,6 +25,7 @@ export default function SuccessPage() {
         
         if (data.success) {
           setOrderStatus('completed');
+          clearCart();
         } else {
           setError(data.error || 'Failed to process order');
         }
