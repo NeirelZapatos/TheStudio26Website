@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Fragment } from 'react'
+import Link from "next/link";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { getCart, removeFromCart, updateCartItemQuantity, clearCart } from "@/services/cartService";
@@ -171,17 +172,16 @@ const SlidingCart = ({ isOpen, onClose }: SlidingCartProps) => {
                       </div>
                       <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                       <div className="mt-6">
-                        <button
-                          type="button"
-                          onClick={handleCheckout}
-                          disabled={cartItems.length === 0}
+                        <Link
+                          onClick={onClose}
+                          href="/check-out"
                           className={`flex w-full items-center justify-center rounded-md border border-transparent px-6 py-3 text-base font-medium text-white shadow-sm ${cartItems.length === 0
-                              ? 'bg-indigo-300 cursor-not-allowed'
-                              : 'bg-indigo-600 hover:bg-indigo-700'
+                            ? 'bg-indigo-300 cursor-not-allowed'
+                            : 'bg-indigo-600 hover:bg-indigo-700'
                             }`}
                         >
                           Checkout
-                        </button>
+                        </Link>
                       </div>
                       <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
                         <p>
@@ -192,7 +192,6 @@ const SlidingCart = ({ isOpen, onClose }: SlidingCartProps) => {
                             className="font-medium text-indigo-600 hover:text-indigo-500"
                           >
                             Continue Shopping
-                            <span aria-hidden="true"> &rarr;</span>
                           </button>
                         </p>
                       </div>

@@ -8,7 +8,7 @@ interface CartItem {
   
   const CART_KEY = "cart";
   
-  const cartUpdate = () => {
+  const signalCartUpdate = () => {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cart-updated'));
     }
@@ -35,14 +35,14 @@ interface CartItem {
     }
   
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    cartUpdate();
+    signalCartUpdate();
   };
   
   export const removeFromCart = (productId: string) => {
     const cart = getCart();
     const updatedCart = cart.filter((item) => item.productId !== productId);
     localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
-    cartUpdate();
+    signalCartUpdate();
   };
   
   export const updateCartItemQuantity = (productId: string, quantity: number) => {
@@ -52,11 +52,11 @@ interface CartItem {
     if (item) {
       item.quantity = quantity;
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      cartUpdate();
+      signalCartUpdate();
     }
   };
   
   export const clearCart = () => {
     localStorage.removeItem(CART_KEY);
-    cartUpdate();
+    signalCartUpdate();
   };
