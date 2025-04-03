@@ -9,7 +9,6 @@ export interface ILab extends Document {
     time: string;
     duration: number;
     image_url: string;
-    instructor: string;
     location: string;
     max_capacity: number;
 }
@@ -27,10 +26,6 @@ const labSchema:Schema = new mongoose.Schema({
     description: {
         type: String,
     },
-    // purchaseType: {
-    //     type: String,
-    //     required: true,
-    // },
     date: {
         type: String,
         required: true
@@ -45,19 +40,11 @@ const labSchema:Schema = new mongoose.Schema({
     image_url: {
         type: String,
     },
-    instructor: {
-        type: String,
-    },
     location: {
         type: String,
     },
     max_capacity: {
         type: Number,
-    },
-    stripeProductId: {
-        type: String,
-        required: true,
-        unique: true,
     },
 });
 

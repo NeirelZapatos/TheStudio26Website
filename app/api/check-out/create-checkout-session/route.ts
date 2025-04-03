@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { MongoClient, ObjectId } from 'mongodb';
+import Customer from '@/app/models/Customer';
+import Subscription from '@/app/models/Subscription';
+import mongoose, { Types } from 'mongoose';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+
+// Define cart item interface
+interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string;
+  description?: string;
+  isSubscription?: boolean;
+  interval?: 'day' | 'week' | 'month' | 'year';
+  intervalCount?: number;
+  type?: 'lab' | 'item' | 'course' | 'subscription';
+}
 
 const uri = process.env.MONGODB_URI as string;
 let client: MongoClient | null = null;
@@ -25,132 +42,165 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
 
-    const dbClient = await connectToDatabase();
-    const db = dbClient.db("test");
-    const itemsCollection = db.collection("items");
-    const coursesCollection = db.collection("courses");
+    await connectToDatabase();
 
-    // * Get product names from the cart
-    const productNames = cartItems.map((product: any) => product.name);
+    // Find or initialize customer
+    let customer = await Customer.findOne({ email: customerEmail });
 
-    // * Match products by name from their respective collection
-    const [itemsFromDb, coursesFromDb] = await Promise.all([
-      itemsCollection.find({ name: { $in: productNames } }).toArray(),
-      coursesCollection.find({ name: { $in: productNames } }).toArray(),
-    ]);
+    let stripeCustomerId: string | null = null;
 
-    console.log(`Found ${itemsFromDb.length} items and ${coursesFromDb.length} courses matching cart names`);
+    // * Check if any subscription products
+    const hasSubscriptions = cartItems.some((item: CartItem) => item.isSubscription);
 
-    // * Create a mapping of name to MongoDB ID
-    const itemNameToIdMap: Record<string, string> = {};
-    itemsFromDb.forEach(item => {
-      itemNameToIdMap[item.name] = item._id.toString();
-    });
+    if (hasSubscriptions) {
+      // ! For subscriptions, we need a Stripe customer
+      if (customer && customer.stripe_customer_id) {
+        stripeCustomerId = customer.stripe_customer_id;
+      } else {
+        // * Create a new Stripe customer
+        const stripeCustomer = await stripe.customers.create({
+          email: customerEmail,
+          name: `${firstName} ${lastName}`,
+        });
 
-    const courseNameToIdMap: Record<string, string> = {};
-    coursesFromDb.forEach(course => {
-      courseNameToIdMap[course.name] = course._id.toString();
-    });
+        stripeCustomerId = stripeCustomer.id;
 
-    // * Create Line items for stripe
-    // * "Invoice Line Items represent the individual lines within an invoice and only exist within the context of an invoice"
-    const mongoItemIds: string[] = [];
-    const mongoCourseIds: string[] = [];
+        // * Save or update customer in database
+        if (customer) {
+          customer.stripe_customer_id = stripeCustomerId;
+          await customer.save();
+        } else {
+          customer = new Customer({
+            email: customerEmail,
+            first_name: firstName,
+            last_name: lastName,
+            stripe_customer_id: stripeCustomerId,
+            orders: [],
+            courses: [],
+          });
+          await customer.save();
+        }
+      }
+    }
+
+    // * Separate cart items by type
+    const labItems: CartItem[] = [];
+    const courseItems: CartItem[] = [];
+    const regularItems: CartItem[] = [];
+    const subscriptionItems: CartItem[] = [];
+
+    // * Categorize items and validate against database
+    const labIds: Types.ObjectId[] = [];
+    const courseIds: Types.ObjectId[] = [];
+    const itemIds: Types.ObjectId[] = [];
+    const subscriptionIds: Types.ObjectId[] = [];
+
+    // * Process and categorize all cart items
+    for (const item of cartItems) {
+      if (item.isSubscription) {
+        subscriptionItems.push(item);
+        subscriptionIds.push(new mongoose.Types.ObjectId(item.productId));
+      } else if (item.type === 'lab') {
+        labItems.push(item);
+        labIds.push(new mongoose.Types.ObjectId(item.productId));
+      } else if (item.type === 'course') {
+        courseItems.push(item);
+        courseIds.push(new mongoose.Types.ObjectId(item.productId));
+      } else {
+        regularItems.push(item);
+        itemIds.push(new mongoose.Types.ObjectId(item.productId));
+      }
+    }
+
+    // * Check for subscription products and fetch their Stripe price IDs
+    let subscriptionProducts = [];
+    if (subscriptionItems.length > 0) {
+      subscriptionProducts = await Subscription.find({
+        _id: { $in: subscriptionIds },
+        active: true,
+      });
+    }
+
+    // * Create line items for Stripe
     const lineItems: any[] = [];
 
-    cartItems.forEach((product: any) => {
-      const isItem = itemNameToIdMap[product.name];
-      const isCourse = courseNameToIdMap[product.name];
+    // * Create line items for labs, courses, and regular items
+    cartItems.forEach((product: CartItem) => {
+      if (product.isSubscription) {
+        // ! For subscription items, find the matching subscription product 
+        const subscriptionProduct = subscriptionProducts.find(
+          (p) => p._id.toString() === product.productId
+        );
 
-      // * If it is an item
-      if (isItem) {
-        mongoItemIds.push(itemNameToIdMap[product.name]);
-
+        if (subscriptionProduct && subscriptionProduct.stripePriceId) {
+          // * For subscription items, we use the price ID directly
+          lineItems.push({
+            price: subscriptionProduct.stripePriceId,
+            quantity: 1, // ! Subscriptions always have quantity of 1
+          });
+        }
+      } else {
+        // ! For non-subscription items, create a price on the fly
         lineItems.push({
           price_data: {
             currency: 'usd',
             product_data: {
               name: product.name,
-              description: product.description,
+              description: product.description || '',
               images: [product.image_url],
               metadata: {
-                mongoId: itemNameToIdMap[product.name],
-                type: 'product'
-              }
+                productId: product.productId,
+                type: product.type || 'item',
+              },
             },
-            unit_amount: Math.round(product.price * 100), // convert unit amount to cents
+            unit_amount: Math.round(product.price * 100), // Convert to cents
           },
           quantity: product.quantity,
         });
       }
-      // * If it is a course
-      else if (isCourse) {
-        mongoCourseIds.push(courseNameToIdMap[product.name]);
-
-        lineItems.push({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: product.name,
-              description: product.description,
-              images: [product.image_url],
-              metadata: {
-                mongoId: courseNameToIdMap[product.name],
-                type: 'product'
-              }
-            },
-            unit_amount: Math.round(product.price * 100), // convert unit amount to cents
-          },
-          quantity: product.quantity,
-        });
-      }
-
-      // * NOT FOUND
-      else {
-        console.log(`Warning: Item "${product.name}" not found in any collection`);
-        lineItems.push({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: product.name,
-              description: product.description,
-              images: [product.image_url],
-              metadata: {
-                type: 'unknown'
-              }
-            },
-            unit_amount: Math.round(product.price * 100),
-          },
-          quantity: product.quantity,
-        });
-      }
-    })
+    });
 
     const origin = request.headers.get('origin') || 'http://localhost:3000';
 
-    // * Create a checkout session
-    const session = await stripe.checkout.sessions.create({
+    // * Determine checkout mode based on cart contents
+    const checkoutMode = hasSubscriptions ? 'subscription' : 'payment';
+
+    // * Create a checkout session with the appropriate mode
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: lineItems,
-      mode: 'payment',
-      success_url: `${request.headers.get('origin')}/check-out/success?session_id={CHECKOUT_SESSION_ID}`, // Redirect URL after successful payment
-      cancel_url: `${request.headers.get('origin')}/check-out`, // Redirect URL if payment is canceled
-      shipping_address_collection: {
-        allowed_countries: ['US'],
-      },
+      mode: checkoutMode as Stripe.Checkout.SessionCreateParams.Mode,
+      success_url: `${origin}/check-out/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/check-out`,
       billing_address_collection: 'required',
-      automatic_tax: {
-        enabled: true,
-      },
-      customer_email: customerEmail,
       metadata: {
-        tempCustomerEmail: customerEmail || "",
-        tempFirstName: firstName || "",
-        tempLastName: lastName || "",
-        mongoItemIds: JSON.stringify(mongoItemIds),
-        mongoCourseIds: JSON.stringify(mongoCourseIds)
+        customerId: customer ? customer._id.toString() : '',
+        customerEmail,
+        firstName,
+        lastName,
+        labIds: JSON.stringify(labIds.map(id => id.toString())),
+        courseIds: JSON.stringify(courseIds.map(id => id.toString())),
+        itemIds: JSON.stringify(itemIds.map(id => id.toString())),
+        subscriptionIds: JSON.stringify(subscriptionIds.map(id => id.toString())),
+        checkoutMode,
       },
-    });
+    };
+
+    // ! Add shipping address collection for physical items
+    if (regularItems.length > 0) {
+      sessionParams.shipping_address_collection = {
+        allowed_countries: ['US'],
+      };
+    }
+
+    // ! Add customer ID if it exists (required for subscriptions)
+    if (stripeCustomerId) {
+      sessionParams.customer = stripeCustomerId;
+    } else if (customerEmail) {
+      sessionParams.customer_email = customerEmail;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log("Checkout Session ID:", session.id);
     return NextResponse.json({ id: session.id });
@@ -203,6 +253,18 @@ export async function GET(request: Request) {
     // * Get product and course IDs from metadata
     const mongoItemIds = session.metadata?.mongoItemIds ? JSON.parse(session.metadata.mongoItemIds) : [];
     const mongoCourseIds = session.metadata?.mongoCourseIds ? JSON.parse(session.metadata.mongoCourseIds) : [];
+    const mongoSubscriptionIds = session.metadata?.mongoSubscriptionIds ? JSON.parse(session.metadata.mongoSubscriptionIds) : [];
+
+    const checkoutMode = session.metadata?.checkoutMode || 'payment';
+
+    // ! For subscription-only checkouts don't need to create an order -> handled by webhooks
+    if (checkoutMode === 'subscription' && mongoItemIds.length === 0 && mongoCourseIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "Subscription processed via webhooks",
+        isSubscription: true
+      });
+    }
 
     if (mongoItemIds.length === 0 && mongoCourseIds.length === 0) {
       return NextResponse.json({ error: "No items or courses found" }, { status: 400 });
@@ -278,6 +340,7 @@ export async function GET(request: Request) {
       customer_id: new ObjectId(customer._id),
       product_items: itemProducts,
       course_items: courseProducts,
+      has_subscription_items: mongoSubscriptionIds.length > 0,
       order_date: new Date(),
       total_amount: totalAmount,
       shipping_method: "Standard",
