@@ -13,6 +13,7 @@ const CoursesList: React.FC = () => {
       isCustom: boolean;
       range: [number, number];
     };
+    searchTerm?: string;
   };
   // Data States
   const [filter, setFilter] = useState<FilterState>({
@@ -20,6 +21,7 @@ const CoursesList: React.FC = () => {
     category: "all",
     classType: [],
     price: { isCustom: false, range: [0, 500] as [number, number] },
+    searchTerm: "",
   });
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +100,15 @@ const CoursesList: React.FC = () => {
       ) {
         return false;
       }
+
+      // Apply search filter - case insensitive
+      if (
+        filter.searchTerm &&
+        !course.name.toLowerCase().includes(filter.searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+
       return true;
     });
   };

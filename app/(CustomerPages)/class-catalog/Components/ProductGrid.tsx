@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
+import Pagination from "../../StoreSearch/Components/Pagination";
 
 interface Course {
   _id: string;
@@ -19,13 +20,18 @@ interface ProductGridProps {
     category: string;
     classType: string[];
     price: { range: [number, number] };
+    searchTerm?: string;
   };
 }
 
 export default function ProductGrid({ filter }: ProductGridProps) {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postPerPage, setPostsPerPage] = useState(24);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -55,16 +61,30 @@ export default function ProductGrid({ filter }: ProductGridProps) {
         setCourses(data);
       } catch (err) {
         console.error("Error fetching courses:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load courses"
-        );
+        setError(err instanceof Error ? err.message : "Failed to load courses");
       } finally {
         setLoading(false);
       }
     };
 
     fetchCourses();
-  }, [filter]);
+  }, [filter.sort, filter.category, filter.classType]);
+
+  //Client side search filter
+  useEffect(() => {
+    if (!filter.searchTerm || filter.searchTerm.trim() === "") {
+      setFilteredCourses(courses);
+      return;
+    }
+
+    const searchTermLower = filter.searchTerm.toLowerCase().trim();
+    const filtered = courses.filter((course) =>
+      course.name.toLowerCase().includes(searchTermLower)
+    );
+
+    setFilteredCourses(filtered);
+    setCurrentPage(1); // Reset to the first page when filtering
+  }, [courses, filter.searchTerm]);
 
   if (loading) {
     return <div className="text-center py-8">Loading courses...</div>;
@@ -74,9 +94,23 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   }
 
+  const coursesToDisplay =
+    filteredCourses.length > 0 ? filteredCourses : courses;
+  const lastPostIndex = currentPage * postPerPage;
+  const firstPostIndex = lastPostIndex - postPerPage;
+  const currentPosts = coursesToDisplay.slice(firstPostIndex, lastPostIndex);
+
+  if (filteredCourses.length === 0) {
+    return (
+      <div className="lg:col-span-3 text-center py-8">
+        No products match your search criteria.
+      </div>
+    );
+  }
+
   return (
     <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
-      {courses.map((course) => (
+      {currentPosts.map((course) => (
         <ProductCard
           key={course._id}
           _id={course._id}
@@ -85,6 +119,14 @@ export default function ProductGrid({ filter }: ProductGridProps) {
           image_url={course.image_url}
         />
       ))}
+      <div className="col-span-full flex justify-center mt-8">
+        <Pagination
+          totalPosts={coursesToDisplay.length}
+          postsPerPage={postPerPage}
+          setCurrentPage={setCurrentPage}
+          currentPage={currentPage}
+        />
+      </div>
     </div>
   );
 }
