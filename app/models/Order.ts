@@ -43,6 +43,7 @@ export interface IOrder extends Document {
     order_date: string;
     total_amount?: number;
     shipping_method?: string;
+    delivery_method?: 'pickup' | 'delivery'; // ! Added for choosing pick up or not
     payment_method?: string;
     order_status?: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled';
     shipping_address?: string;
@@ -50,9 +51,10 @@ export interface IOrder extends Document {
     customer?: ICustomer;
     courses?: ICourse;
     products?: { product: IItem; quantity: number }[];
-    parsedShippingAddress: IParsedShippingAddress;
+    parsedShippingAddress?: IParsedShippingAddress; // ! made optional in case pickup
     shippingDetails?: IShippingDetails;
-    
+    is_pickup: boolean;
+
 }
 
 const orderSchema: Schema = new mongoose.Schema({
@@ -81,6 +83,11 @@ const orderSchema: Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    delivery_method: {
+        type: String,
+        enum: ['pickup', 'delivery'],
+        required: true,
+    },
     payment_method: {
         type: String,
         required: true,
@@ -91,7 +98,9 @@ const orderSchema: Schema = new mongoose.Schema({
     },
     shipping_address: {
         type: String,
-        required: true
+        required: function (this: any) {
+            return this.delivery_method === 'delivery'; // Only required for delivery orders
+        }
     },
     billing_address: {
         type: String,
@@ -108,6 +117,11 @@ const orderSchema: Schema = new mongoose.Schema({
             required: true,
             min: 1
         }
+    },
+    is_pickup: {
+        type: Boolean,
+        required: true,
+        default: false
     },
     shippingDetails: {
         fromAddress: {
@@ -130,13 +144,19 @@ const orderSchema: Schema = new mongoose.Schema({
         },
         shippingCost: { type: Number, default: 0 },
         subtotal: { type: Number, default: 0 },
-        trackingNumber: { type: String, default: '' } 
+        trackingNumber: { type: String, default: '' }
     }
 });
 
-// Virtual field for parsed shipping address
-orderSchema.virtual('parsedShippingAddress').get(function (): IParsedShippingAddress {
+// Virtual field for parsed shipping address // ! Adjust to only be processed for delivery orders
+orderSchema.virtual('parsedShippingAddress').get(function (): IParsedShippingAddress | undefined {
     const doc = this as unknown as IOrder;
+
+    // ! Only process shipping address for delivery orders
+    if (doc.delivery_method !== 'delivery' || !doc.shipping_address) {
+        return undefined;
+    }
+
     const parts = doc.shipping_address?.split(", ").filter(Boolean) || [];
     const stateZip = parts[2]?.split(" ") || [];
 
@@ -149,6 +169,19 @@ orderSchema.virtual('parsedShippingAddress').get(function (): IParsedShippingAdd
     };
 });
 
+// Middleware to set is_pickup based on delivery_method
+orderSchema.pre('save', function (next) {
+    if (this.delivery_method === 'pickup') {
+        this.is_pickup = true;
+
+        this.shipping_address = undefined;
+        this.shippingDetails = undefined;
+    } else {
+        this.is_pickup = false;
+    }
+    next();
+});
+
 // Enable virtuals in responses
 orderSchema.set('toJSON', { virtuals: true });
 orderSchema.set('toObject', { virtuals: true });
@@ -156,11 +189,11 @@ orderSchema.set('toObject', { virtuals: true });
 // Add type declaration for virtual properties
 declare module 'mongoose' {
     interface Document {
-        parsedShippingAddress: IParsedShippingAddress;
+        parsedShippingAddress?: IParsedShippingAddress;
     }
-    
+
     interface IOrder {
-        parsedShippingAddress: IParsedShippingAddress;
+        parsedShippingAddress?: IParsedShippingAddress;
     }
 }
 

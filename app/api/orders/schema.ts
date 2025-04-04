@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { Types } from 'mongoose';
-import exp from 'constants';
 import mongoose from 'mongoose';
 
 const objectIdSchema = z
@@ -14,6 +12,7 @@ const schema = z.object({
   customer_id: objectIdSchema,
   product_items: z.array(objectIdSchema),
   course_items: z.array(objectIdSchema),
+  lab_items: z.array(objectIdSchema),
   order_date: z.date(),
   // order_date: z.string(),
   // total_amount: z.number().min(0, { message: "Total amount must be a positive number" }),
