@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
-// import { Pagination } from "@mui/material";
 import Pagination from "./Pagination";
 
 interface Product {
@@ -28,11 +27,13 @@ interface ProductGridProps {
     material: string[];
     size: string[];
     price: { range: [number, number] };
+    searchTerm?: string;
   };
 }
 
 export default function ProductGrid({ filter }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +61,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
         if (filter.size.length > 0) {
           params.append("size", filter.size.join(","));
         }
+        
         // params.append("minPrice", filter.price.range[0].toString());
         // params.append("maxPrice", filter.price.range[1].toString());
 
@@ -84,7 +86,23 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     };
 
     fetchProducts();
-  }, [filter]);
+  }, [filter.sort, filter.category, filter.color, filter.material, filter.size, filter.price]);
+
+  //Client side search filter
+  useEffect(() => {
+    if (!filter.searchTerm || filter.searchTerm.trim() === '') {
+      setFilteredProducts(products);
+      return;
+    }
+
+    const searchTermLower = filter.searchTerm.toLowerCase().trim();
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(searchTermLower)
+    );
+    
+    setFilteredProducts(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [products, filter.searchTerm]);
 
   if (loading) {
     return <div className="text-center py-8">Loading products...</div>;
@@ -94,9 +112,18 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   }
 
+  const productsToDisplay = filteredProducts.length > 0 ? filteredProducts : products;
   const lastPostIndex = currentPage * postPerPage;
   const firstPostIndex = lastPostIndex - postPerPage;
-  const currentPosts = products.slice(firstPostIndex, lastPostIndex);
+  const currentPosts = productsToDisplay.slice(firstPostIndex, lastPostIndex);
+
+  if (filteredProducts.length === 0) {
+    return (
+      <div className="lg:col-span-3 text-center py-8">
+        No products match your search criteria.
+      </div>
+    );
+  }
 
   return (
     <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
@@ -112,7 +139,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
       ))}
       <div className="col-span-full flex justify-center mt-8">
         <Pagination
-          totalPosts={products.length}
+          totalPosts={productsToDisplay.length}
           postsPerPage={postPerPage}
           setCurrentPage={setCurrentPage}
           currentPage={currentPage}
