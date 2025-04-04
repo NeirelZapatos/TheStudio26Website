@@ -11,6 +11,8 @@ interface Course {
   classType: string[];
   image_url: string;
   description: string;
+  date?: string;
+  time?: string;
 }
 
 interface ProductGridProps {
@@ -83,6 +85,8 @@ export default function ProductGrid({ filter }: ProductGridProps) {
           name={course.name}
           price={course.price}
           image_url={course.image_url}
+          date={course.date}
+          time={course.time}
         />
       ))}
     </div>

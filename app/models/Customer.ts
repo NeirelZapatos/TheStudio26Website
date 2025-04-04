@@ -33,7 +33,7 @@ const customerSchema: Schema = new mongoose.Schema({
         unique: true,
     },
     phone_number: {
-        type: Number,
+        type: String,
     },
     orders: [{
         type: Schema.Types.ObjectId,

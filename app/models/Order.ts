@@ -35,6 +35,15 @@ interface IShippingDetails {
     trackingNumber: string;
 }
 
+// Class booking specific information
+interface IClassBookingDetails {
+    class_date: string;
+    class_time: string;
+    participants: number;
+    instructor?: string;
+    location?: string;
+}
+
 export interface IOrder extends Document {
     _id: Types.ObjectId;
     customer_id?: Types.ObjectId;
@@ -54,6 +63,10 @@ export interface IOrder extends Document {
     parsedShippingAddress?: IParsedShippingAddress; // ! made optional in case pickup
     shippingDetails?: IShippingDetails;
     is_pickup: boolean;
+
+    order_type: 'product' | 'class_booking'; // Distinguish between product orders and class bookings
+    class_booking_details?: IClassBookingDetails; // Details for class bookings
+    stripe_session_id?: string; // Store Stripe session ID
 
 }
 
@@ -145,6 +158,38 @@ const orderSchema: Schema = new mongoose.Schema({
         shippingCost: { type: Number, default: 0 },
         subtotal: { type: Number, default: 0 },
         trackingNumber: { type: String, default: '' }
+    },
+    order_type: {
+        type: String,
+        enum: ['product', 'class_booking'],
+        required: true,
+        default: 'product'
+    },
+    class_booking_details: {
+        class_date: {
+            type: String,
+            required: function (this: any) {
+                return this.order_type === 'class_booking';
+            }
+        },
+        class_time: {
+            type: String,
+            required: function (this: any) {
+                return this.order_type === 'class_booking';
+            }
+        },
+        participants: {
+            type: Number,
+            required: function (this: any) {
+                return this.order_type === 'class_booking';
+            },
+            min: 1
+        },
+        instructor: String,
+        location: String
+    },
+    stripe_session_id: {
+        type: String
     }
 });
 
@@ -153,7 +198,7 @@ orderSchema.virtual('parsedShippingAddress').get(function (): IParsedShippingAdd
     const doc = this as unknown as IOrder;
 
     // ! Only process shipping address for delivery orders
-    if (doc.delivery_method !== 'delivery' || !doc.shipping_address) {
+    if (doc.order_type === 'class_booking' || doc.delivery_method !== 'delivery' || !doc.shipping_address) {
         return undefined;
     }
 
@@ -169,15 +214,23 @@ orderSchema.virtual('parsedShippingAddress').get(function (): IParsedShippingAdd
     };
 });
 
-// Middleware to set is_pickup based on delivery_method
-orderSchema.pre('save', function (next) {
-    if (this.delivery_method === 'pickup') {
-        this.is_pickup = true;
-
+// Middleware to set is_pickup based on delivery_method for product orders
+orderSchema.pre('save', function(next) {
+    if (this.order_type === 'product') {
+        if (this.delivery_method === 'pickup') {
+            this.is_pickup = true;
+            this.shipping_address = undefined;
+            this.shippingDetails = undefined;
+        } else {
+            this.is_pickup = false;
+        }
+    } else if (this.order_type === 'class_booking') {
+        // For class bookings, we don't need shipping-related fields
         this.shipping_address = undefined;
         this.shippingDetails = undefined;
-    } else {
-        this.is_pickup = false;
+        this.shipping_method = undefined;
+        this.is_pickup = undefined;
+        this.delivery_method = undefined;
     }
     next();
 });

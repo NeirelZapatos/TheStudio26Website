@@ -2,16 +2,23 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import AddToCartButton from "./AddToCartButton";
+import BookNowButton from "./BookNowButton";
 
 interface ProductCardProps {
   _id: string;
   name: string;
   price: number;
   image_url: string;
+  date?: string;
+  time?: string;
 }
 
-function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
+function ProductCard({ _id, name, price, image_url, date, time }: ProductCardProps) {
+  const formattedDate = date ? new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }) : null;
   return (
     <div className="group relative h-full">
       <Link
@@ -31,17 +38,15 @@ function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
           <div>
             <h3 className="text-sm text-gray-700">{name}</h3>
             <p className="mt-1 text-sm text-gray-500">${price}</p>
+            {formattedDate && (
+              <p className="mt-1 text-xs text-gray-500">
+                {formattedDate} {time && `• ${time}`}
+              </p>
+            )}
           </div>
         </div>
       </Link>
-      <AddToCartButton
-        product={{
-          _id,
-          name,
-          price,
-          image_url,
-        }}
-      />
+      <BookNowButton classId={_id} />
     </div>
   );
 }

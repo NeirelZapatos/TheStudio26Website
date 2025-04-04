@@ -3,27 +3,29 @@ import Stripe from 'stripe';
 import { MongoClient, ObjectId } from 'mongodb';
 import Customer from '@/app/models/Customer';
 import mongoose, { Types } from 'mongoose';
+import Order from '@/app/models/Order';
 
 const uri = process.env.MONGODB_URI as string;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-// Define cart item interface
-interface CartItem {
-  productId: string;
+// Define booking interface
+interface ClassBooking {
+  classId: string;
   name: string;
   price: number;
-  quantity: number;
-  image_url: string;
-  description?: string;
-  type?: string;
+  quantity: number; // Number of participants
+  date: string;
+  time: string;
+  image_url?: string;
+  type: 'class'; // Type identifier
 }
 
-interface CustomerInfo {
+interface ContactInfo {
   firstName: string;
   lastName: string;
   email?: string;
-  phone?: string;
-  deliveryMethod: 'pickup' | 'delivery';
+  phone?: string
+  participants?: number;
 }
 
 async function connectToDatabase() {
@@ -51,21 +53,12 @@ async function connectToDatabase() {
 
 export async function POST(request: Request) {
   try {
-    const { cartItems, customerInfo } = await request.json();
-    const { firstName, lastName, email, phone, deliveryMethod } = customerInfo as CustomerInfo;
+    const { classBooking, contactInfo } = await request.json();
+    const { firstName, lastName, email, phone, participants } = contactInfo as ContactInfo;
 
-    // * Validate cart items
-    if (!cartItems || cartItems.length === 0) {
-      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
-    }
-
-    // * Filter out any lab or course items that might have been sent
-    const filteredCartItems = cartItems.filter((item: CartItem) =>
-      item.type !== 'lab' && item.type !== 'course'
-    );
-
-    if (filteredCartItems.length === 0) {
-      return NextResponse.json({ error: "No valid items in cart after filtering" }, { status: 400 });
+    // * Validate booking data
+    if (!classBooking) {
+      return NextResponse.json({ error: 'No booking data provided' }, { status: 400 });
     }
 
     if (!firstName || !lastName) {
@@ -74,11 +67,6 @@ export async function POST(request: Request) {
 
     if (!email && !phone) {
       return NextResponse.json({ error: "Either email or phone number is required" }, { status: 400 });
-    }
-
-    // * Validate delivery method
-    if (!deliveryMethod || (deliveryMethod !== 'pickup' && deliveryMethod !== 'delivery')) {
-      return NextResponse.json({ error: "Invalid delivery method" }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -91,69 +79,56 @@ export async function POST(request: Request) {
       customer = await Customer.findOne({ phone_number: phone });
     }
 
-    // * Process items only 
-    const regularItems: CartItem[] = filteredCartItems;
-    const itemIds: Types.ObjectId[] = regularItems.map(item =>
-      new mongoose.Types.ObjectId(item.productId)
-    );
-
-    // * Create line items for Stripe
-    const lineItems = cartItems.map((product: CartItem) => ({
+    // * Create line item for Stripe
+    const lineItem = {
       price_data: {
         currency: 'usd',
         product_data: {
-          name: product.name,
-          description: product.description,
-          images: product.image_url ? [product.image_url] : [],
+          name: classBooking.name,
+          description: classBooking.description,
+          images: classBooking.image_url ? [classBooking.image_url] : [],
           metadata: {
-            productId: product.productId,
-            type: product.type || 'item',
+            classId: classBooking.classId,
+            type: classBooking.type || 'class',
+            date: classBooking.date,
+            time: classBooking.time,
           },
         },
-        unit_amount: Math.round(product.price * 100),
+        unit_amount: Math.round(classBooking.price * 100), // Convert to cents
       },
-      quantity: product.quantity,
-    }));
+      quantity: classBooking.quantity,
+    };
 
     const origin = request.headers.get('origin') || 'http://localhost:3000';
 
     // * Create a checkout session with the appropriate mode
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
-      line_items: lineItems,
+      line_items: [lineItem],
       mode: 'payment',
-      success_url: `${origin}/check-out/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/check-out`,
+      success_url: `${origin}/class-booking/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/class-booking?id=${classBooking.classId}`,
       billing_address_collection: 'required',
       metadata: {
         customerId: customer ? customer._id.toString() : '',
         firstName,
         lastName,
-        deliveryMethod,
+        classId: classBooking.classId,
+        participants: classBooking.quantity.toString(),
         ...(email && { email }),
         ...(phone && { phone_number: phone }),
-        mongoItemIds: JSON.stringify(itemIds.map(id => id.toString())),
       },
     };
-
-    // ! Add shipping address collection for physical items IF order is a deliery order
-    if (deliveryMethod === 'delivery') {
-      sessionParams.shipping_address_collection = {
-        allowed_countries: ['US'],
-      };
-    }
 
     if (email) {
       sessionParams.customer_email = email;
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-
-    console.log("Checkout Session ID:", session.id, "Delivery Method:", deliveryMethod);
     return NextResponse.json({ id: session.id });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error('Error creating Checkout Session:', err.message);
+      console.error('Error creating Class Booking Session:', err.message);
       return NextResponse.json({ error: err.message }, { status: 500 });
     }
     return NextResponse.json(
@@ -171,24 +146,36 @@ export async function GET(request: Request) {
     const sessionId = searchParams.get('session_id');
 
     if (!sessionId) {
-      return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
-    console.log("Processing order for session ID:", sessionId);
+    console.log("Processing class booking for session ID:", sessionId);
 
     const { client, dbName } = await connectToDatabase();
     const db = client.db(dbName);
     const ordersCollection = db.collection("orders");
     const customersCollection = db.collection("customers");
+    const classesCollection = db.collection("courses");
 
     // * Check if order already exists for this session
-    const existingOrder = await ordersCollection.findOne({ stripe_session_id: sessionId });
+    const existingOrder = await ordersCollection.findOne({
+      stripe_session_id: sessionId,
+      order_type: 'class_booking'
+    });
+
     if (existingOrder) {
-      console.log("Order already exists for session:", sessionId);
+      console.log("Class booking already exists for session:", sessionId);
       return NextResponse.json({
         success: true,
-        orderId: existingOrder._id.toString(),
-        message: "Order already processed",
+        bookingId: existingOrder._id.toString(),
+        message: "Booking already processed",
+        classDetails: {
+          name: existingOrder.class_name || '',
+          date: existingOrder.class_booking_details?.class_date || '',
+          time: existingOrder.class_booking_details?.class_time || '',
+          instructor: existingOrder.class_booking_details?.instructor || '',
+          location: existingOrder.class_booking_details?.location || '',
+        },
         session: {
           id: sessionId,
           customer_details: {
@@ -208,20 +195,25 @@ export async function GET(request: Request) {
 
     console.log("Retrieved Stripe session, payment status:", session.payment_status);
 
-    // * Get product and course IDs from metadata
-    const mongoItemIds = session.metadata?.mongoItemIds ? JSON.parse(session.metadata.mongoItemIds) : [];
+    // * Get class ID from metadata
+    const classId = session.metadata?.classId;
+    const participants = parseInt(session.metadata?.participants || '1', 10);
 
-    const deliveryMethod = session.metadata?.deliveryMethod || 'delivery';
-
-    if (mongoItemIds.length === 0) {
-      return NextResponse.json({ error: "No items found" }, { status: 400 });
+    if (!classId) {
+      return NextResponse.json({ error: "Class ID not found" }, { status: 400 });
     }
 
-    const verifiedEmail = session.customer_details?.email || session.metadata?.tempCustomerEmail;
+    // * Get class details from MongoDB
+    const classDetails = await classesCollection.findOne({ _id: new ObjectId(classId) });
+    if (!classDetails) {
+      return NextResponse.json({ error: "Class not found" }, { status: 404 });
+    }
+
+    const verifiedEmail = session.customer_details?.email || session.metadata?.email;
     const verifiedPhone = session.customer_details?.phone || session.metadata?.phone_number;
 
     if (!verifiedEmail && !verifiedPhone) {
-      return NextResponse.json({ error: "Customer contact info not found" }, { status: 400 })
+      return NextResponse.json({ error: "Customer contact info not found" }, { status: 400 });
     }
 
     let customerQuery = {};
@@ -284,9 +276,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Customer ID not found in session metadata" }, { status: 400 });
     }
 
-    // * Convert string Id's to object id's
-    const itemProducts = mongoItemIds.map((id: string) => new ObjectId(id));
-
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0; // Convert back to dollars
 
     const formatAddress = (address: any) => {
@@ -302,32 +291,37 @@ export async function GET(request: Request) {
       return addressParts.join(", ");
     };
 
-    const shippingAddress = deliveryMethod === 'delivery' ? formatAddress(session.shipping_details?.address) : "";
     const billingAddress = formatAddress(session.customer_details?.address);
 
     const orderData = {
       stripe_session_id: sessionId,
       customer_id: new ObjectId(customer._id),
-      product_items: itemProducts,
+      course_items: [new ObjectId(classId)],
       order_date: new Date(),
       total_amount: totalAmount,
-      delivery_method: deliveryMethod, // ! Addded for delivery orders
-      shipping_method: "Standard",
       payment_method: session.payment_method_types[0],
       payment_status: session.payment_status || 'unknown',
-      order_status: "pending",
-      shipping_address: shippingAddress, // ! Will return empty if pickup order
+      order_status: "confirmed",
       billing_address: billingAddress,
       customer_email: session.customer_details?.email || "",
-      shipping_id: null,
-      is_pickup: deliveryMethod === 'pickup',
+      first_name: firstName,
+      last_name: lastName,
+      order_type: 'class_booking',
+      class_name: classDetails.name,
+      class_booking_details: {
+        class_date: classDetails.date,
+        class_time: classDetails.time,
+        participants: participants,
+        instructor: classDetails.instructor,
+        location: classDetails.location,
+      },
       updatedAt: new Date(),
     };
 
     const orderResult = await ordersCollection.insertOne(orderData);
     const orderId = orderResult.insertedId;
 
-    // * Update customer with order(s)
+    // * Update customer with order
     await customersCollection.updateOne(
       { _id: new ObjectId(customer._id) },
       {
@@ -336,13 +330,28 @@ export async function GET(request: Request) {
       }
     );
 
-    console.log("Order saved to MongoDB:", orderId.toString());
+    // * Update class with participant count
+    await classesCollection.updateOne(
+      { _id: new ObjectId(classId) },
+      {
+        $inc: { current_participants: participants },
+        $set: { updatedAt: new Date() }
+      }
+    );
+
+    console.log("Class booking saved to orders collection:", orderId.toString());
 
     return NextResponse.json({
       success: true,
-      orderId: orderId.toString(),
-      deliveryMethod,
-      message: "Order successfully processed and saved",
+      bookingId: orderId.toString(),
+      message: "Class booking successfully processed and saved",
+      classDetails: {
+        name: classDetails.name,
+        date: classDetails.date,
+        time: classDetails.time,
+        instructor: classDetails.instructor,
+        location: classDetails.location,
+      },
       session: {
         id: session.id,
         amount_total: session.amount_total,
