@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
         const newAdmin = new Admin({
             "email": body.email,
             "hashed_password": hashed_password,
+            "resetPasswordToken": null,
+            "resetPasswordExpires": null
         })
 
         await newAdmin.save();
