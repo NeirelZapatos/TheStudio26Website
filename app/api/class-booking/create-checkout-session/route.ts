@@ -118,6 +118,7 @@ export async function POST(request: Request) {
         ...(email && { email }),
         ...(phone && { phone_number: phone }),
       },
+      automatic_tax: { enabled: true },
     };
 
     if (email) {
@@ -175,6 +176,7 @@ export async function GET(request: Request) {
           time: existingOrder.class_booking_details?.class_time || '',
           instructor: existingOrder.class_booking_details?.instructor || '',
           location: existingOrder.class_booking_details?.location || '',
+          participants: existingOrder.class_booking_details?.participants || 1
         },
         session: {
           id: sessionId,
@@ -293,72 +295,103 @@ export async function GET(request: Request) {
 
     const billingAddress = formatAddress(session.customer_details?.address);
 
-    const orderData = {
-      stripe_session_id: sessionId,
-      customer_id: new ObjectId(customer._id),
-      course_items: [new ObjectId(classId)],
-      order_date: new Date(),
-      total_amount: totalAmount,
-      payment_method: session.payment_method_types[0],
-      payment_status: session.payment_status || 'unknown',
-      order_status: "confirmed",
-      billing_address: billingAddress,
-      customer_email: session.customer_details?.email || "",
-      first_name: firstName,
-      last_name: lastName,
-      order_type: 'class_booking',
-      class_name: classDetails.name,
-      class_booking_details: {
-        class_date: classDetails.date,
-        class_time: classDetails.time,
-        participants: participants,
-        instructor: classDetails.instructor,
-        location: classDetails.location,
-      },
-      updatedAt: new Date(),
-    };
+    try {
+      const orderData = {
+        stripe_session_id: sessionId,
+        customer_id: new ObjectId(customer._id),
+        course_items: [new ObjectId(classId)],
+        order_date: new Date(),
+        total_amount: totalAmount,
+        payment_method: session.payment_method_types[0],
+        payment_status: session.payment_status || 'unknown',
+        order_status: "confirmed",
+        billing_address: billingAddress,
+        customer_email: session.customer_details?.email || "",
+        first_name: firstName,
+        last_name: lastName,
+        order_type: 'class_booking',
+        class_name: classDetails.name,
+        class_booking_details: {
+          class_date: classDetails.date,
+          class_time: classDetails.time,
+          participants: participants,
+          instructor: classDetails.instructor,
+          location: classDetails.location,
+        },
+        updatedAt: new Date(),
+      };
+      const orderResult = await ordersCollection.insertOne(orderData);
+      const orderId = orderResult.insertedId;
 
-    const orderResult = await ordersCollection.insertOne(orderData);
-    const orderId = orderResult.insertedId;
+      // * Update customer with order
+      await customersCollection.updateOne(
+        { _id: new ObjectId(customer._id) },
+        {
+          $addToSet: { orders: orderId.toString() },
+          $set: { updatedAt: new Date() }
+        }
+      );
 
-    // * Update customer with order
-    await customersCollection.updateOne(
-      { _id: new ObjectId(customer._id) },
-      {
-        $addToSet: { orders: orderId.toString() },
-        $set: { updatedAt: new Date() }
+      // * Update class with participant count
+      await classesCollection.updateOne(
+        { _id: new ObjectId(classId) },
+        {
+          $inc: { current_participants: participants },
+          $set: { updatedAt: new Date() }
+        }
+      );
+
+      console.log("Class booking saved to orders collection:", orderId.toString());
+
+      return NextResponse.json({
+        success: true,
+        bookingId: orderId.toString(),
+        message: "Class booking successfully processed and saved",
+        classDetails: {
+          name: classDetails.name,
+          date: classDetails.date,
+          time: classDetails.time,
+          instructor: classDetails.instructor,
+          location: classDetails.location,
+          participants: participants
+        },
+        session: {
+          id: session.id,
+          amount_total: session.amount_total,
+          customer_details: session.customer_details,
+          payment_status: session.payment_status,
+        }
+      });
+    } catch (error) {
+      // Check if it's a duplicate key error
+      if (error instanceof Error && (error as any).code === 11000) {
+        // Someone else just processed this order, fetch it
+        const justCreatedOrder = await ordersCollection.findOne({ stripe_session_id: sessionId });
+
+        if (justCreatedOrder) {
+          return NextResponse.json({
+            success: true,
+            bookingId: justCreatedOrder._id.toString(),
+            message: "Booking was just processed by another request",
+            classDetails: {
+              name: classDetails.name,
+              date: classDetails.date,
+              time: classDetails.time,
+              instructor: classDetails.instructor,
+              location: classDetails.location,
+            },
+            session: {
+              id: session.id,
+              amount_total: session.amount_total,
+              customer_details: session.customer_details,
+              payment_status: session.payment_status,
+            }
+          });
+        }
       }
-    );
-
-    // * Update class with participant count
-    await classesCollection.updateOne(
-      { _id: new ObjectId(classId) },
-      {
-        $inc: { current_participants: participants },
-        $set: { updatedAt: new Date() }
-      }
-    );
-
-    console.log("Class booking saved to orders collection:", orderId.toString());
-
-    return NextResponse.json({
-      success: true,
-      bookingId: orderId.toString(),
-      message: "Class booking successfully processed and saved",
-      classDetails: {
-        name: classDetails.name,
-        date: classDetails.date,
-        time: classDetails.time,
-        instructor: classDetails.instructor,
-        location: classDetails.location,
-      },
-      session: {
-        id: session.id,
-        amount_total: session.amount_total,
-        customer_details: session.customer_details,
-        payment_status: session.payment_status,
-      }
-    });
+      // If it's another type of error, rethrow it
+      throw error;
+    }
   } catch (err: unknown) {
     console.error('Error in GET handler:', err);
     if (err instanceof Error) {
