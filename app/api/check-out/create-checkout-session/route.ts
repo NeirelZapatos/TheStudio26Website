@@ -18,6 +18,18 @@ interface CartItem {
   type?: string;
 }
 
+interface DBItem {
+  _id: ObjectId;
+  name: string;
+  price: number;
+  quantity_in_stock: number;
+  description?: string;
+  image_url?: string;
+  type?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 interface CustomerInfo {
   firstName: string;
   lastName: string;
@@ -45,6 +57,98 @@ async function connectToDatabase() {
     return { client, dbName };
   } catch (error) {
     console.error("MongoDB connection error:", error);
+    throw error;
+  }
+}
+
+// Check if items are in stock before proceeding with checkout
+async function verifyItemsInStock(db: any, cartItems: CartItem[]): Promise<{
+  success: boolean;
+  insufficientItems?: Array<{
+    productId: string;
+    name: string;
+    requestedQuantity: number;
+    availableQuantity: number;
+  }>;
+}> {
+  try {
+    const itemsCollection = db.collection("items");
+
+    // Fetch all items in one query
+    const itemDocuments = await itemsCollection.find({
+      _id: { $in: cartItems.map(item => new ObjectId(item.productId)) }
+    }).toArray() as DBItem[];
+
+    // Check if all items exist and have sufficient stock
+    const itemsMap = new Map(itemDocuments.map(item => [item._id.toString(), item]));
+
+    const insufficientItems = cartItems.filter(cartItem => {
+      const dbItem = itemsMap.get(cartItem.productId);
+      // Item doesn't exist or not enough quantity
+      return !dbItem || dbItem.quantity_in_stock < cartItem.quantity;
+    });
+
+    if (insufficientItems.length > 0) {
+      return {
+        success: false,
+        insufficientItems: insufficientItems.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          requestedQuantity: item.quantity,
+          availableQuantity: itemsMap.get(item.productId)?.quantity_in_stock || 0
+        }))
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error verifying stock:", error);
+    throw error;
+  }
+}
+
+// Helper function to decrement stock quantities
+async function decrementStockQuantities(db: mongoose.mongo.Db, cartItems: any[]) {
+  try {
+    const itemsCollection = db.collection("items");
+
+    // Create bulk operations for each item
+    const bulkOps = cartItems.map((item: { productId: number; quantity: number; }) => ({
+      updateOne: {
+        // Only update if quantity_in_stock is greater than or equal to the requested quantity
+        filter: {
+          _id: new ObjectId(item.productId),
+          quantity_in_stock: { $gte: item.quantity }
+        },
+        update: {
+          $inc: { quantity_in_stock: -item.quantity },
+          $set: { updatedAt: new Date() }
+        }
+      }
+    }));
+
+    if (bulkOps.length > 0) {
+      const result = await itemsCollection.bulkWrite(bulkOps);
+      console.log(`Stock quantities updated for ${result.modifiedCount} items`);
+
+      // Check if all items were updated
+      if (result.modifiedCount !== cartItems.length) {
+        // Find which items didn't have enough stock
+        const insufficientStockItems = await itemsCollection.find({
+          _id: { $in: cartItems.map((item: { productId: number; }) => new ObjectId(item.productId)) },
+          quantity_in_stock: { $lt: 0 }
+        }).toArray();
+
+        if (insufficientStockItems.length > 0) {
+          throw new Error("Some items don't have enough stock");
+        }
+      }
+
+      return result;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error decrementing stock quantities:", error);
     throw error;
   }
 }
@@ -81,7 +185,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid delivery method" }, { status: 400 });
     }
 
-    await connectToDatabase();
+    const { client, dbName } = await connectToDatabase();
+    const db = client.db(dbName);
+
+    // * Verify stock availability before proceeding
+    const stockVerification = await verifyItemsInStock(db, filteredCartItems);
+    if (!stockVerification.success) {
+      return NextResponse.json({
+        error: "Some items are out of stock or have insufficient quantity",
+        items: stockVerification.insufficientItems
+      }, { status: 400 });
+    }
 
     let customer = null;
 
@@ -117,7 +231,7 @@ export async function POST(request: Request) {
 
     const origin = request.headers.get('origin') || 'http://localhost:3000';
 
-    // * Create a checkout session with the appropriate mode
+    // * Create a checkout session
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -133,8 +247,13 @@ export async function POST(request: Request) {
         ...(email && { email }),
         ...(phone && { phone_number: phone }),
         mongoItemIds: JSON.stringify(itemIds.map(id => id.toString())),
+        cartItems: JSON.stringify(cartItems.map((item: { productId: any; quantity: any; }) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }))),
       },
       automatic_tax: { enabled: true },
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes expiration
     };
 
     // ! Add shipping address collection for physical items IF order is a deliery order
@@ -212,7 +331,43 @@ export async function GET(request: Request) {
         }
       });
     }
+
     console.log("Retrieved Stripe session, payment status:", stripeSession.payment_status);
+
+    if (stripeSession.payment_status === 'paid') {
+      try {
+        const cartItems = stripeSession.metadata?.cartItems
+          ? JSON.parse(stripeSession.metadata.cartItems)
+          : [];
+
+        if (cartItems.length > 0) {
+          // Verify stock before decrementing
+          const itemsCollection = db.collection("items");
+          const outOfStockItems = await itemsCollection.find({
+            _id: { $in: cartItems.map((i: { productId: number; }) => new ObjectId(i.productId)) },
+            quantity_in_stock: { $lt: 1 }
+          }).toArray();
+
+          if (outOfStockItems.length > 0) {
+            return NextResponse.json(
+              { error: "Some items are out of stock", items: outOfStockItems },
+              { status: 400 }
+            );
+          }
+
+          // Proceed with decrement
+          await decrementStockQuantities(db, cartItems);
+        }
+      } catch (error) {
+        console.error("Stock update failed:", error);
+        throw error; // This will prevent order creation
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Payment not completed" },
+        { status: 402 }
+      );
+    }
 
     // * Get product and course IDs from metadata
     const mongoItemIds = stripeSession.metadata?.mongoItemIds ? JSON.parse(stripeSession.metadata.mongoItemIds) : [];

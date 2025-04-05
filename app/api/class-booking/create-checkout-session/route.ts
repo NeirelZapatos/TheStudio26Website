@@ -119,6 +119,7 @@ export async function POST(request: Request) {
         ...(phone && { phone_number: phone }),
       },
       automatic_tax: { enabled: true },
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes expiration
     };
 
     if (email) {
