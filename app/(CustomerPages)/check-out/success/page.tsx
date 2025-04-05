@@ -3,9 +3,20 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
+import Image from "next/image";
 import { TruckIcon, MapPinIcon, CheckCircleIcon, ShoppingBagIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 
 import { clearCart } from "@/services/cartService";
+
+interface CartItem {
+  productId: string;
+  name: string;
+  price: number | string;
+  quantity: number;
+  image_url: string;
+  description?: string;
+  type?: string;
+}
 
 interface OrderDetails {
   success: boolean;
@@ -41,6 +52,7 @@ interface OrderDetails {
     };
     payment_status: string;
   };
+  items?: CartItem[];
 }
 
 export default function OrderSuccessPage() {
@@ -50,12 +62,23 @@ export default function OrderSuccessPage() {
   const [loading, setLoading] = useState(true);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
     if (!sessionId) {
       setError("No session ID found");
       setLoading(false);
       return;
+    }
+
+    try {
+      const storedCart = localStorage.getItem("cart");
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart);
+        setCartItems(parsedCart);
+      }
+    } catch (err) {
+      console.error("Error parsing cart from localStorage:", err);
     }
 
     const fetchOrderDetails = async () => {
@@ -74,7 +97,7 @@ export default function OrderSuccessPage() {
         if (data.success) {
           clearCart();
         }
-        
+
       } catch (err) {
         console.error("Error fetching order details:", err);
         setError("Could not load order details. Please contact support.");
@@ -98,6 +121,29 @@ export default function OrderSuccessPage() {
     return addressParts.join(", ");
   };
 
+  const formatPrice = (price: number | string): string => {
+    // Convert to number if it's a string
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+    // Check if it's a valid number
+    if (isNaN(numPrice)) {
+      return '0.00';
+    }
+
+    return numPrice.toFixed(2);
+  };
+
+  // Calculate item total safely
+  const calculateItemTotal = (price: number | string, quantity: number): string => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+    if (isNaN(numPrice) || isNaN(quantity)) {
+      return '0.00';
+    }
+
+    return (numPrice * quantity).toFixed(2);
+  };
+
   if (loading) {
     return <div className="text-center py-16">Loading order details...</div>;
   }
@@ -118,6 +164,8 @@ export default function OrderSuccessPage() {
   }
 
   const deliveryMethod = orderDetails.deliveryMethod === 'pickup' ? 'pickup' : 'delivery';
+
+  const items = cartItems.length > 0 ? cartItems : (orderDetails.items || []);
 
   return (
     <div className="max-w-3xl mx-auto p-4">
@@ -170,6 +218,46 @@ export default function OrderSuccessPage() {
             </div>
           </div>
 
+          {/* Order Items Section */}
+          {items.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-medium text-gray-700 mb-2">Purchased Items</h3>
+              <div className="bg-gray-50 rounded-md overflow-hidden">
+                <div className="divide-y divide-gray-200">
+                  {items.map((item) => (
+                    <div key={item.productId} className="flex items-center p-4">
+                      <div className="flex-shrink-0 h-16 w-16 relative mr-4">
+                        {item.image_url ? (
+                          <Image
+                            src={item.image_url}
+                            alt={item.name}
+                            fill
+                            className="object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gray-200 rounded-md flex items-center justify-center">
+                            <ShoppingBagIcon className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-gray-900 truncate">{item.name}</h4>
+                        <p className="text-sm text-gray-500">${formatPrice(item.price)} x {item.quantity}</p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <p className="text-sm font-medium text-gray-900">${calculateItemTotal(item.price, item.quantity)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-4 bg-gray-100 flex justify-between items-center border-t border-gray-200">
+                  <span className="font-medium">Total</span>
+                  <span className="font-bold">${(orderDetails.session.amount_total / 100).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="font-medium text-gray-700 mb-2">Customer Information</h3>
             <div className="bg-gray-50 p-4 rounded-md">
@@ -190,7 +278,7 @@ export default function OrderSuccessPage() {
                 )}
                 <div>
                   <p className="text-sm text-gray-500">Total Paid</p>
-                  <p className="font-medium">${(orderDetails.session.amount_total / 100).toFixed(2)}</p>
+                  <p className="font-medium">${Number((orderDetails.session.amount_total / 100).toFixed(2))}</p>
                 </div>
               </div>
             </div>
@@ -204,15 +292,7 @@ export default function OrderSuccessPage() {
               </p>
             </div>
           )}
-
-          {/* {deliveryMethod === 'delivery' && (
-            <div className="mb-6 bg-blue-50 p-4 rounded-md">
-              <h3 className="font-medium text-blue-800 mb-2">Delivery Information</h3>
-              <p className="text-blue-700">
-                Your items will be delivered to the address provided. You'll receive shipping updates via email.
-              </p>
-            </div>
-          )} */}
+          
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -220,18 +300,6 @@ export default function OrderSuccessPage() {
             <p className="text-gray-600">
               Please save this confirmation for your records. Thank you for your purchase!
             </p>
-            <div className="flex justify-center space-x-4 pt-2">
-              <Link href="/shop">
-                <div className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                  Continue Shopping
-                </div>
-              </Link>
-              <Link href="/account/orders">
-                <div className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
-                  View My Orders
-                </div>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
