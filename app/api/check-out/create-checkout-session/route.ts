@@ -134,6 +134,7 @@ export async function POST(request: Request) {
         ...(phone && { phone_number: phone }),
         mongoItemIds: JSON.stringify(itemIds.map(id => id.toString())),
       },
+      automatic_tax: { enabled: true },
     };
 
     // ! Add shipping address collection for physical items IF order is a deliery order
@@ -181,6 +182,12 @@ export async function GET(request: Request) {
     const ordersCollection = db.collection("orders");
     const customersCollection = db.collection("customers");
 
+    const stripeSession = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items', 'customer_details', 'total_details']
+    });
+
+    console.log("Retrieved Stripe session, payment status:", stripeSession.payment_status);
+
     // * Check if order already exists for this session
     const existingOrder = await ordersCollection.findOne({ stripe_session_id: sessionId });
     if (existingOrder) {
@@ -188,37 +195,36 @@ export async function GET(request: Request) {
       return NextResponse.json({
         success: true,
         orderId: existingOrder._id.toString(),
+        deliveryMethod: existingOrder.delivery_method || (existingOrder.is_pickup ? 'pickup' : 'delivery'),
         message: "Order already processed",
         session: {
           id: sessionId,
-          customer_details: {
-            email: existingOrder.customer_email,
-            name: `${existingOrder.first_name} ${existingOrder.last_name}`,
-          },
           amount_total: existingOrder.total_amount * 100,
+          customer_details: {
+            email: existingOrder.customer_email || stripeSession.customer_details?.email,
+            name: `${existingOrder.first_name || ''} ${existingOrder.last_name || ''}`.trim() || stripeSession.customer_details?.name,
+            phone: existingOrder.phone_number || stripeSession.customer_details?.phone,
+            address: stripeSession.customer_details?.address
+          },
+          shipping_details: stripeSession.shipping_details,
           payment_status: existingOrder.payment_status,
+          total_details: stripeSession.total_details
         }
       });
     }
-
-    // * Retrieve the checkout session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items', 'customer_details'],
-    });
-
-    console.log("Retrieved Stripe session, payment status:", session.payment_status);
+    console.log("Retrieved Stripe session, payment status:", stripeSession.payment_status);
 
     // * Get product and course IDs from metadata
-    const mongoItemIds = session.metadata?.mongoItemIds ? JSON.parse(session.metadata.mongoItemIds) : [];
+    const mongoItemIds = stripeSession.metadata?.mongoItemIds ? JSON.parse(stripeSession.metadata.mongoItemIds) : [];
 
-    const deliveryMethod = session.metadata?.deliveryMethod || 'delivery';
+    const deliveryMethod = stripeSession.metadata?.deliveryMethod || 'delivery';
 
     if (mongoItemIds.length === 0) {
       return NextResponse.json({ error: "No items found" }, { status: 400 });
     }
 
-    const verifiedEmail = session.customer_details?.email || session.metadata?.tempCustomerEmail;
-    const verifiedPhone = session.customer_details?.phone || session.metadata?.phone_number;
+    const verifiedEmail = stripeSession.customer_details?.email || stripeSession.metadata?.tempCustomerEmail;
+    const verifiedPhone = stripeSession.customer_details?.phone || stripeSession.metadata?.phone_number;
 
     if (!verifiedEmail && !verifiedPhone) {
       return NextResponse.json({ error: "Customer contact info not found" }, { status: 400 })
@@ -233,9 +239,9 @@ export async function GET(request: Request) {
 
     let customer = await customersCollection.findOne(customerQuery);
 
-    const customerName = session.customer_details?.name?.split(" ") || [];
-    const firstName = customerName[0] || session.metadata?.tempFirstName || "";
-    const lastName = customerName.slice(1).join(" ") || session.metadata?.tempLastName || "";
+    const customerName = stripeSession.customer_details?.name?.split(" ") || [];
+    const firstName = customerName[0] || stripeSession.metadata?.tempFirstName || "";
+    const lastName = customerName.slice(1).join(" ") || stripeSession.metadata?.tempLastName || "";
 
     if (customer) {
       await customersCollection.updateOne(
@@ -287,7 +293,7 @@ export async function GET(request: Request) {
     // * Convert string Id's to object id's
     const itemProducts = mongoItemIds.map((id: string) => new ObjectId(id));
 
-    const totalAmount = session.amount_total ? session.amount_total / 100 : 0; // Convert back to dollars
+    const totalAmount = stripeSession.amount_total ? stripeSession.amount_total / 100 : 0; // Convert back to dollars
 
     const formatAddress = (address: any) => {
       if (!address) return "No address provided";
@@ -302,8 +308,8 @@ export async function GET(request: Request) {
       return addressParts.join(", ");
     };
 
-    const shippingAddress = deliveryMethod === 'delivery' ? formatAddress(session.shipping_details?.address) : "";
-    const billingAddress = formatAddress(session.customer_details?.address);
+    const shippingAddress = deliveryMethod === 'delivery' ? formatAddress(stripeSession.shipping_details?.address) : "";
+    const billingAddress = formatAddress(stripeSession.customer_details?.address);
 
     const orderData = {
       stripe_session_id: sessionId,
@@ -313,12 +319,12 @@ export async function GET(request: Request) {
       total_amount: totalAmount,
       delivery_method: deliveryMethod, // ! Addded for delivery orders
       shipping_method: "Standard",
-      payment_method: session.payment_method_types[0],
-      payment_status: session.payment_status || 'unknown',
+      payment_method: stripeSession.payment_method_types[0],
+      payment_status: stripeSession.payment_status || 'unknown',
       order_status: "pending",
       shipping_address: shippingAddress, // ! Will return empty if pickup order
       billing_address: billingAddress,
-      customer_email: session.customer_details?.email || "",
+      customer_email: stripeSession.customer_details?.email || "",
       shipping_id: null,
       is_pickup: deliveryMethod === 'pickup',
       updatedAt: new Date(),
@@ -344,10 +350,10 @@ export async function GET(request: Request) {
       deliveryMethod,
       message: "Order successfully processed and saved",
       session: {
-        id: session.id,
-        amount_total: session.amount_total,
-        customer_details: session.customer_details,
-        payment_status: session.payment_status,
+        id: stripeSession.id,
+        amount_total: stripeSession.amount_total,
+        customer_details: stripeSession.customer_details,
+        payment_status: stripeSession.payment_status,
       }
     });
   } catch (err: unknown) {
