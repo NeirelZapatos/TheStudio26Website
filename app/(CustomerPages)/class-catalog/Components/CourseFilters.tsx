@@ -84,14 +84,14 @@ const CourseFilters = ({
         placeholder="Search courses..."
       />
       {/* Categories Filter */}
-      <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
+      <ul className="space-y-2 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
         <li>
           <button
             onClick={() => handleCategoryChange("all")}
-            className={`w-full text-left ${
+            className={`w-full text-left px-3 py-2 rounded-md ${
               courseFilter.category === "all"
-                ? "text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-blue-100 text-blue-700 font-semibold border-blue-500"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
             }`}
           >
             All Classes
@@ -101,10 +101,10 @@ const CourseFilters = ({
           <li key={category.name}>
             <button
               onClick={() => handleCategoryChange(category.name)}
-              className={`w-full text-left ${
-                courseFilter.category === category.name.toLowerCase()
-                  ? "text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+              className={`w-full text-left px-3 py-2 rounded-md ${
+                courseFilter.category.toLowerCase() === category.name.toLowerCase()
+                  ? "bg-blue-100 text-blue-700 font-semibold border-blue-500"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               }`}
             >
               {category.name}
@@ -115,7 +115,7 @@ const CourseFilters = ({
 
       {/* Class Types Filter */}
       <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-900">
+        <label className="block text-sm font-bold text-gray-900">
           Class Type
         </label>
         <ul className="space-y-4 mt-2">

@@ -64,7 +64,7 @@ export default function SuggestedProducts() {
               _id={product._id}
               name={product.name}
               price={product.price}
-              category={product.category}
+              // category={product.category}
               image_url={product.image_url}
               compact
             />

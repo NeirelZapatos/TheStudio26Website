@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import Pagination from "./Pagination";
+import ProductSkeleton from "./ProductSkeleton";
 
 interface Product {
   _id: string;
@@ -105,7 +106,13 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }, [products, filter.searchTerm]);
 
   if (loading) {
-    return <div className="text-center py-8">Loading products...</div>;
+    return (
+      <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
+        {Array(postPerPage).fill(0).map((_, index) => (
+          <ProductSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   if (error) {
@@ -133,7 +140,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
           _id={product._id}
           name={product.name}
           price={product.price}
-          category={product.category}
+          // category={product.category}
           image_url={product.image_url}
         />
       ))}

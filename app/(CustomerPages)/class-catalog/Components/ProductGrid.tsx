@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
+import ProductSkeleton from "../../StoreSearch/Components/ProductSkeleton";
 import Pagination from "../../StoreSearch/Components/Pagination";
 
 interface Course {
@@ -89,7 +90,13 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }, [courses, filter.searchTerm]);
 
   if (loading) {
-    return <div className="text-center py-8">Loading courses...</div>;
+    return (
+      <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
+        {Array(postPerPage).fill(0).map((_, index) => (
+          <ProductSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   if (error) {

@@ -113,15 +113,15 @@ const Filters = ({ filter, setFilter }: FilterProps) => {
         className="mb-4"
         placeholder="Search products..."
       />
-        
-      <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
+
+      <ul className="space-y-2 border-b border-gray-200 pb-6 text-md font-medium">
         <li>
           <button
             onClick={() => handleCategoryChange("all")}
-            className={`w-full text-left ${
+            className={`w-full text-left px-3 py-2 rounded-md ${
               filter.category === "all"
-                ? "text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-blue-100 text-blue-700 font-semibold border-blue-500"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
             }`}
           >
             All Items
@@ -131,10 +131,10 @@ const Filters = ({ filter, setFilter }: FilterProps) => {
           <li key={category.name}>
             <button
               onClick={() => handleCategoryChange(category.name)}
-              className={`w-full text-left ${
-                filter.category === category.name.toLowerCase()
-                  ? "text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+              className={`w-full text-left px-3 py-2 rounded-md ${
+                filter.category.toLowerCase() === category.name.toLowerCase()
+                  ? "bg-blue-100 text-blue-700 font-semibold border-blue-500"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               }`}
             >
               {category.name}
@@ -146,7 +146,7 @@ const Filters = ({ filter, setFilter }: FilterProps) => {
       {/* Accordion */}
       {/* Color Filters */}
       <div className="collapse collapse-arrow">
-        <input type="checkbox" name="my-accordion-2"/>
+        <input type="checkbox" name="my-accordion-2" />
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
           <span className="font-medium text-gray-900">Color</span>
         </div>
@@ -215,11 +215,11 @@ const Filters = ({ filter, setFilter }: FilterProps) => {
                 </label>
               </li>
             ))}
-            {/* <li className="flex jsutify-center flex-col gap-2">
+            {/* <li className="flex justify-center flex-col gap-2">
               <div className="flex justify-between">
                 <p className="font-medium">Price</p>
                 <div>
-                  ${minPrice.toFixed(0)} - ${maxPrice.toFixed(0)}
+                  ${minPrice.toFixed(0)} - ${Number(maxPrice).toFixed(0)}
                 </div>
               </div>
               <div className="flex gap-2">

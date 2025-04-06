@@ -2,6 +2,7 @@
 
 import { addToCart } from "@/services/cartService";
 import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
 
 interface AddToCartButtonProps {
   product: {
@@ -37,15 +38,16 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
   };
 
   return (
+    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
     <button
-      onClick={handleAddToCart}
-      disabled={isAdding}
-      className={`text-sm px-4 py-2.5 mt-4 w-full font-semibold tracking-wide rounded-md text-white flex items-center justify-center ${isAdding
-        ? "bg-green-600 hover:bg-green-600"
-        : "bg-slate-800 hover:bg-slate-900"
-        } transition-colors duration-300`}
+      onClick={(e) => {
+        e.preventDefault(); //prevents navigation when button is clicked
+        handleAddToCart();
+      }}
+      className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-blue-500 hover:text-white transition-colors duration-200"
     >
-      {buttonText}
+      <ShoppingCart size={20} />
     </button>
+  </div>
   );
 }
