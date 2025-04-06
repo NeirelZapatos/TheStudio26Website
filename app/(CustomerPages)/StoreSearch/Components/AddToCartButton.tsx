@@ -1,6 +1,7 @@
 "use client";
 
 import { addToCart } from "@/services/cartService";
+import { ShoppingCart } from "lucide-react";
 
 interface AddToCartButtonProps {
   product: {
@@ -26,11 +27,16 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
   };
 
   return (
+    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
     <button
-      onClick={handleAddToCart}
-      className="bg-blue-500 text-white px-4 py-2 rounded mt-4 w-full"
+      onClick={(e) => {
+        e.preventDefault(); //prevents navigation when button is clicked
+        handleAddToCart();
+      }}
+      className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-blue-500 hover:text-white transition-colors duration-200"
     >
-      Add to Cart
+      <ShoppingCart size={20} />
     </button>
+  </div>
   );
 }

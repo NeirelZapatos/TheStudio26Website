@@ -1,47 +1,37 @@
-"use client"
-
 import Link from "next/link";
 import Image from "next/image";
-import AddToCartButton from "./AddToCartButton";
+import AddToCartButton from "../../StoreSearch/Components/AddToCartButton";
 
 interface ProductCardProps {
   _id: string;
   name: string;
   price: number;
   image_url: string;
+  compact?: boolean;
 }
 
-function ProductCard({ name, price, image_url, _id }: ProductCardProps) {
+function ProductCard({ name, price, image_url, _id, compact }: ProductCardProps) {
   return (
-    <div className="group relative h-full">
-      <Link
-        href={`/class-catalog/courses/${_id}`}
-        className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
-      >
-        <div className="relative aspect-square">
+    <div className={`group relative h-full ${compact ? "h-48" : "h-64"}`}>
+      <div className="relative aspect-square">
+        <Link
+          href={`/class-catalog/courses/${_id}`}
+          className="block w-full h-full"
+        >
           <Image
             src={image_url}
-            width={300}
-            height={300}
+            width={compact ? 200 : 300}
+            height={compact ? 200 : 300}
             alt="Product Image"
-            className="rounded-md h-full w-full object-cover group-hover:opacity-75 duration-200"
+            className="rounded-md h-full w-full object-cover group-hover:opacity-90 duration-200"
           />
-        </div>
-        <div className="mt-4 flex justify-between">
-          <div>
-            <h3 className="text-sm text-gray-700">{name}</h3>
-            <p className="mt-1 text-sm text-gray-500">${price}</p>
-          </div>
-        </div>
-      </Link>
-      <AddToCartButton
-        product={{
-          _id,
-          name,
-          price,
-          image_url,
-        }}
-      />
+          <AddToCartButton product={{ _id, name, price, image_url, }}/>
+        </Link>
+      </div>
+      <div className="mt-3 px-1">
+        <h3 className="text-sm text-gray-700">{name}</h3>
+        <p className="mt-1 text-lg font- text-gray-900">${Number(price).toFixed(2)}</p>
+      </div>
     </div>
   );
 }
