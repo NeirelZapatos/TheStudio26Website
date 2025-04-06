@@ -101,7 +101,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 mb-4"
             >
-              Send Email
+              Sign In
             </button>
           </form>
         </div>
