@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
 
         await admin.save();
 
-        const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/ResetPassword?token=${token}`;
-        
+        const resetUrl = `${process.env.NEXTAUTH_URL}/ResetPassword?token=${token}`;
+
         try {
             // Ensure the transporter is initialized and ready to send emails
             if (!transporter) {
