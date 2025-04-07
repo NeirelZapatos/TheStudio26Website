@@ -3,18 +3,18 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
-import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, UserIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, DocumentTextIcon , CheckCircleIcon } from '@heroicons/react/24/outline';
 
 interface BookingDetails {
   success: boolean;
   bookingId: string;
   message: string;
-  classDetails: {
+  labDetails: {
     name: string;
     date: string;
     time: string;
-    instructor: string;
     location: string;
+    participants: number;
   };
   session: {
     id: string;
@@ -26,12 +26,19 @@ interface BookingDetails {
     };
     payment_status: string;
   };
-  class_booking_details?: {
+  lab_booking_details?: {
     participants: number;
+    rental_equipment?: Array<{
+      id: string;
+      name: string;
+      description?: string;
+    }>;
+    comments?: string;
   };
 }
 
-export default function BookingSuccessPage() {
+
+export default function LabBookingSuccess() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -49,7 +56,7 @@ export default function BookingSuccessPage() {
     const fetchBookingDetails = async () => {
       if (!loading) return;
       try {
-        const response = await fetch(`/api/class-booking/create-checkout-session?session_id=${sessionId}`);
+        const response = await fetch(`/api/lab-booking/create-checkout-session?session_id=${sessionId}`);
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -94,9 +101,13 @@ export default function BookingSuccessPage() {
   }
 
   // Get participants from the right location in the response
-  const participants = bookingDetails.class_booking_details?.participants ||
-    (bookingDetails as any)?.classDetails?.participants ||
+  const participants = bookingDetails.labDetails.participants ||
+    bookingDetails.lab_booking_details?.participants ||
     1; // Default to 1 if not found
+
+  // Get rental equipment if available
+  const rentalEquipment = bookingDetails.lab_booking_details?.rental_equipment || [];
+  const comments = bookingDetails.lab_booking_details?.comments || '';
 
   return (
     <div className="max-w-3xl mx-auto p-4">
@@ -108,40 +119,35 @@ export default function BookingSuccessPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-green-700 mb-2">
-            Booking Confirmed!
+            Lab Booking Confirmed!
           </h1>
           <p className="text-gray-600">
-            Your class has been booked successfully. We've sent a confirmation to {bookingDetails.session.customer_details.email}.
+            Your lab session has been booked successfully. We've sent a confirmation to {bookingDetails.session.customer_details.email}.
           </p>
         </div>
 
         <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-xl font-semibold mb-4">Class Details</h2>
+          <h2 className="text-xl font-semibold mb-4">Lab Details</h2>
 
           <div className="bg-blue-50 rounded-md p-4 mb-6">
             <h3 className="text-lg font-medium text-blue-800 mb-2">
-              {bookingDetails.classDetails.name}
+              {bookingDetails.labDetails.name}
             </h3>
 
             <div className="space-y-3">
               <div className="flex items-start">
                 <CalendarIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                <span>{formatDate(bookingDetails.classDetails.date)}</span>
+                <span>{formatDate(bookingDetails.labDetails.date)}</span>
               </div>
 
               <div className="flex items-start">
                 <ClockIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                <span>{bookingDetails.classDetails.time}</span>
+                <span>{bookingDetails.labDetails.time}</span>
               </div>
 
               <div className="flex items-start">
                 <MapPinIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                <span>{bookingDetails.classDetails.location}</span>
-              </div>
-
-              <div className="flex items-start">
-                <UserIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                <span>Instructor: {bookingDetails.classDetails.instructor}</span>
+                <span>{bookingDetails.labDetails.location}</span>
               </div>
 
               <div className="flex items-start">
@@ -151,6 +157,34 @@ export default function BookingSuccessPage() {
 
             </div>
           </div>
+
+          {rentalEquipment.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-medium text-gray-700 mb-2">Rental Equipment</h3>
+              <div className="bg-yellow-50 p-4 rounded-md">
+                <ul className="space-y-2">
+                  {rentalEquipment.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>{item.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {comments && (
+            <div className="mb-6">
+              <h3 className="font-medium text-gray-700 mb-2">Special Requests / Comments</h3>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <div className="flex items-start">
+                  <DocumentTextIcon className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                  <p className="text-gray-700">{comments}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mb-6">
             <h3 className="font-medium text-gray-700 mb-2">Booking Information</h3>

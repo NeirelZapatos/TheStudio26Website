@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import Image from "next/image";
 
@@ -32,7 +32,6 @@ interface ContactInfo {
 }
 
 export default function ClassBookingPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const classId = searchParams.get('id');
 
@@ -41,8 +40,6 @@ export default function ClassBookingPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availableSpots, setAvailableSpots] = useState(0);
-
-  const [currentStep, setCurrentStep] = useState<'form' | 'review'>('form');
 
   // * Contact Info
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
@@ -174,19 +171,6 @@ export default function ClassBookingPage() {
       day: 'numeric'
     };
     return new Date(dateString).toLocaleDateString('en-US', options);
-  };
-
-
-  const handleContinueToReview = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (validateContactInfo()) {
-      setCurrentStep('review');
-    }
-  };
-
-  const handleBackToForm = () => {
-    setCurrentStep('form');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -424,16 +408,26 @@ export default function ClassBookingPage() {
                   </label>
 
                   <div className="join">
-                    <button
-                      type="button"
-                      className="join-item btn bg-blue-600 hover:bg-blue-800 text-white text-xl"
-                      onClick={() => setContactInfo(prev => ({
-                        ...prev,
-                        participants: Math.max(1, prev.participants - 1)
-                      }))}
-                    >
-                      -
-                    </button>
+                    {contactInfo.participants <= 1 ? (
+                      <button
+                        type="button"
+                        className="join-item btn bg-gray-400 cursor-not-allowed text-white text-xl"
+                        disabled={true}
+                      >
+                        -
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="join-item btn bg-blue-600 hover:bg-blue-800 text-white text-xl"
+                        onClick={() => setContactInfo(prev => ({
+                          ...prev,
+                          participants: Math.max(1, prev.participants - 1)
+                        }))}
+                      >
+                        -
+                      </button>
+                    )}
 
                     <input
                       type="number"
@@ -448,16 +442,26 @@ export default function ClassBookingPage() {
                       style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                     />
 
-                    <button
-                      type="button"
-                      className="join-item btn bg-blue-600 hover:bg-blue-800 text-white text-xl"
-                      onClick={() => setContactInfo(prev => ({
-                        ...prev,
-                        participants: Math.min(availableSpots, prev.participants + 1)
-                      }))}
-                    >
-                      +
-                    </button>
+                    {contactInfo.participants >= availableSpots ? (
+                      <button
+                        type="button"
+                        className="join-item btn bg-gray-400 cursor-not-allowed text-white text-xl"
+                        disabled={true}
+                      >
+                        +
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="join-item btn bg-blue-600 hover:bg-blue-800 text-white text-xl"
+                        onClick={() => setContactInfo(prev => ({
+                          ...prev,
+                          participants: Math.min(availableSpots, prev.participants + 1)
+                        }))}
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
 
                   <label className="label">
@@ -466,6 +470,7 @@ export default function ClassBookingPage() {
                     </span>
                   </label>
                 </div>
+                
               </form>
             </div>
           </div>
@@ -515,7 +520,7 @@ export default function ClassBookingPage() {
             )}
 
             {/* Back to Classes Button */}
-            <Link href="/courses">
+            <Link href="/course-catalog">
               <div className="text-center mt-4">
                 <span className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer">
                   View All Classes
