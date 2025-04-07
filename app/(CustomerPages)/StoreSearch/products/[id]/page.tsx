@@ -1,13 +1,11 @@
+// app/product/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
-import { ShoppingCart } from "lucide-react";
-import "react-medium-image-zoom/dist/styles.css";
-import SuggestedProducts from "../../Components/SuggestedProducts";
-import ProductSpecs from "../../Components/ProductSpecifications";
 import ProductGallery from "../../Components/ProductGallery";
+import ProductDescription from "../../Components/ProductDescription";
+import SuggestedProducts from "../../Components/SuggestedProducts";
 
 interface Product {
   _id: string;
@@ -41,7 +39,6 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,7 +68,7 @@ export default function ProductPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        Loading...
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
       </div>
     );
   }
@@ -84,78 +81,28 @@ export default function ProductPage() {
     );
   }
 
-  const formattedPrice =
-    typeof product.price === "number"
-      ? product.price.toFixed(2)
-      : Number(product.price).toFixed(2);
-
-  const maxQuantity = Math.max(0, Math.min(10, product.quantity_in_stock));
-  const quantityOptions =
-    maxQuantity > 0 ? Array.from({ length: maxQuantity }, (_, i) => i + 1) : [];
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
-        {/* Image gallery */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
+      {/* Breadcrumb */}
+      <nav className="flex mb-6 text-sm text-gray-500">
+        <a href="/" className="hover:text-amber-600">
+          Home
+        </a>
+        <span className="mx-2">/</span>
+        <a href="/StoreSearch" className="hover:text-amber-600">
+          {product.category}
+        </a>
+        <span className="mx-2">/</span>
+        <span className="text-gray-900">{product.name}</span>
+      </nav>
+
+      <div className="lg:grid lg:grid-cols-5 lg:gap-x-8 lg:items-start">
         <ProductGallery images={product.images || []} />
-
-        {/* Product info */}
-        <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            {product.name}
-          </h1>
-
-          <div className="mt-3">
-            <h2 className="sr-only">Product information</h2>
-            <p className="text-3xl tracking-tight text-gray-900">
-              ${formattedPrice}
-            </p>
-          </div>
-
-          <div className="mt-6">
-            <h3 className="sr-only">Description</h3>
-            <p className="text-base text-gray-500">{product.description}</p>
-          </div>
-
-          <div className="mt-8">
-            {product.quantity_in_stock > 0 && (
-              <p>Quantity
-              <div className="flex items-center">
-                <label htmlFor="quantity" className="sr-only">
-                  Quantity
-                </label>
-                <select
-                  id="quantity"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="select select-bordered w-20"
-                >
-                  {quantityOptions.map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              </p>
-            )}
-            <div className="flex items-center space-x-4 py-5">
-              {product.quantity_in_stock > 0 ? (
-                <button className="btn flex-1">
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart
-                </button>
-              ) : (
-                <button className="btn flex-1" disabled>
-                  Out of Stock
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <ProductDescription product={product} />
       </div>
-      <ProductSpecs product={product} />
-      <SuggestedProducts />
+      <div className="mt-16 border-t border-gray-200 pt-10">
+        <SuggestedProducts />
+      </div>
     </div>
   );
 }

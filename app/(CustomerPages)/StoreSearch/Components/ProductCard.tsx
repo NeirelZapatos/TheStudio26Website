@@ -30,7 +30,7 @@ function ProductCard({ name, price, image_url, _id, compact }: ProductCardProps)
       </div>
       <div className="mt-3 px-1">
         <h3 className="text-sm text-gray-700">{name}</h3>
-        <p className="mt-1 text-lg font- text-gray-900">${Number(price).toFixed(2)}</p>
+        <p className="mt-1 text-md text-gray-900">${Number(price).toFixed(2)}</p>
       </div>
     </div>
   );
