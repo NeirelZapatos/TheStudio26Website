@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
-import dbConnect from '@/app/lib/dbConnect';
-import { sendOrderEmail } from "@/app/lib/mailer";
-import Order from '@/app/models/Order';
-import Item from '@/app/models/Item';
-import Course from '@/app/models/Course';
+import dbConnect from '../../lib/dbConnect';
+import { sendOrderEmail } from "../../lib/mailer";
+import Order from '../../models/Order';
+import Item from '../../models/Item';
+import Course from '../../models/Course';
 
 // Example of JSON to send to this api endpoint
 // {
