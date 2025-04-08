@@ -43,7 +43,20 @@ export interface IShipping extends Document {
     carrier_account: string;
     servicelevel_token: string;
     name?: string;
-    label_file_type: 'pdf' | 'png';
+   // label_file_type: {
+  //    type: String,
+   //   default: 'pdf_4x6',
+ //     enum: [
+   //     'pdf',
+   //     'pdf_4x6',
+    //    'pdf_4x8',
+    //    'pdf_2.3x7.5',
+    //    'pdf_a4',  // all lowercase
+    //    'pdf_a5',
+     //   'pdf_a6',
+     //   'png'
+     // ],
+    //}
     metadata?: Record<string, any>;
     shippo_shipment_id?: string;  // New field to store Shippo's shipment ID
   };
@@ -111,7 +124,20 @@ const shippingSchema = new Schema({
   shipment: {
     carrier_account: { type: String, required: true },
     servicelevel_token: { type: String, required: true },
-    label_file_type: { type: String, default: 'pdf', enum: ['pdf', 'png'] },
+    label_file_type: {
+      type: String,
+      default: 'PDF_A4',
+      enum: [
+        'PDF',
+        'PDF_4x6',
+        'PDF_4x8',
+        'PDF_2.3x7.5',
+        'PDF_A4',  // Added PDF_A4 to match what you're using in your API
+        'PDF_A5',
+        'PDF_A6',
+        'PNG'      // Added PNG to match your Zod schema
+      ]
+    },
     metadata: Schema.Types.Mixed
   },
   transaction: {

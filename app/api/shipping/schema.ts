@@ -48,7 +48,7 @@ enum DistanceUnitEnum {
   const shipmentSchema = z.object({
       carrier_account: z.string().min(1, { message: "Carrier account is required" }),
       servicelevel_token: z.string().min(1, { message: "Service level token is required" }),
-      label_file_type: z.enum(['PDF', 'PDF_4x6', 'PNG']).default('PDF_4x6'),
+      label_file_type: z.enum(['PDF', 'PDF_4x6', 'PDF_A4', 'PNG']).default('PDF_4x6'),
       metadata: z.record(z.any()).optional(),
   });
   

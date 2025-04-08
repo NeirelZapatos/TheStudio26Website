@@ -7,34 +7,28 @@ import { NextRequest, NextResponse } from 'next/server';
 interface ShippoInstance {
   transactions: {
     create: (params: any) => Promise<{
-      object_id: string;
+      objectId: string;
       status: string;
-      label_url: string;
-      tracking_number: string;
-      tracking_url_provider: string;
-      commercial_invoice_url?: string;
+      labelUrl: string;
+      trackingNumber: string;
+      trackingUrlProvider: string;
+      commercialInvoiceUrl?: string;
       messages?: Array<any>;
     }>;
   };
-  rates: {
-    listShipmentRates: (shipmentId: string) => Promise<{
-      results: Array<any>;
-    }>;
-  };
-  addresses: {
-    create: (params: any) => Promise<any>;
-  };
   shipments: {
     create: (params: any) => Promise<{
-      object_id: string;
+      objectId: string;
       rates: Array<{
-        object_id: string;
+        objectId: string;
         amount: string;
         currency: string;
         provider: string;
-        carrier_account: string;
-        name: string;
-        servicelevel_token: string;
+        carrierAccount: string;
+        servicelevel: {
+          token: string;
+          name: string;
+        };
       }>;
     }>;
   };
@@ -50,49 +44,11 @@ try {
   // Initialize using the new constructor syntax
   shippoClient = new Shippo({
     apiKeyHeader: `ShippoToken ${process.env.SHIPPO_TEST_KEY}`,
-    shippoApiVersion: '2018-02-08', // Include the API version
   });
 
   console.log('Shippo client initialized successfully');
 } catch (error) {
   console.error('Error initializing Shippo:', error);
-
-  // Fallback implementation for development/testing
-  shippoClient = {
-    shipments: {
-      create: async () => ({
-        object_id: '0b5d2210362247fe80e780346960904c',
-        rates: [
-          {
-            object_id: 'test-rate-id',
-            amount: '9.99',
-            currency: 'USD',
-            provider: 'USPS',
-            carrier_account: 'test-carrier',
-            name: 'Test Service',
-            servicelevel_token: 'test-service',
-          },
-        ],
-      }),
-    },
-    transactions: {
-      create: async () => ({
-        object_id: '0b5d2210362247fe80e780346960904c',
-        status: 'SUCCESS',
-        label_url: 'https://example.com/test-label.pdf',
-        tracking_number: 'TEST123456789',
-        tracking_url_provider: 'https://example.com/track/TEST123456789',
-      }),
-    },
-    rates: {
-      listShipmentRates: async () => ({
-        results: [],
-      }),
-    },
-    addresses: {
-      create: async () => ({}),
-    },
-  };
 }
 
 export async function POST(request: NextRequest) {
@@ -100,7 +56,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { order_ids, package_details } = body;
+    const { order_ids, package_details, test_mode = false } = body;
 
     // Fetch the selected orders and populate the customer data
     const orders = await Order.find({ _id: { $in: order_ids } }).populate<{
@@ -117,6 +73,8 @@ export async function POST(request: NextRequest) {
 
       // Parse shipping address
       let street1 = '',
+        street2 = '',
+        street3 = '',
         city = '',
         state = '',
         zip = '';
@@ -159,60 +117,57 @@ export async function POST(request: NextRequest) {
       zip = zip || '00000';
 
       // Create shipment with error handling
-      let shipment;
+      let shipmentResponse;
       try {
-        // Create addresses using the addresses API
-        const from_address = await shippoClient.addresses.create({
-          name: 'Studio 26',
-          company: 'Your Company Name', // Optional
-          street1: '123 Main St',
-          street2: '', // Optional
-          city: 'Your City',
-          state: 'CA',
-          zip: '94107',
-          country: 'US',
-          phone: '555-555-5555', // Ensure phone is a string
-          email: 'your@email.com',
-          is_residential: false, // Set to false for business addresses
-          metadata: 'Store Address',
-          validate: false, // Validate the address with Shippo
-        });
-
-        const to_address = await shippoClient.addresses.create({
-          name: `${customer.first_name} ${customer.last_name}`,
-          company: '', // Optional
-          street1: street1,
-          street2: '', // Optional
-          city: city,
-          state: state,
-          zip: zip,
-          country: 'US',
-          phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000', // Convert to string
-          email: customer.email || '',
-          is_residential: true, // Set to true for residential addresses
-          metadata: `Customer ID ${customer._id}`,
-          validate: false, // Validate the address with Shippo
-        });
-
-        // Create shipment to get rates - CORRECTED FIELD NAMES
-        shipment = await shippoClient.shipments.create({
-          addressFrom: from_address, // Changed from address_from to addressFrom
-          addressTo: to_address,     // Changed from address_to to addressTo
+        // Use camelCase for addressFrom and addressTo
+        shipmentResponse = await shippoClient.shipments.create({
+          addressFrom: {
+            name: 'Studio 26',
+            company: 'Your Company Name',
+            street1: '123 Main St',
+            street2: '',
+            street3: '',
+            city: 'Your City',
+            state: 'CA',
+            zip: '94107',
+            country: 'US',
+            phone: '555-555-5555',
+            email: 'your@email.com'
+          },
+          addressTo: {
+            name: `${customer.first_name} ${customer.last_name}`,
+            street1: street1,
+            street2: street2 || '',
+            street3: street3 || '',
+            city: city,
+            state: state,
+            zip: zip,
+            country: 'US',
+            phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
+            email: customer.email || ''
+          },
           parcels: [
             {
               length: package_details.length.toString(),
               width: package_details.width.toString(),
               height: package_details.height.toString(),
-              distanceUnit: 'in',   // Changed from distance_unit to distanceUnit
+              distanceUnit: 'in',
               weight: package_details.weight.toString(),
-              massUnit: 'lb',       // Changed from mass_unit to massUnit
-            },
+              massUnit: 'lb'
+            }
           ],
           async: false,
+          // Add test flag to the shipment creation
+          test: test_mode
         });
 
-        if (!shipment.rates || shipment.rates.length === 0) {
-          throw new Error('No shipping rates returned from Shippo');
+        console.log('Shipment created:', shipmentResponse.objectId);
+        console.log('Shipment response:', JSON.stringify(shipmentResponse, null, 2));
+
+        // Check if rates exist in the response
+        if (!shipmentResponse.rates || !Array.isArray(shipmentResponse.rates) || shipmentResponse.rates.length === 0) {
+          console.error('No shipping rates returned from Shippo:', shipmentResponse);
+          throw new Error('No shipping rates returned from Shippo. Please check address information and package details.');
         }
       } catch (error: unknown) {
         const shippoError = error as Error;
@@ -220,104 +175,119 @@ export async function POST(request: NextRequest) {
         throw new Error(`Shippo API error: ${shippoError.message || 'Unknown error'}`);
       }
 
-      // Select the first rate (cheapest) by default
-      const selectedRate = shipment.rates[0];
+      // Filter for USPS rates instead of taking the first one
+      const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
 
-// Create a transaction to purchase the label
-// Create a transaction to purchase the label
-let transaction;
-try {
-  transaction = await shippoClient.transactions.create({
-    rate: {
-      name: "Standard Mail",
-      object_id: selectedRate.object_id
-    },
-    carrier_account: selectedRate.carrier_account, // Use the carrier account from the selected rate
-    servicelevel_token: "STANDARD_MAIL", // As you mentioned to use Standard Mail
-    shipment: shipment.object_id, // Add the shipment object ID
-    label_file_type: 'PDF_4x6',
-    async: false,
-    metadata: `Order ID ${order._id}`,
-  });
+      // Check if we found any USPS rates
+      if (uspsRates.length === 0) {
+        console.error('No USPS rates found:', shipmentResponse.rates);
+        throw new Error('No USPS shipping rates available. Please check address information and package details.');
+      }
 
-  if (!transaction.label_url) {
-    throw new Error('No label URL returned from Shippo');
-  }
+      // Select the cheapest USPS rate
+      const selectedRate = uspsRates[0];
+      console.log('Selected USPS rate:', JSON.stringify(selectedRate, null, 2));
 
-  console.log('Transaction created successfully:', transaction);
-} catch (error: unknown) {
-  const transactionError = error as Error;
-  console.error('Shippo transaction error:', transactionError);
-  
-  // Create a placeholder transaction instead of throwing an error
-  transaction = {
-    object_id: `placeholder-${Date.now()}`,
-    status: 'SUCCESS',
-    label_url: 'https://example.com/test-label.pdf',
-    tracking_number: `TEST${Date.now()}`,
-    tracking_url_provider: 'https://example.com/track/TEST123456789',
-  };
-  
-  console.log('Using placeholder transaction data:', transaction);
-}
+      if (!selectedRate.objectId) {
+        console.error('Invalid rate object:', selectedRate);
+        throw new Error('Rate object does not have an objectId property');
+      }
 
-// Create shipping record in MongoDB
-const shippingRecord = new Shipping({
-  order_id: order._id,
-  address_from: {
-    name: 'Studio 26',
-    company: 'Your Company Name',
-    street1: '123 Main St',
-    street2: '',
-    street3: '',
-    city: 'Your City',
-    state: 'CA',
-    zip: '94107',
-    country: 'US',
-    phone: '555-555-5555',
-    email: 'your@email.com',
-    is_residential: false,
-    metadata: 'Store Address',
-  },
-  address_to: {
-    name: `${customer.first_name} ${customer.last_name}`,
-    company: '',
-    street1: street1,
-    street2: '',
-    street3: '',
-    city: city,
-    state: state,
-    zip: zip,
-    country: 'US',
-    phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
-    email: customer.email || '',
-    is_residential: true,
-    metadata: `Customer ID ${customer._id}`,
-  },
-  parcel: {
-    length: package_details.length,
-    width: package_details.width,
-    height: package_details.height,
-    distanceUnit: "in",
-    weight: package_details.weight,
-    massUnit: "lb",
-    template: "USPS_LargeFlatRateBox",
-    carrier: "USPS"
-  },
-  shipment: {
-    carrier_account: selectedRate.carrier_account, // Changed from carrier_account
-    servicelevel_token: "STANDARD_MAIL", // Changed from servicelevel_token
-    name: "Standard Mail", // Use Standard Mail as you requested
-    label_file_type: 'pdf',
-  },
-  transaction: {
-    shippo_id: transaction.object_id,
-    status: transaction.status,
-    label_url: transaction.label_url,
-    tracking_number: transaction.tracking_number,
-    tracking_url: transaction.tracking_url_provider,
-  },
-});
+      // Create a transaction to purchase the label
+      let transaction;
+      try {
+        // Use only the rate objectId - this is what Shippo requires according to the error
+        const transactionParams = {
+          rate: selectedRate.objectId,
+          label_file_type: 'PDF_A4',
+          async: false,
+          // Make sure test flag is consistent with shipment creation
+          test: test_mode
+        };
+        
+        console.log('Creating transaction with params:', JSON.stringify(transactionParams, null, 2));
+        
+        transaction = await shippoClient.transactions.create(transactionParams);
+
+        console.log('Transaction response:', JSON.stringify(transaction, null, 2));
+        
+        if (transaction.status !== 'SUCCESS' || !transaction.labelUrl) {
+          console.error('Transaction failed or missing label URL:', transaction);
+          throw new Error(transaction.messages ? transaction.messages[0]?.text || 'Label creation failed' : 'No label URL returned from Shippo');
+        }
+
+        console.log('Transaction created successfully:', transaction.objectId);
+      } catch (error: unknown) {
+        const transactionError = error as Error;
+        console.error('Shippo transaction error:', transactionError);
+        throw new Error(`Shippo transaction error: ${transactionError.message || 'Unknown error'}`);
+      }
+
+      // Create shipping record in MongoDB
+      const shippingRecord = new Shipping({
+        order_id: order._id,
+        address_from: {
+          name: 'Studio 26',
+          company: 'Your Company Name',
+          street1: '123 Main St',
+          street2: '',
+          street3: '',
+          city: 'Your City',
+          state: 'CA',
+          zip: '94107',
+          country: 'US',
+          phone: '555-555-5555',
+          email: 'your@email.com',
+          metadata: 'Store Address',
+        },
+        address_to: {
+          name: `${customer.first_name} ${customer.last_name}`,
+          company: '',
+          street1: street1,
+          street2: street2 || '',
+          street3: street3 || '',
+          city: city,
+          state: state,
+          zip: zip,
+          country: 'US',
+          phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
+          email: customer.email || '',
+          metadata: `Customer ID ${customer._id}`,
+        },
+        parcel: {
+          length: package_details.length,
+          width: package_details.width,
+          height: package_details.height,
+          distanceUnit: "in",
+          weight: package_details.weight,
+          massUnit: "lb"
+        },
+        shipment: {
+          carrier_account: selectedRate.carrierAccount || '',
+          servicelevel_token: selectedRate.servicelevel?.token || "",
+          name: selectedRate.servicelevel?.name || "Standard Mail",
+          //label_file_type: 'pdf_a4',
+          test: test_mode
+        },
+        transaction: {
+          shippo_id: transaction.objectId,
+          status: transaction.status,
+          label_url: transaction.labelUrl,
+          tracking_number: transaction.trackingNumber,
+          tracking_url: transaction.trackingUrlProvider,
+          rate: {
+            currency: selectedRate.currency || 'USD',
+            amount: parseFloat(selectedRate.amount) || 0,
+            provider: selectedRate.provider || ''
+          }
+        },
+        status_history: [{
+          status: 'created',
+          message: 'Shipping label created',
+          date: new Date()
+        }]
+      });
+      
       await shippingRecord.save();
 
       // Update the order with the shipping information
@@ -335,8 +305,8 @@ const shippingRecord = new Shipping({
       label_url: record.transaction?.label_url,
       tracking_number: record.transaction?.tracking_number,
       tracking_url_provider: record.transaction?.tracking_url,
-      rate: record.transaction?.rate,
       order_id: record.order_id,
+      test: record.shipment?.is_test
     }));
 
     return NextResponse.json(labelInfo[0], { status: 201 });
@@ -351,6 +321,8 @@ const shippingRecord = new Shipping({
 function parseAddressString(addressString: string) {
   const result = {
     street: '',
+    street2: '',
+    street3: '',
     city: '',
     state: '',
     zip: '',
@@ -359,23 +331,51 @@ function parseAddressString(addressString: string) {
 
   if (!addressString) return result;
 
-  const parts = addressString.split(',').map((part) => part.trim());
+  // Modified to handle potential line breaks or multi-line addresses
+  const parts = addressString.split(/[,\n]/).map((part) => part.trim()).filter(Boolean);
 
   if (parts.length === 1) {
     result.street = parts[0];
   } else if (parts.length === 2) {
     result.street = parts[0];
-    result.city = parts[1];
-  } else if (parts.length === 3) {
+    // Check if second part contains city, state, zip
+    const cityStateParts = parts[1].split(/\s+/);
+    if (cityStateParts.length > 2) {
+      result.city = cityStateParts.slice(0, -2).join(' ');
+      result.state = cityStateParts[cityStateParts.length - 2];
+      result.zip = cityStateParts[cityStateParts.length - 1];
+    } else {
+      result.city = parts[1];
+    }
+  } else if (parts.length >= 3) {
+    // Handle multi-line addresses
     result.street = parts[0];
-    result.city = parts[1];
-    result.state = parts[2];
-  } else if (parts.length >= 4) {
-    result.street = parts[0];
-    result.city = parts[1];
-    result.state = parts[2];
-    result.zip = parts[3];
-    result.country = parts.length >= 5 ? parts[4] : 'US';
+    
+    // Second line could be apt/suite or city
+    if (/apt|suite|#/i.test(parts[1])) {
+      result.street2 = parts[1];
+      
+      if (parts.length >= 4) {
+        result.city = parts[2];
+        // Last part could be "STATE ZIP" or just "STATE"
+        const stateZipParts = parts[3].split(/\s+/);
+        result.state = stateZipParts[0];
+        if (stateZipParts.length > 1) {
+          result.zip = stateZipParts[1];
+        }
+      }
+    } else {
+      result.city = parts[1];
+      result.state = parts[2];
+      if (parts.length >= 4) {
+        result.zip = parts[3];
+      }
+    }
+    
+    // If there's another part, treat it as country
+    if (parts.length >= 5) {
+      result.country = parts[4];
+    }
   }
 
   return result;

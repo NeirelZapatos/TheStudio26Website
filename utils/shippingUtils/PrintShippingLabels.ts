@@ -56,7 +56,7 @@ interface ShippoLabelRequest {
   shipment: {
     carrier_account: string;
     servicelevel_token: string;
-    label_file_type: 'pdf' | 'png';
+    label_file_type: 'PDF_A4';
   };
 }
 
