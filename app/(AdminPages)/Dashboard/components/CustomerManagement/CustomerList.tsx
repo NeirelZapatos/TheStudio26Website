@@ -70,7 +70,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
         </div>
         <input
           type="text"
-          placeholder="Search by name or email"
+          placeholder="Search by name, phone, or email"
           className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
           value={searchQuery}
           onChange={(e) => {
