@@ -120,26 +120,40 @@ export async function createShippingRecord(order: any, package_details: PackageD
     throw new Error(`Shippo API error: ${shippoError.message || 'Unknown error'}`);
   }
 
-  // Filter for USPS rates
-  const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
+  // In your existing filtered rates section, modify it to prioritize Ground Advantage
+const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
 
-  if (!uspsRates || uspsRates.length === 0) {
-    console.log('No USPS rates available, using first available rate');
-    if (!shipmentResponse.rates || shipmentResponse.rates.length === 0) {
-      console.log('Address data sent:', { street1, city, state, zip, country, phone: phoneStr });
-      console.error('No shipping rates returned from Shippo:', shipmentResponse);
-      throw new Error('No shipping rates returned from Shippo. Please check address information and package details.');
-    }
-  }
+// First look for Ground Advantage specifically
+const groundAdvantageRates = uspsRates.filter(rate => 
+  rate.servicelevel && rate.servicelevel.token === 'usps_ground_advantage'
+);
 
-  // Select the cheapest USPS rate or the first available rate
-  const selectedRate = uspsRates.length > 0 ? uspsRates[0] : shipmentResponse.rates[0];
-  console.log('Selected rate:', JSON.stringify(selectedRate, null, 2));
+// Sort by price (lowest first) if we have multiple Ground Advantage options
+if (groundAdvantageRates.length > 0) {
+  groundAdvantageRates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+}
 
-  if (!selectedRate.objectId) {
-    console.error('Invalid rate object:', selectedRate);
-    throw new Error('Rate object does not have an objectId property');
-  }
+// If no Ground Advantage, sort all USPS rates by price
+if (uspsRates.length > 0) {
+  uspsRates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+}
+
+// Select the rate in priority order: cheapest Ground Advantage -> cheapest USPS -> cheapest any carrier
+let selectedRate;
+if (groundAdvantageRates.length > 0) {
+  selectedRate = groundAdvantageRates[0]; // Cheapest Ground Advantage
+  console.log('Selected USPS Ground Advantage rate');
+} else if (uspsRates.length > 0) {
+  selectedRate = uspsRates[0]; // Cheapest USPS
+  console.log('Ground Advantage not available, using cheapest USPS rate');
+} else {
+  // If no USPS rates, sort all rates by price
+  shipmentResponse.rates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+  selectedRate = shipmentResponse.rates[0]; // Cheapest of any carrier
+  console.log('No USPS rates available, using cheapest available rate');
+}
+
+console.log('Selected rate:', JSON.stringify(selectedRate, null, 2));
 
   // Create a transaction to purchase the label
   let transaction;
