@@ -77,57 +77,62 @@ export async function POST(request: NextRequest) {
         street3 = '',
         city = '',
         state = '',
-        zip = '';
+        zip = '',
+        country = 'US'; // Default to US
 
-      if (order.shipping_address) {
-        const addressParts = parseAddressString(order.shipping_address);
+      if (order?.shipping_address) {
+        const addressParts = parseAddressString(order?.shipping_address);
         street1 = addressParts.street || '';
+        street2 = addressParts.street2 || '';
+        street3 = addressParts.street3 || '';
         city = addressParts.city || '';
-        state = addressParts.state || 'CA';
-        zip = addressParts.zip || '00000';
-      } else if (customer?.shipping_address) {
-        const addressParts = parseAddressString(customer.shipping_address);
-        street1 = addressParts.street || '';
-        city = addressParts.city || '';
-        state = addressParts.state || 'CA';
-        zip = addressParts.zip || '00000';
-      }
-
-      // Fallback to fromAddress if available
-      if (!street1 && order.shippingDetails?.fromAddress?.street) {
-        street1 = order.shippingDetails.fromAddress.street;
-      }
-      if (!city && order.shippingDetails?.fromAddress?.city) {
-        city = order.shippingDetails.fromAddress.city;
-      }
-      if (!state || state === 'N/A') {
-        state = order.shippingDetails?.fromAddress?.state || 'CA';
-        if (state.length !== 2) {
-          state = 'CA';
+        state = addressParts.state || '';
+        zip = addressParts.zip || '';
+        country = addressParts.country || 'US';
+        
+        // Add detailed console logging for debugging
+        console.log('====== ADDRESS PARSING DEBUG ======');
+        console.log('Original shipping_address:', order.shipping_address);
+        console.log('Parsed components:', { street1, street2, street3, city, state, zip, country });
+        console.log('==================================');
+        
+        // If any critical address components are missing, log a warning
+        if (!street1 || !city || !state || !zip) {
+          console.warn('⚠️ INCOMPLETE ADDRESS DETECTED:', { street1, city, state, zip });
         }
-      }
-      if (!zip && order.shippingDetails?.fromAddress?.postalCode) {
-        zip = order.shippingDetails.fromAddress.postalCode;
+      } 
+
+      // Validate required address fields before proceeding
+      if (!street1 || !city || !state || !zip) {
+        const missingFields = [];
+        if (!street1) missingFields.push('street address');
+        if (!city) missingFields.push('city');
+        if (!state) missingFields.push('state');
+        if (!zip) missingFields.push('ZIP code');
+        
+        const errorMessage = `Cannot create shipping label: Missing required address fields (${missingFields.join(', ')})`;
+        console.error(errorMessage, { 
+          orderId: order._id,
+          customerName: `${customer.first_name} ${customer.last_name}`,
+          parsedAddress: { street1, street2, city, state, zip, country }
+        });
+        
+        throw new Error(errorMessage);
       }
 
-      // Fallback values for required fields
-      street1 = street1 || 'Address not provided';
-      city = city || 'City not provided';
-      state = state || 'CA';
-      zip = zip || '00000';
+      // Ensure phone number is a string
+      const phoneStr = customer.phone_number ? String(customer.phone_number) : '';
 
       // Create shipment with error handling
       let shipmentResponse;
       try {
-        // Use camelCase for addressFrom and addressTo
         shipmentResponse = await shippoClient.shipments.create({
           addressFrom: {
-            name: 'Studio 26',
-            company: 'Your Company Name',
+            name: 'Owner Name',
+            company: 'The Studio 26',
             street1: '123 Main St',
             street2: '',
-            street3: '',
-            city: 'Your City',
+            city: 'Sacramento',
             state: 'CA',
             zip: '94107',
             country: 'US',
@@ -137,13 +142,12 @@ export async function POST(request: NextRequest) {
           addressTo: {
             name: `${customer.first_name} ${customer.last_name}`,
             street1: street1,
-            street2: street2 || '',
-            street3: street3 || '',
+            street2: street2,
             city: city,
             state: state,
             zip: zip,
-            country: 'US',
-            phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
+            country: country,
+            phone: phoneStr, // Using string version of phone
             email: customer.email || ''
           },
           parcels: [
@@ -157,7 +161,6 @@ export async function POST(request: NextRequest) {
             }
           ],
           async: false,
-          // Add test flag to the shipment creation
           test: test_mode
         });
 
@@ -178,15 +181,19 @@ export async function POST(request: NextRequest) {
       // Filter for USPS rates instead of taking the first one
       const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
 
-      // Check if we found any USPS rates
-      if (uspsRates.length === 0) {
-        console.error('No USPS rates found:', shipmentResponse.rates);
-        throw new Error('No USPS shipping rates available. Please check address information and package details.');
+      if (!uspsRates || uspsRates.length === 0) {
+        // If no USPS rates are available, use the first available rate from any carrier
+        console.log('No USPS rates available, using first available rate');
+        if (!shipmentResponse.rates || shipmentResponse.rates.length === 0) {
+          console.log('Address data sent:', { street1, city, state, zip, country, phone: phoneStr });
+          console.error('No shipping rates returned from Shippo:', shipmentResponse);
+          throw new Error('No shipping rates returned from Shippo. Please check address information and package details.');
+        }
       }
 
-      // Select the cheapest USPS rate
-      const selectedRate = uspsRates[0];
-      console.log('Selected USPS rate:', JSON.stringify(selectedRate, null, 2));
+      // Select the cheapest USPS rate or the first available rate
+      const selectedRate = uspsRates.length > 0 ? uspsRates[0] : shipmentResponse.rates[0];
+      console.log('Selected rate:', JSON.stringify(selectedRate, null, 2));
 
       if (!selectedRate.objectId) {
         console.error('Invalid rate object:', selectedRate);
@@ -201,7 +208,6 @@ export async function POST(request: NextRequest) {
           rate: selectedRate.objectId,
           label_file_type: 'PDF_A4',
           async: false,
-          // Make sure test flag is consistent with shipment creation
           test: test_mode
         };
         
@@ -231,7 +237,6 @@ export async function POST(request: NextRequest) {
           company: 'Your Company Name',
           street1: '123 Main St',
           street2: '',
-          street3: '',
           city: 'Your City',
           state: 'CA',
           zip: '94107',
@@ -249,8 +254,8 @@ export async function POST(request: NextRequest) {
           city: city,
           state: state,
           zip: zip,
-          country: 'US',
-          phone: customer.phone_number ? customer.phone_number.toString() : '000-000-0000',
+          country: country,
+          phone: String(customer.phone_number || ''), // Convert to string
           email: customer.email || '',
           metadata: `Customer ID ${customer._id}`,
         },
@@ -266,7 +271,6 @@ export async function POST(request: NextRequest) {
           carrier_account: selectedRate.carrierAccount || '',
           servicelevel_token: selectedRate.servicelevel?.token || "",
           name: selectedRate.servicelevel?.name || "Standard Mail",
-          //label_file_type: 'pdf_a4',
           test: test_mode
         },
         transaction: {
@@ -306,7 +310,7 @@ export async function POST(request: NextRequest) {
       tracking_number: record.transaction?.tracking_number,
       tracking_url_provider: record.transaction?.tracking_url,
       order_id: record.order_id,
-      test: record.shipment?.is_test
+      test: record.shipment?.test
     }));
 
     return NextResponse.json(labelInfo[0], { status: 201 });
@@ -326,13 +330,17 @@ function parseAddressString(addressString: string) {
     city: '',
     state: '',
     zip: '',
-    country: 'US',
+    country: 'US', // Default to US
   };
 
   if (!addressString) return result;
 
+  // Log the original address string for debugging
+  console.log('Original address string:', addressString);
+
   // Modified to handle potential line breaks or multi-line addresses
   const parts = addressString.split(/[,\n]/).map((part) => part.trim()).filter(Boolean);
+  console.log('Parsed address parts:', parts);
 
   if (parts.length === 1) {
     result.street = parts[0];
@@ -377,6 +385,10 @@ function parseAddressString(addressString: string) {
       result.country = parts[4];
     }
   }
-
+  
+  // Log the parsed result for debugging
+  console.log('Parsed address result:', result);
+  
   return result;
 }
+

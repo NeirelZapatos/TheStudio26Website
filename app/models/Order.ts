@@ -14,6 +14,7 @@ export interface IOrder extends Document {
     payment_method?: string;
     order_status?: 'pending' | 'pickup' | 'shipped' | 'delivered' | 'fulfilled';
     billing_address?: string;
+    shipping_address?: string;
     customer?: ICustomer;
     courses?: ICourse;
     products?: { product: IItem; quantity: number }[];
@@ -51,6 +52,10 @@ const orderSchema: Schema = new mongoose.Schema({
         required: true,
     },
     billing_address: {
+        type: String,
+        required: true
+    },
+    shipping_address: {
         type: String,
         required: true
     },
