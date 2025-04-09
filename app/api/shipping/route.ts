@@ -78,28 +78,23 @@ export async function POST(request: NextRequest) {
         city = '',
         state = '',
         zip = '',
-        country = 'US'; // Default to US
+        country = '';
 
       if (order?.shipping_address) {
         const addressParts = parseAddressString(order?.shipping_address);
-        street1 = addressParts.street || '';
-        street2 = addressParts.street2 || '';
-        street3 = addressParts.street3 || '';
-        city = addressParts.city || '';
-        state = addressParts.state || '';
-        zip = addressParts.zip || '';
-        country = addressParts.country || 'US';
+        street1 = addressParts.street;
+        street2 = addressParts.street2;
+        street3 = addressParts.street3;
+        city = addressParts.city;
+        state = addressParts.state;
+        zip = addressParts.zip;
+        country = addressParts.country;
         
         // Add detailed console logging for debugging
         console.log('====== ADDRESS PARSING DEBUG ======');
         console.log('Original shipping_address:', order.shipping_address);
         console.log('Parsed components:', { street1, street2, street3, city, state, zip, country });
         console.log('==================================');
-        
-        // If any critical address components are missing, log a warning
-        if (!street1 || !city || !state || !zip) {
-          console.warn('⚠️ INCOMPLETE ADDRESS DETECTED:', { street1, city, state, zip });
-        }
       } 
 
       // Validate required address fields before proceeding
@@ -147,7 +142,7 @@ export async function POST(request: NextRequest) {
             state: state,
             zip: zip,
             country: country,
-            phone: phoneStr, // Using string version of phone
+            phone: phoneStr,
             email: customer.email || ''
           },
           parcels: [
@@ -178,11 +173,10 @@ export async function POST(request: NextRequest) {
         throw new Error(`Shippo API error: ${shippoError.message || 'Unknown error'}`);
       }
 
-      // Filter for USPS rates instead of taking the first one
+      // Filter for USPS rates
       const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
 
       if (!uspsRates || uspsRates.length === 0) {
-        // If no USPS rates are available, use the first available rate from any carrier
         console.log('No USPS rates available, using first available rate');
         if (!shipmentResponse.rates || shipmentResponse.rates.length === 0) {
           console.log('Address data sent:', { street1, city, state, zip, country, phone: phoneStr });
@@ -255,7 +249,7 @@ export async function POST(request: NextRequest) {
           state: state,
           zip: zip,
           country: country,
-          phone: String(customer.phone_number || ''), // Convert to string
+          phone: String(customer.phone_number || ''),
           email: customer.email || '',
           metadata: `Customer ID ${customer._id}`,
         },
@@ -330,7 +324,7 @@ function parseAddressString(addressString: string) {
     city: '',
     state: '',
     zip: '',
-    country: 'US', // Default to US
+    country: 'US', // Default to US as fallback
   };
 
   if (!addressString) return result;
@@ -391,4 +385,3 @@ function parseAddressString(addressString: string) {
   
   return result;
 }
-
