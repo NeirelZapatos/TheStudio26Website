@@ -39,6 +39,15 @@ export default function Page() {
         </button>
       </div>
 
+      {/* Management Portal Link */}
+      <div className="text-center mt-2">
+        <Link href="/OpenLab/subscription/portal">
+          <span className="text-blue-600 text-sm hover:underline cursor-pointer">
+            Already subscribed? Manage your subscription
+          </span>
+        </Link>
+      </div>
+
       {/* Cards */}
       <div className="flex justify-center mb-8">
         {activeTab === "individual" ? (
@@ -67,14 +76,13 @@ export default function Page() {
           </div>
         ) : (
           <div className="mt-8">
-            <Link href="/OpenLab/SubscriptionCheckout">
-              <MonthlyCard
-                title="Silver Lab Bundle"
-                imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
-                price={100}
-                description="Studio 26 access, 6 benches, tools. 4-hour sessions, alumni only. BYO materials, torch & butane."
-              />
-            </Link>
+            <MonthlySubscriptionCard
+              id="67edc949208b99bf25cd4da0"
+              title="Silver Lab Bundle"
+              imageUrl="https://static.wixstatic.com/media/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png/v1/fill/w_363,h_363,fp_0.50_0.50,lg_1,q_85,enc_auto/704f16_7c79111720ea4feb8fcdc17cb2171143~mv2.png"
+              price={100}
+              description="Studio 26 access, 6 benches, tools. 4-hour sessions, alumni only. BYO materials, torch & butane."
+            />
           </div>
         )}
       </div>
@@ -104,12 +112,13 @@ const Card: React.FC<{ title: string; imageUrl: string; price: number }> = ({
   </div>
 );
 
-const MonthlyCard: React.FC<{
+const MonthlySubscriptionCard: React.FC<{
+  id: string;
   title: string;
   imageUrl: string;
   price: number;
   description: string;
-}> = ({ title, imageUrl, price, description }) => (
+}> = ({ id, title, imageUrl, price, description }) => (
   <div className="border border-gray-300 rounded-lg overflow-hidden w-80 p-4 mx-auto my-auto">
     <div className="w-full h-60 bg-gray-100 flex items-center justify-center">
       <img
@@ -124,6 +133,11 @@ const MonthlyCard: React.FC<{
       <h3 className="text-lg text-gray-600">{title}</h3>
       <p className="text-sm text-gray-500 mt-1">{description}</p>
       <p className="text-black mt-2 font-bold">${price}/month</p>
+      <Link href={`/OpenLab/subscription-checkout?id=${id}`}>
+        <button className="mt-4 w-full bg-black text-white py-2 rounded hover:bg-gray-800">
+          Subscribe
+        </button>
+      </Link>
     </div>
   </div>
 );

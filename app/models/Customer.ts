@@ -11,7 +11,7 @@ export interface ICustomer {
     billing_address?: string;
     orders?: Types.ObjectId[];
     courses?: Types.ObjectId[];
-
+    labs?: Types.ObjectId[]; 
     // For subscription
     stripe_customer_id?: string;
     has_active_subscription?: boolean;
@@ -43,7 +43,10 @@ const customerSchema: Schema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Course'
     }],
-
+    labs: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Order' // Reference to the same Order model but specifically for lab bookings
+    }],
     // ! subscription-related fields
     stripe_customer_id: {
         type: String,
