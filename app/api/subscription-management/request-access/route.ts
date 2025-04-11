@@ -60,18 +60,43 @@ export async function POST(request: Request) {
     // Get the origin for the management URL
     const origin = request.headers.get('origin') || 'http://localhost:3000';
 
-    // Process each subscription to generate new management tokens
+    // Process each subscription
     for (const subscription of subscriptions) {
-      // ALWAYS generate a new token, regardless if one already exists
-      const managementToken = crypto.createHash('sha256')
-        .update(`${subscription.customer_id || subscription._id}:${subscription._id}:${Date.now()}:${Math.random()}:${process.env.TOKEN_SECRET || 'fallback-secret'}`)
-        .digest('hex');
+      // Check if there's already a valid token that's not expired (less than 24 hours old)
+      let managementToken = subscription.management_token;
+      let tokenCreatedAt = subscription.token_created_at;
+      let shouldGenerateNewToken = true;
 
-      // Store the token with the subscription
-      await subscriptionsCollection.updateOne(
-        { _id: subscription._id },
-        { $set: { management_token: managementToken, token_created_at: new Date() } }
-      );
+      // Only generate a new token if the current one is expired or doesn't exist
+      if (managementToken && tokenCreatedAt) {
+        const tokenDate = new Date(tokenCreatedAt);
+        const now = new Date();
+        const tokenAge = now.getTime() - tokenDate.getTime();
+        const TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+        if (tokenAge < TOKEN_EXPIRY) {
+          // Token is still valid, use the existing one
+          shouldGenerateNewToken = false;
+          console.log(`Using existing valid token for subscription ID: ${subscription._id}`);
+        }
+      }
+
+      // Generate a new token only if needed
+      if (shouldGenerateNewToken) {
+        managementToken = crypto.createHash('sha256')
+          .update(`${subscription.customer_id || subscription._id}:${subscription._id}:${Date.now()}:${Math.random()}:${process.env.TOKEN_SECRET || 'fallback-secret'}`)
+          .digest('hex');
+
+        tokenCreatedAt = new Date();
+
+        // Store the new token with the subscription
+        await subscriptionsCollection.updateOne(
+          { _id: subscription._id },
+          { $set: { management_token: managementToken, token_created_at: tokenCreatedAt } }
+        );
+
+        console.log(`Generated new token for subscription ID: ${subscription._id}`);
+      }
 
       // Generate the management URL
       const managementUrl = `${origin}/OpenLab/subscription/manage?token=${managementToken}`;
@@ -120,5 +145,44 @@ export async function POST(request: Request) {
       { error: err instanceof Error ? err.message : 'An unknown error occurred' },
       { status: 500 }
     );
+  }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get('token');
+
+  if (!token) {
+    return NextResponse.json({ error: 'Token required' }, { status: 400 });
+  }
+
+  try {
+    const { client, dbName } = await connectToDatabase();
+    const db = client.db(dbName);
+    const subscriptionsCollection = db.collection("subscriptions");
+
+    // Find subscription by token
+    const subscription = await subscriptionsCollection.findOne({ management_token: token });
+
+    if (!subscription) {
+      return NextResponse.json({ error: 'Token not found', success: false }, { status: 404 });
+    }
+
+    // Return token info for debugging
+    return NextResponse.json({
+      success: true,
+      token_info: {
+        subscription_id: subscription._id.toString(),
+        token_created_at: subscription.token_created_at,
+        current_time: new Date(),
+        token_age_ms: subscription.token_created_at ?
+          (new Date().getTime() - new Date(subscription.token_created_at).getTime()) : 'unknown'
+      }
+    });
+  } catch (err) {
+    return NextResponse.json({
+      error: 'Token check failed',
+      details: err instanceof Error ? err.message : 'An unknown error occurred'
+    }, { status: 500 });
   }
 }

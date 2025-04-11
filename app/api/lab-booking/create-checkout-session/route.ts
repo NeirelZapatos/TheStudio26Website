@@ -63,8 +63,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No booking data provided' }, { status: 400 });
     }
 
-    if (!firstName || !lastName) {
-      return NextResponse.json({ error: "Customer name is required" }, { status: 400 });
+    // Only require names if there's rental equipment or comments
+    if ((labBooking.rentalEquipment?.length > 0 || labBooking.comments) && (!firstName || !lastName)) {
+      return NextResponse.json({ error: "Customer name is required when renting equipment or adding special requests" }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -144,8 +145,8 @@ export async function POST(request: Request) {
       billing_address_collection: 'required',
       metadata: {
         customerId: customer ? customer._id.toString() : '',
-        firstName,
-        lastName,
+        firstName: firstName || '',
+        lastName: lastName || '',
         labId: labBooking.labId,
         participants: labBooking.quantity.toString(),
         ...(email && { email }),
@@ -159,8 +160,18 @@ export async function POST(request: Request) {
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes expiration
     };
 
+    const hasCustomerInfo = firstName && lastName;
+
     if (email) {
       sessionParams.customer_email = email;
+    }
+
+    // Determine which fields need to be collected in the checkout
+    if (!hasCustomerInfo) {
+      sessionParams.billing_address_collection = 'required';
+      sessionParams.customer_creation = 'always';
+    } else {
+      sessionParams.billing_address_collection = 'required';
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -390,7 +401,10 @@ export async function GET(request: Request) {
       await customersCollection.updateOne(
         { _id: new ObjectId(customer._id) },
         {
-          $addToSet: { orders: orderId.toString() },
+          $addToSet: { 
+            orders: orderId.toString(),
+            labs: new ObjectId(labId)
+           },
           $set: { updatedAt: new Date() }
         }
       );

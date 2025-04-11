@@ -31,7 +31,7 @@ async function connectToDatabase() {
 
 export async function POST(request: Request) {
   try {
-    const { token, cancelImmediately = false } = await request.json();
+    const { token } = await request.json();
 
     if (!token) {
       return NextResponse.json({ error: 'Management token is required' }, { status: 400 });
@@ -58,11 +58,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Management link has expired. Please request a new one.' }, { status: 401 });
     }
 
-    // Cancel the subscription in Stripe
-    // If cancelImmediately is true, cancel now; otherwise, cancel at period end
+    // Cancel the subscription in Stripe at period end only
     const stripeSubscription = await stripe.subscriptions.update(subscription.stripe_subscription_id, {
-      cancel_at_period_end: !cancelImmediately,
-      ...(cancelImmediately && { status: 'canceled' })
+      cancel_at_period_end: true
     });
 
     // Update subscription in the database
@@ -77,25 +75,11 @@ export async function POST(request: Request) {
       }
     );
 
-    // If canceled immediately, update customer's has_active_subscription flag
-    if (cancelImmediately && stripeSubscription.status === 'canceled') {
-      await Customer.findByIdAndUpdate(
-        subscription.customer_id,
-        { 
-          $set: { 
-            has_active_subscription: false,
-            updatedAt: new Date()
-          }
-        }
-      );
-    }
-
     // Get origin for email links
     const origin = request.headers.get('origin') || 'http://localhost:3000';
     
     // Send cancellation confirmation email
     try {
-      const cancelType = cancelImmediately ? 'immediately' : 'at the end of your billing period';
       const endDate = new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString();
       
       await sendEmail(
@@ -106,16 +90,12 @@ export async function POST(request: Request) {
             <h1 style="color: #333; font-size: 24px;">Subscription Cancellation</h1>
             <p>Hello ${subscription.first_name},</p>
             
-            <p>We've processed your request to cancel your <strong>${subscription.name || subscription.subscription_name}</strong> subscription ${cancelType}.</p>
+            <p>We've processed your request to cancel your <strong>${subscription.name || subscription.subscription_name}</strong> subscription at the end of your billing period.</p>
             
             <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #dee2e6;">
               <p><strong>Cancellation Details:</strong></p>
-              ${
-                cancelImmediately 
-                  ? `<p>Your subscription has been canceled immediately. You no longer have access to subscription benefits.</p>` 
-                  : `<p>Your subscription will remain active until the end of your current billing period (${endDate}).</p>
-                     <p>You'll continue to have access to all subscription benefits until that date.</p>`
-              }
+              <p>Your subscription will remain active until the end of your current billing period (${endDate}).</p>
+              <p>You'll continue to have access to all subscription benefits until that date.</p>
             </div>
             
             <p>We're sorry to see you go! If you change your mind, you can always subscribe again from our website:</p>
@@ -139,9 +119,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: cancelImmediately 
-        ? 'Your subscription has been canceled immediately.' 
-        : 'Your subscription will be canceled at the end of your current billing period.',
+      message: 'Your subscription will be canceled at the end of your current billing period.',
       subscription: {
         status: stripeSubscription.status,
         cancel_at_period_end: stripeSubscription.cancel_at_period_end,

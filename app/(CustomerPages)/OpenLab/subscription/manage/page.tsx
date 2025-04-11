@@ -30,7 +30,6 @@ export default function ManageSubscriptionPage() {
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [cancelOption, setCancelOption] = useState<'end_of_period' | 'immediately'>('end_of_period');
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export default function ManageSubscriptionPage() {
         },
         body: JSON.stringify({
           token,
-          cancelImmediately: cancelOption === 'immediately'
+          cancelImmediately: false // Always set to false to only cancel at end of period
         }),
       });
 
@@ -211,7 +210,7 @@ export default function ManageSubscriptionPage() {
         </button>
       </Link>
       
-      {/* Cancel Modal */}
+      {/* Cancel Modal - Simplified to only show end of period option */}
       {cancelModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -220,30 +219,9 @@ export default function ManageSubscriptionPage() {
               Are you sure you want to cancel your {subscription.name} subscription?
             </p>
             
-            <div className="mb-4">
-              <label className="flex items-center mb-2">
-                <input
-                  type="radio"
-                  name="cancelOption"
-                  value="end_of_period"
-                  checked={cancelOption === 'end_of_period'}
-                  onChange={() => setCancelOption('end_of_period')}
-                  className="mr-2"
-                />
-                <span>Cancel at end of billing period ({formatDate(subscription.current_period_end)})</span>
-              </label>
-              
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="cancelOption"
-                  value="immediately"
-                  checked={cancelOption === 'immediately'}
-                  onChange={() => setCancelOption('immediately')}
-                  className="mr-2"
-                />
-                <span>Cancel immediately (no refund)</span>
-              </label>
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <p>Your subscription will be canceled at the end of your current billing period ({formatDate(subscription.current_period_end)}).</p>
+              <p className="mt-2">You will continue to have access to all subscription benefits until that date.</p>
             </div>
             
             <div className="flex justify-end space-x-3">

@@ -7,6 +7,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css"; // Import default styles
 import Image from "next/image";
 import Link from "next/link";
+import { set } from "mongoose";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
@@ -222,35 +223,36 @@ const Page = () => {
     const additionalItems = showAdditionalInputs ? selectedItems : [];
     const additionalComments = showAdditionalInputs ? comments : "";
 
-    // ! Uncomment this
+    setIsProcessing(true);
+
     // Send email if additional details exist.
-    // if (
-    //   showAdditionalInputs &&
-    //   (additionalItems.length > 0 || additionalComments.trim().length > 0)
-    // ) {
-    //   const emailPayload = {
-    //     labId: selectedLab._id,
-    //     labName: selectedLab.name,
-    //     bookingDate: format(date, "yyyy-MM-dd"),
-    //     quantity,
-    //     selectedItems,
-    //     comments: additionalComments,
-    //     total: finalTotal,
-    //     customerName: `${firstName} ${lastName}`,
-    //   };
-    //   try {
-    //     const emailResponse = await fetch("/api/sendBookingEmail", {
-    //       method: "POST",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify(emailPayload),
-    //     });
-    //     if (!emailResponse.ok) {
-    //       console.error("Email sending failed", await emailResponse.json());
-    //     }
-    //   } catch (error) {
-    //     console.error("Error sending booking email:", error);
-    //   }
-    // }
+    if (
+      showAdditionalInputs &&
+      (additionalItems.length > 0 || additionalComments.trim().length > 0)
+    ) {
+      const emailPayload = {
+        labId: selectedLab._id,
+        labName: selectedLab.name,
+        bookingDate: format(date, "yyyy-MM-dd"),
+        quantity,
+        selectedItems,
+        comments: additionalComments,
+        total: finalTotal,
+        customerName: `${firstName} ${lastName}`,
+      };
+      try {
+        const emailResponse = await fetch("/api/sendBookingEmail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(emailPayload),
+        });
+        if (!emailResponse.ok) {
+          console.error("Email sending failed", await emailResponse.json());
+        }
+      } catch (error) {
+        console.error("Error sending booking email:", error);
+      }
+    }
 
     const contactInfo = {
       firstName: showAdditionalInputs ? firstName : "",
@@ -510,6 +512,9 @@ const Page = () => {
                           setShowAdditionalInputs(false);
                           setSelectedItems([]);
                           setComments("");
+                          setFirstName("");
+                          setLastName("");
+                          setNameError("");
                         }}
                         className="mr-2"
                       />
@@ -831,6 +836,7 @@ const Page = () => {
                     type="button"
                     className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     onClick={handleSubmit}
+                    disabled={isProcessing}
                   >
                     Proceed to Checkout
                   </button>
