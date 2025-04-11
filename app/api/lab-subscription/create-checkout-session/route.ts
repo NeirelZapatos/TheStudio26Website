@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     const { client, dbName } = await connectToDatabase();
     const db = client.db(dbName);
     const subscriptionPlansCollection = db.collection("subscription_plans");
+    const subscriptionsCollection = db.collection("subscriptions");
 
     // Find the subscription plan
     const subscriptionPlan = await subscriptionPlansCollection.findOne({
@@ -92,6 +93,41 @@ export async function POST(request: Request) {
 
     if (customer) {
       customerId = customer._id.toString();
+
+      // Check if customer already has an active subscription to this plan
+      const existingSubscription = await subscriptionsCollection.findOne({
+        customer_id: new ObjectId(customerId),
+        subscription_plan_id: new ObjectId(subscriptionInfo.subscriptionId),
+        status: { $in: ['active', 'trialing'] }
+      });
+
+      if (existingSubscription) {
+        // Generate management URL for existing subscription
+        const origin = request.headers.get('origin') || 'http://localhost:3000';
+        let managementToken = existingSubscription.management_token;
+
+        // Generate a new token if none exists
+        if (!managementToken) {
+          managementToken = crypto.createHash('sha256')
+            .update(`${customer._id}:${existingSubscription.stripe_subscription_id}:${Date.now()}:${Math.random()}:${process.env.TOKEN_SECRET || 'fallback-secret'}`)
+            .digest('hex');
+
+          // Update the token
+          await subscriptionsCollection.updateOne(
+            { _id: existingSubscription._id },
+            { $set: { management_token: managementToken, token_created_at: new Date() } }
+          );
+        }
+
+        const managementUrl = `${origin}/OpenLab/subscription/manage?token=${managementToken}`;
+
+        return NextResponse.json({
+          error: "You already have an active subscription to this plan",
+          status: "already_subscribed",
+          managementUrl: managementUrl,
+          subscriptionId: existingSubscription._id.toString()
+        }, { status: 400 });
+      }
 
       // Update customer information if needed
       await Customer.updateOne(
@@ -238,8 +274,36 @@ export async function GET(request: Request) {
     const customerName = session.customer_details?.name?.split(" ") || [];
     const firstName = customerName[0] || session.metadata?.firstName || "";
     const lastName = customerName.slice(1).join(" ") || session.metadata?.lastName || "";
+    const subscriptionPlanId = session.metadata?.subscriptionId;
 
     if (customer) {
+      // Check for existing active subscription to the same plan before processing
+      if (subscriptionPlanId) {
+        const existingActiveSub = await subscriptionsCollection.findOne({
+          customer_id: new ObjectId(customer._id),
+          subscription_plan_id: new ObjectId(subscriptionPlanId),
+          status: { $in: ['active', 'trialing'] }
+        });
+
+        if (existingActiveSub) {
+          console.log(`Customer ${customer._id} already has active subscription to plan ${subscriptionPlanId}`);
+
+          // Generate management URL
+          const origin = request.headers.get('origin') || 'http://localhost:3000';
+          const managementUrl = existingActiveSub.management_token
+            ? `${origin}/OpenLab/subscription/manage?token=${existingActiveSub.management_token}`
+            : null;
+
+          return NextResponse.json({
+            success: false,
+            error: "You already have an active subscription to this plan",
+            status: "already_subscribed",
+            existingSubscriptionId: existingActiveSub._id.toString(),
+            managementUrl
+          }, { status: 400 });
+        }
+      }
+
       // Update existing customer with verified info
       await Customer.findByIdAndUpdate(
         customer._id,
@@ -311,7 +375,7 @@ export async function GET(request: Request) {
         stripe_subscription_id: stripeSubscriptionId,
         customer_id: new ObjectId(customer._id),
         subscription_date: new Date(),
-        subscription_plan_id: new ObjectId(session.metadata?.subscriptionId || ""), 
+        subscription_plan_id: new ObjectId(session.metadata?.subscriptionId || ""),
         subscription_name: session.metadata?.subscriptionName || "Lab Subscription",
         status: subscription.status,
         current_period_end: new Date(subscription.current_period_end * 1000),
@@ -337,7 +401,7 @@ export async function GET(request: Request) {
 
       const subscriptionId = result.insertedId;
       console.log("Subscription saved with ID:", subscriptionId.toString());
-      
+
       // Update customer with subscription ID and set active subscription flag
       await Customer.findByIdAndUpdate(
         customer._id,

@@ -53,7 +53,6 @@ const subscriptionSchema: Schema = new mongoose.Schema({
     stripeProductId: {
         type: String,
         required: true,
-        unique: true,
     },
     stripePriceId: {
         type: String,
