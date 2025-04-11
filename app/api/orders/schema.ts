@@ -12,7 +12,7 @@ const objectIdSchema = z
 // Zod schema for Order model
 const schema = z.object({
   customer_id: objectIdSchema,
-  product_items: z.array(objectIdSchema),
+  // product_items: z.array(objectIdSchema),
   course_items: z.array(objectIdSchema),
   order_date: z.date(),
   // order_date: z.string(),

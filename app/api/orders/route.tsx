@@ -68,29 +68,30 @@ export async function POST(request: NextRequest) {
         for(let i = 0; i < body.product_items.length; i++) {
             const productId = body.product_items[i];
             const item = await Item.findById(productId);
-            total_amount += item.price;
+            total_amount += Number(item.price);
         }
 
         for(let i = 0; i < body.course_items.length; i++) {
             const courseId = body.course_items[i];
             const course = await Course.findById(courseId);
-            total_amount += course.price;
+            total_amount += Number(course.price);
         }
 
         body.total_amount = total_amount;
+        // console.log(`Total Amount Type: ${typeof total_amount}`)
 
         const newOrder = new Order(body);
         await newOrder.save();
 
         // Send order confirmation email
-        await sendOrderEmail(
-            body.customer_email,
-            newOrder._id.toString(),
-            body.product_items,
-            body.course_items,
-            //total_amount, //reading it as string despite being input as Number in mailer.ts
-            body.order_date
-        );
+        // await sendOrderEmail(
+        //     body.customer_email,
+        //     newOrder._id.toString(),
+        //     body.product_items,
+        //     body.course_items,
+        //     total_amount, //reading it as string despite being input as Number in mailer.ts
+        //     body.order_date
+        // );
 
         return NextResponse.json(newOrder, { status: 201 });
 

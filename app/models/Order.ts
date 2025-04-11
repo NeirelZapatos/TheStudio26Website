@@ -97,18 +97,18 @@ const orderSchema: Schema = new mongoose.Schema({
         type: String,
         required: true
     },
-    products: {
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1
-        }
-    },
+    // products: {
+    //     product: {
+    //         type: Schema.Types.ObjectId,
+    //         ref: 'Product',
+    //         required: true
+    //     },
+    //     quantity: {
+    //         type: Number,
+    //         required: true,
+    //         min: 1
+    //     }
+    // },
     shippingDetails: {
         fromAddress: {
             name: { type: String, default: '' },
