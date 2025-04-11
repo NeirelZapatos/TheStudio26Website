@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const subscriptionsCollection = db.collection("subscriptions");
 
     // Find all subscriptions for this email
-    const subscriptions = await subscriptionsCollection.find({ 
+    const subscriptions = await subscriptionsCollection.find({
       $or: [
         { customer_email: email.toLowerCase() },
         { email: email.toLowerCase() }
@@ -60,22 +60,18 @@ export async function POST(request: Request) {
     // Get the origin for the management URL
     const origin = request.headers.get('origin') || 'http://localhost:3000';
 
-    // Process each subscription to generate management tokens if needed
+    // Process each subscription to generate new management tokens
     for (const subscription of subscriptions) {
-      let managementToken = subscription.management_token;
+      // ALWAYS generate a new token, regardless if one already exists
+      const managementToken = crypto.createHash('sha256')
+        .update(`${subscription.customer_id || subscription._id}:${subscription._id}:${Date.now()}:${Math.random()}:${process.env.TOKEN_SECRET || 'fallback-secret'}`)
+        .digest('hex');
 
-      // If no management token exists, generate one
-      if (!managementToken) {
-        managementToken = crypto.createHash('sha256')
-          .update(`${subscription.customer_id}:${subscription._id}:${Date.now()}:${process.env.TOKEN_SECRET || 'fallback-secret'}`)
-          .digest('hex');
-
-        // Store the token with the subscription
-        await subscriptionsCollection.updateOne(
-          { _id: subscription._id },
-          { $set: { management_token: managementToken, token_created_at: new Date() } }
-        );
-      }
+      // Store the token with the subscription
+      await subscriptionsCollection.updateOne(
+        { _id: subscription._id },
+        { $set: { management_token: managementToken, token_created_at: new Date() } }
+      );
 
       // Generate the management URL
       const managementUrl = `${origin}/OpenLab/subscription/manage?token=${managementToken}`;

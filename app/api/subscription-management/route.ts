@@ -28,7 +28,7 @@ async function connectToDatabase() {
 }
 
 export async function GET(request: Request) {
-  
+
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
@@ -46,17 +46,56 @@ export async function GET(request: Request) {
     const subscription = await subscriptionsCollection.findOne({ management_token: token });
 
     if (!subscription) {
+      console.log(`Subscription not found for token: ${token.substring(0, 10)}...`);
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 404 });
     }
-    
+
+    // Check token expiration with detailed logging
+    console.log('Full subscription record:', JSON.stringify(subscription, null, 2));
+
+
+    const tokenCreatedAt = subscription.token_created_at ? new Date(subscription.token_created_at) : null;
+    const updatedAt = subscription.updatedAt ? new Date(subscription.updatedAt) : null;
+    const now = new Date();
+
+    console.log('Current server time:', now.toISOString());
+    console.log('Token created at:', tokenCreatedAt ? tokenCreatedAt.toISOString() : 'null');
+    console.log('Updated at:', updatedAt ? updatedAt.toISOString() : 'null');
+
     const tokenTimestamp = subscription.token_created_at || subscription.updatedAt;
-    const tokenAge = Date.now() - new Date(tokenTimestamp).getTime();
-    const TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    
-    if (tokenAge > TOKEN_EXPIRY) {
-      return NextResponse.json({ error: 'Management link has expired. Please request a new one.' }, { status: 401 });
+
+    if (!tokenTimestamp) {
+      console.log(`Token timestamp missing for subscription ID: ${subscription._id.toString()}`);
+      return NextResponse.json({
+        error: 'Could not validate token expiration, please request a new management link'
+      }, { status: 401 });
     }
 
+    const tokenDate = new Date(tokenTimestamp);
+    console.log('Token timestamp used for calculation:', tokenDate.toISOString());
+
+    const tokenAge = now.getTime() - tokenDate.getTime();
+    console.log('Calculated token age (ms):', tokenAge);
+
+    const TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    console.log('Token expiry threshold (ms):', TOKEN_EXPIRY);
+
+    if (tokenAge > TOKEN_EXPIRY) {
+      console.log(`Token expired for subscription ID: ${subscription._id.toString()}, age: ${tokenAge}ms`);
+      console.log(`Token created: ${tokenDate.toISOString()}, Now: ${now.toISOString()}`);
+      return NextResponse.json({ 
+        error: 'Management link has expired. Please request a new one.' 
+      }, { status: 401 });
+    }
+    
+    // Validate Stripe subscription ID exists
+    if (!subscription.stripe_subscription_id) {
+      console.log(`Missing Stripe subscription ID for subscription: ${subscription._id.toString()}`);
+      return NextResponse.json({ 
+        error: 'Subscription record is missing Stripe information' 
+      }, { status: 500 });
+    }
+    
     // Get the latest subscription details from Stripe
     const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripe_subscription_id);
 
@@ -75,8 +114,8 @@ export async function GET(request: Request) {
           email: subscription.customer_email || subscription.email
         },
         cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-        price: stripeSubscription.items.data[0]?.price.unit_amount 
-          ? (stripeSubscription.items.data[0].price.unit_amount / 100) 
+        price: stripeSubscription.items.data[0]?.price.unit_amount
+          ? (stripeSubscription.items.data[0].price.unit_amount / 100)
           : null,
         interval: stripeSubscription.items.data[0]?.price.recurring?.interval || 'month'
       }
