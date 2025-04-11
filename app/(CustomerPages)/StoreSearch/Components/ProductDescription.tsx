@@ -33,7 +33,7 @@ export default function ProductDescription({ product }: ProductDescriptionProps)
       productId: product._id,
       name: product.name,
       price: product.price,
-      quantity: 1,
+      quantity: quantity,
       image_url: product.image_url,
     };
 
@@ -61,7 +61,7 @@ export default function ProductDescription({ product }: ProductDescriptionProps)
           {product.description}
         </p>
       </div>
-
+      
       <div className="mt-8 border-t border-gray-200 pt-8">
         {product.quantity_in_stock > 0 && (
           <div className="mb-6">
@@ -91,14 +91,14 @@ export default function ProductDescription({ product }: ProductDescriptionProps)
               onClick={(e) => {
                 handleAddToCart();
               }}
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-3 px-6 rounded-md font-medium flex items-center justify-center transition-colors duration-200"
+              className="flex-1 font-sans bg-amber-600 hover:bg-amber-700 text-white py-3 px-6 rounded-md font-medium flex items-center justify-center transition-colors duration-200"
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
               Add to Cart
             </button>
           ) : (
             <button
-              className="flex-1 bg-gray-300 text-gray-500 py-3 px-6 rounded-md font-medium flex items-center justify-center cursor-not-allowed"
+              className="flex-1 font-sans bg-gray-300 text-gray-500 py-3 px-6 rounded-md font-medium flex items-center justify-center cursor-not-allowed"
               disabled
             >
               Out of Stock

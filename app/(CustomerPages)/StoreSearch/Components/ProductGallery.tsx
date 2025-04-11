@@ -32,7 +32,7 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
   }
 
   return (
-    <div className="col-span-3 space-y-4">
+    <div className="col-span-3 space-y-4 sticky top-5">
       {/* main image */}
       <div className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
         <Zoom>

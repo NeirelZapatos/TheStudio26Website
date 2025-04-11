@@ -90,6 +90,61 @@ export async function GET(request: NextRequest) {
       filter.size = { $in: sizes.split(",") };
     }
 
+    // Jewelry Type filter
+    const jewelryTypes = searchParams.get("jewelry_type");
+    if (jewelryTypes && jewelryTypes !== "") {
+      filter.jewelry_type = { $in: jewelryTypes.split(",") };
+    }
+
+    const metalType = searchParams.get("metal_type");
+    if (metalType && metalType !== "") {
+      filter.metal_type = { $in: metalType.split(",") };
+    }
+
+    const metalPurity = searchParams.get("metal_purity");
+    if (metalPurity && metalPurity !== "") {
+      filter.metal_purity = { $in: metalPurity.split(",") };
+    }
+
+    const customizationOptions = searchParams.get("customization_options");
+    if (customizationOptions && customizationOptions !== "") {
+      filter.customization_options = {
+        $in: customizationOptions.split(","),
+      };
+    }
+    const clarity = searchParams.get("clarity");
+    if (clarity && clarity !== "") {
+      filter.clarity = { $in: clarity.split(",") };
+    }
+    const cutCategory = searchParams.get("cut_category");
+    if (cutCategory && cutCategory !== "") {
+      filter.cut_category = { $in: cutCategory.split(",") };
+    }
+    const certificationAvailable = searchParams.get("certification_available");
+    if (certificationAvailable && certificationAvailable !== "") {
+      filter.certification_available = {
+        $in: certificationAvailable.split(","),
+      };
+    }
+    const essentialsType = searchParams.get("essentials_type");
+    if (essentialsType && essentialsType !== "") {
+      filter.essentials_type = {
+        $in: essentialsType.split(","),
+      };
+    }
+    const semiPreciousBeryl = searchParams.get("semi_precious_beryl");
+    if (semiPreciousBeryl && semiPreciousBeryl !== "") {
+      filter.semiPreciousBeryl = {
+        $in: semiPreciousBeryl.split(","),
+      };
+    }
+    const organicGem = searchParams.get("organic_gem");
+    if (organicGem && organicGem !== "") {
+      filter.organicGem = {
+        $in: organicGem.split(","),
+      };
+    }
+
     // Sorting
     let sort = {};
     const sortParam = searchParams.get("sort");
@@ -106,8 +161,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // console.log("Applied filters:", filter);
-    // console.log("Applied sort:", sort);
+    console.log("Applied filters:", filter);
+    console.log("Applied sort:", sort);
 
     const items = await Item.find(filter).sort(sort);
     return NextResponse.json(items);
