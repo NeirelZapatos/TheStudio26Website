@@ -27,6 +27,7 @@ interface FilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm: string;
 }
 
 export default function StorePage() {
@@ -35,6 +36,7 @@ export default function StorePage() {
     category: "all",
     classType: [], // Default class type
     price: { isCustom: false, range: [0, 500] as [number, number] },
+    searchTerm: "",
   });
 
   return (

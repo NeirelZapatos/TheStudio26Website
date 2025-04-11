@@ -1,3 +1,5 @@
+import SearchBar from "./SearchBar";
+
 const SUBCATEGORIES = [
   { name: "Stones", selected: false, href: "#" },
   { name: "Jewelry", selected: false, href: "#" },
@@ -67,10 +69,11 @@ interface FilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm: string;
 }
 
 const Filters = ({ filter, setFilter }: FilterProps) => {
-  console.log(filter);
+  //console.log(filter);
 
   const handleCategoryChange = (category: string) => {
     setFilter((prev) => ({
@@ -100,6 +103,17 @@ const Filters = ({ filter, setFilter }: FilterProps) => {
 
   return (
     <div className="hidden lg:block overflow-y-auto">
+      <SearchBar
+        onSearch={(searchTerm: string) => {
+          setFilter((prev) => ({
+            ...prev,
+            searchTerm,
+          }));
+        }}
+        className="mb-4"
+        placeholder="Search products..."
+      />
+        
       <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
         <li>
           <button

@@ -21,6 +21,7 @@ interface FilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm: string;
 }
 
 export default function StorePage() {
@@ -31,6 +32,7 @@ export default function StorePage() {
     material: [],
     size: [],
     price: { isCustom: false, range: [0, 500] as [number, number] },
+    searchTerm: "",
   });
 
   return (

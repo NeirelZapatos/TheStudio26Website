@@ -16,6 +16,7 @@ import ManageOrders from "./components/ManageOrders/Components/ManageOrders";
 import ClassCatalogManager from "./components/ClassCatalogManager";
 import AddAdmin from "./components/AddAdmin";
 import RentalEquipmentSection from "./components/RentalEquipmentSection";
+import UpComingClasses from "./components/UpComingClasses"; // Added Upcoming Classes import
 
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -54,7 +55,8 @@ function DashboardPage() {
         {activeSection === "itemsList" && <ItemsListSection />}
         {activeSection === "manageOrders" && <ManageOrders />}
         {activeSection === "classCatalogManager" && <ClassCatalogManager />}
-        {activeSection === "rentalEquipment" && <RentalEquipmentSection />}{" "}
+        {activeSection === "rentalEquipment" && <RentalEquipmentSection />}
+        {activeSection === "upcomingClasses" && <UpComingClasses />}
         {/* New tab */}
         {activeSection === "addAdmin" && <AddAdmin />}
       </main>

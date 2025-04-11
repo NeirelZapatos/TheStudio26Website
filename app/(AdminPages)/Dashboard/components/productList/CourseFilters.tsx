@@ -1,4 +1,5 @@
 import React from "react";
+import SearchBar from "./SearchBar";
 
 const CATEGORIES = [
   { name: "Beginning Jewelry Class", selected: false, href: "#" },
@@ -31,6 +32,7 @@ interface FilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm?: string;
 }
 
 const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
@@ -86,35 +88,50 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
               ✕
             </label>
           </div>
+          {/* Search Bar */}
+          <SearchBar
+            onSearch={(searchTerm: string) => {
+              setFilter((prev) => ({
+                ...prev,
+                searchTerm,
+              }));
+            }}
+            value={filter.searchTerm}
+            className="mb-4"
+            placeholder="Search courses..."
+          />
           {/* Categories Filter */}
-          <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
-            <li>
-              <button
-                onClick={() => handleCategoryChange("all")}
-                className={`w-full text-left ${
-                  filter.category === "all"
-                    ? "text-gray-900"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                All Classes
-              </button>
-            </li>
-            {CATEGORIES.map((category) => (
-              <li key={category.name}>
+          <div className="mb-6">
+            <h4 className="font-bold">Categories</h4>
+            <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
+              <li>
                 <button
-                  onClick={() => handleCategoryChange(category.name)}
+                  onClick={() => handleCategoryChange("all")}
                   className={`w-full text-left ${
-                    filter.category === category.name.toLowerCase()
+                    filter.category === "all"
                       ? "text-gray-900"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {category.name}
+                  All Classes
                 </button>
               </li>
-            ))}
-          </ul>
+              {CATEGORIES.map((category) => (
+                <li key={category.name}>
+                  <button
+                    onClick={() => handleCategoryChange(category.name)}
+                    className={`w-full text-left ${
+                      filter.category === category.name.toLowerCase()
+                        ? "text-gray-900"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Class Types Filter */}
           <div className="mt-6">
@@ -160,6 +177,7 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
                     isCustom: false,
                     range: [0, 500] as [number, number],
                   },
+                  searchTerm: "",
                 })
               }
             >

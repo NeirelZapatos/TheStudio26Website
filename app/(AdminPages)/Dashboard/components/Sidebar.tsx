@@ -59,6 +59,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           Booking Calendar
         </button>
+          {/* ------------------------ Upcoming Classes Section ------------------------ */}
+          <button
+            onClick={() => setActiveSection("upcomingClasses")}
+            className={`block w-full text-left p-2 rounded-lg ${
+              activeSection === "upcomingClasses" ? "bg-gray-700" : "hover:bg-gray-600"
+            }`}
+          >
+            Upcoming Classes
+          </button>
         {/* ------------------------ Product Section ------------------------ */}
         <div>
           <button
@@ -184,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={() => setActiveSection("addAdmin")}
           className={`block w-full text-left p-2 rounded-lg ${
-            activeSection === "AddAdmin" ? "bg-gray-700" : "hover:bg-gray-600"
+            activeSection === "addAdmin" ? "bg-gray-700" : "hover:bg-gray-600"
           }`}
         >
           Admin Management
@@ -194,7 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* New button at the bottom */}
       <Link
         href="/api/auth/signout"
-        className="mt-auto block w-full text-left p-2 rounded-lg bg-gray-00 hover:bg-gray-600"
+        className="mt-auto block w-full text-left p-2 rounded-lg hover:bg-gray-600"
       >
         Sign Out
       </Link>

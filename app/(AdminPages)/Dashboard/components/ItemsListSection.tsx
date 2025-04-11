@@ -15,6 +15,7 @@ const ItemsList: React.FC = () => {
       isCustom: boolean;
       range: [number, number];
     };
+    searchTerm?: string;
   };
   // Data States
   const [filter, setFilter] = useState<FilterState>({
@@ -24,6 +25,7 @@ const ItemsList: React.FC = () => {
     material: [],
     size: [],
     price: { isCustom: false, range: [0, 500] as [number, number] },
+    searchTerm: "",
   });
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,6 +134,14 @@ const ItemsList: React.FC = () => {
         return false;
       }
 
+      // Apply search filter - case insensitive
+      if (
+        filter.searchTerm &&
+        !item.name.toLowerCase().includes(filter.searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+
       return true;
     });
   };
@@ -155,7 +165,7 @@ const ItemsList: React.FC = () => {
           <ItemFilters filter={filter} setFilter={setFilter} />
         </div>
         {filteredItems.length === 0 ? (
-          <p>No items available.</p>
+          <p>No products available.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (

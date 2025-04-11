@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        console.log("Applied filters:", filter);
-        console.log("Applied sort:", sort);
+        // console.log("Applied filters:", filter);
+        // console.log("Applied sort:", sort);
 
         const courses = await Course.find(filter).sort(sort);
         return NextResponse.json(courses);

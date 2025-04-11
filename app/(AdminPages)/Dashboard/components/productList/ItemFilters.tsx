@@ -1,4 +1,5 @@
 import React from "react";
+import SearchBar from "./SearchBar";
 
 const SUBCATEGORIES = [
   { name: "Stones", selected: false, href: "#" },
@@ -82,6 +83,7 @@ interface FilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm?: string;
 }
 
 const ItemFilters = ({ filter, setFilter }: FilterProps) => {
@@ -137,11 +139,23 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
               ✕
             </label>
           </div>
+          {/* Search Bar */}
+          <SearchBar
+            onSearch={(searchTerm: string) => {
+              setFilter((prev) => ({
+                ...prev,
+                searchTerm,
+              }));
+            }}
+            value={filter.searchTerm}
+            className="mb-4"
+            placeholder="Search products..."
+          />
 
           {/* Categories */}
-          <div className="mb-6">
+          <div className="mb-0">
             <h4 className="font-bold">Categories</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-4 pb-6 text-md font-medium text-gray-900">
               <li>
                 <button
                   onClick={() => handleCategoryChange("all")}
@@ -367,6 +381,7 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
                     isCustom: false,
                     range: [0, 500] as [number, number],
                   },
+                  searchTerm: "",
                 })
               }
             >
