@@ -90,7 +90,8 @@ export default function ProductPage() {
         </a>
         <span className="mx-2">/</span>
         <a href="/StoreSearch" className="hover:text-amber-600">
-          {product.category}
+         {/* {product.category} */}
+         Store
         </a>
         <span className="mx-2">/</span>
         <span className="text-gray-900">{product.name}</span>

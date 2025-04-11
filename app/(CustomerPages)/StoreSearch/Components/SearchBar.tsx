@@ -1,27 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
   placeholder?: string;
   delay?: number;
   className?: string;
+  value?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ 
-  onSearch, 
-  placeholder = "Search products...", 
+const SearchBar: React.FC<SearchBarProps> = ({
+  onSearch,
+  placeholder = "Search products...",
   delay = 300,
-  className = "" 
+  className = "",
+  value = "",
 }) => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  //Effect to sync with the "reset filters" button
+  useEffect(() => {
+    if (value !== undefined) {
+      setSearchTerm(value);
+    }
+  }, [value]);
+
   // Debounce search to avoid too many re-renders
   useEffect(() => {
     const handler = setTimeout(() => {
       onSearch(searchTerm);
     }, delay);
-    
+
     return () => {
       clearTimeout(handler);
     };
@@ -40,7 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         />
         {searchTerm && (
           <button
-            onClick={() => setSearchTerm('')}
+            onClick={() => setSearchTerm("")}
             className="ml-1 text-gray-400 hover:text-gray-600"
           >
             <X className="h-4 w-4" />
