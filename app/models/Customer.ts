@@ -11,9 +11,14 @@ export interface ICustomer {
     billing_address?: string;
     orders?: Types.ObjectId[];
     courses?: Types.ObjectId[];
-  }
+    labs?: Types.ObjectId[]; 
+    // For subscription
+    stripe_customer_id?: string;
+    has_active_subscription?: boolean;
+    subscriptions?: Types.ObjectId[];
+}
 
-const customerSchema:Schema = new mongoose.Schema({
+const customerSchema: Schema = new mongoose.Schema({
     first_name: {
         type: String,
         required: true,
@@ -25,9 +30,10 @@ const customerSchema:Schema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     phone_number: {
-        type: Number,
+        type: String,
     },
     orders: [{
         type: Schema.Types.ObjectId,
@@ -36,16 +42,26 @@ const customerSchema:Schema = new mongoose.Schema({
     courses: [{
         type: Schema.Types.ObjectId,
         ref: 'Course'
-    }]
-    // hashed_password: { not required for scope
-    //     type: String
-    // },
-    // shipping_address: { For now lets store this is the orders area to make it less complicated
-    //     type: String,
-    // },
-    // billing_address: {
-    //     type: String,
-    // },
+    }],
+    labs: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Order' // Reference to the same Order model but specifically for lab bookings
+    }],
+    // ! subscription-related fields
+    stripe_customer_id: {
+        type: String,
+        sparse: true, // Allows null values while maintaining uniqueness for non-null values
+    },
+    has_active_subscription: {
+        type: Boolean,
+        default: false,
+    },
+    subscriptions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'CustomerSubscription'
+    }],
+}, {
+    timestamps: true,
 });
 
 const Customer = mongoose.models.Customer || mongoose.model<ICustomer>('Customer', customerSchema);

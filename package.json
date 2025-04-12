@@ -13,6 +13,8 @@
     "@aws-sdk/s3-request-presigner": "^3.744.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.11.0",
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^6.4.2",
     "@mui/material": "^6.4.2",
     "@stripe/react-stripe-js": "^3.1.1",
