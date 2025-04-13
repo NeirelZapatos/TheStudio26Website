@@ -316,10 +316,39 @@ export async function GET(request: Request) {
 
     if (existingOrder) {
       console.log("Order already exists for session:", sessionId);
+
+      const deliveryMethod = existingOrder.delivery_method || (existingOrder.is_pickup ? 'pickup' : 'delivery');
+
+      let formattedShippingAddress = undefined;
+      if (existingOrder.shipping_address && deliveryMethod === 'delivery') {
+        const addressParts = existingOrder.shipping_address.split(", ");
+        formattedShippingAddress = {
+          line1: addressParts[0] || "",
+          ...(addressParts.length > 4 && { line2: addressParts[1] || "" }),
+          city: addressParts.length > 4 ? addressParts[2] || "" : addressParts[1] || "",
+          state: addressParts.length > 4 ? addressParts[3].split(" ")[0] || "" : addressParts[2].split(" ")[0] || "",
+          postal_code: addressParts.length > 4 ? addressParts[3].split(" ")[1] || "" : addressParts[2].split(" ")[1] || "",
+          country: addressParts[addressParts.length - 1] || ""
+        };
+      }
+
+      let formattedBillingAddress = undefined;
+      if (existingOrder.billing_address) {
+        const addressParts = existingOrder.billing_address.split(", ");
+        formattedBillingAddress = {
+          line1: addressParts[0] || "",
+          ...(addressParts.length > 4 && { line2: addressParts[1] || "" }),
+          city: addressParts.length > 4 ? addressParts[2] || "" : addressParts[1] || "",
+          state: addressParts.length > 4 ? addressParts[3].split(" ")[0] || "" : addressParts[2].split(" ")[0] || "",
+          postal_code: addressParts.length > 4 ? addressParts[3].split(" ")[1] || "" : addressParts[2].split(" ")[1] || "",
+          country: addressParts[addressParts.length - 1] || ""
+        };
+      }
+
       return NextResponse.json({
         success: true,
         orderId: existingOrder._id.toString(),
-        deliveryMethod: existingOrder.delivery_method || (existingOrder.is_pickup ? 'pickup' : 'delivery'),
+        deliveryMethod: deliveryMethod,
         message: "Order already processed",
         session: {
           id: sessionId,
@@ -328,7 +357,14 @@ export async function GET(request: Request) {
             email: existingOrder.customer_email || "",
             name: `${existingOrder.first_name || ''} ${existingOrder.last_name || ''}`.trim() || "",
             phone: existingOrder.phone_number || "",
+            ...(formattedBillingAddress && { address: formattedBillingAddress })
           },
+          ...(deliveryMethod === 'delivery' && formattedShippingAddress && {
+            shipping_details: {
+              address: formattedShippingAddress,
+              name: `${existingOrder.first_name || ''} ${existingOrder.last_name || ''}`.trim() || ""
+            }
+          }),
           payment_status: existingOrder.payment_status,
         }
       });
@@ -483,10 +519,10 @@ export async function GET(request: Request) {
     if (cartItems.length > 0) {
       const itemIds = cartItems.map((item: { productId: string }) => new ObjectId(item.productId));
       const itemsData = await itemsCollection.find({ _id: { $in: itemIds } }).toArray();
-      
+
       // Create a map for quick lookup
       const itemsMap = new Map(itemsData.map(item => [item._id.toString(), item]));
-      
+
       // Build detailed item list with quantities
       itemDetails = cartItems.map((item: { productId: string; quantity: number; name: string; price: number }) => {
         const dbItem = itemsMap.get(item.productId);
@@ -532,17 +568,17 @@ export async function GET(request: Request) {
         { $setOnInsert: orderData },
         { upsert: true, returnDocument: 'after' }
       );
-      
+
       if (!orderResult) {
         throw new Error("Failed to create or retrieve order");
       }
-      
+
       // Handle different MongoDB driver versions (v5+ returns directly, older versions use .value)
       const order = orderResult.value || orderResult;
       if (!order) {
         throw new Error("Order result is undefined");
       }
-      
+
       const orderId = order._id;
 
       // * Update customer with order(s)
@@ -555,14 +591,14 @@ export async function GET(request: Request) {
       );
 
       console.log("Order saved to MongoDB:", orderId.toString());
-      
+
       // If order was just created (email_sent should be false)
       if (!order.email_sent && verifiedEmail) {
         // Send email and mark as sent
         try {
           let itemsListHtml = '';
           let subtotal = 0;
-          
+
           if (itemDetails && itemDetails.length > 0) {
             const itemRows = itemDetails.map((item: { total: number; name: any; quantity: any; price: number; }) => {
               subtotal += item.total;
@@ -573,11 +609,11 @@ export async function GET(request: Request) {
                 <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">$${item.total.toFixed(2)}</td>
               </tr>`;
             }).join('');
-            
-            const shippingCost = stripeSession.shipping_cost?.amount_subtotal 
-              ? stripeSession.shipping_cost.amount_subtotal / 100 
+
+            const shippingCost = stripeSession.shipping_cost?.amount_subtotal
+              ? stripeSession.shipping_cost.amount_subtotal / 100
               : 0;
-              
+
             itemsListHtml = `
               <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                 <thead>
@@ -609,15 +645,15 @@ export async function GET(request: Request) {
               </table>
             `;
           }
-          
-          const deliveryInfoHtml = deliveryMethod === 'delivery' 
+
+          const deliveryInfoHtml = deliveryMethod === 'delivery'
             ? `
               <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
                 <h3 style="margin-top: 0;">Delivery Information:</h3>
                 <p><strong>Shipping Address:</strong> ${shippingAddress}</p>
                 <p><strong>Shipping Method:</strong> ${stripeSession.shipping_cost?.shipping_rate || "Standard"}</p>
               </div>
-            ` 
+            `
             : `
               <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
                 <h3 style="margin-top: 0;">Pickup Information:</h3>
@@ -625,7 +661,7 @@ export async function GET(request: Request) {
                 <p><strong>Pickup Location:</strong> Studio 26, 123 Main St</p>
               </div>
             `;
-      
+
           await sendEmail(
             verifiedEmail,
             `Order Confirmation #${orderId.toString().slice(-6)}`,
@@ -638,11 +674,11 @@ export async function GET(request: Request) {
                 <div style="background-color: #e6f3ff; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #b3d7ff;">
                   <h2 style="margin-top: 0;">Order Details</h2>
                   <p><strong>Order Number:</strong> #${orderId.toString().slice(-6)}</p>
-                  <p><strong>Order Date:</strong> ${new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</p>
+                  <p><strong>Order Date:</strong> ${new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</p>
                   <p><strong>Delivery Method:</strong> ${deliveryMethod === 'delivery' ? 'Delivery' : 'Pickup'}</p>
                   <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
                 </div>
@@ -663,13 +699,13 @@ export async function GET(request: Request) {
               </div>
             `
           );
-          
+
           // Mark email as sent
           await ordersCollection.updateOne(
             { _id: orderId },
             { $set: { email_sent: true } }
           );
-          
+
           console.log(`Order confirmation email sent to: ${verifiedEmail}`);
         } catch (emailError) {
           // Just log the error, don't fail the whole order process
