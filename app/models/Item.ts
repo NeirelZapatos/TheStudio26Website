@@ -25,6 +25,7 @@ const itemSchema: Schema = new mongoose.Schema({
     images: { type: [String] },
     size: { type: String },
     color: { type: String },
+    inlayed_stone: { type: String },
     quantity_in_stock: { type: Number, required: true, default: 0, min: 0 },
     jewelry_type: { type: String },
     metal_type: { type: String },

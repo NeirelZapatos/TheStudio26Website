@@ -1,10 +1,13 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
-import ItemCard, { Item } from "./productList/ItemCard";
-import EditItemForm from "./productList/EditItemForm";
+import ItemCard from "./productList/ItemCard";
+import ItemViewModal from "./productList/ItemViewModal";
 import ItemFilters from "./productList/ItemFilters";
+import { Item } from "./productList/ItemTypes";
 
-const ItemsList: React.FC = () => {
+const ItemsListSection: React.FC = () => {
   type FilterState = {
     sort: string;
     category: string;
@@ -17,6 +20,7 @@ const ItemsList: React.FC = () => {
     };
     searchTerm?: string;
   };
+  
   // Data States
   const [filter, setFilter] = useState<FilterState>({
     sort: "none",
@@ -27,14 +31,15 @@ const ItemsList: React.FC = () => {
     price: { isCustom: false, range: [0, 500] as [number, number] },
     searchTerm: "",
   });
+  
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Editing States
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  // Modal State
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-  // Fetch items
+  // Fetch items on component mount
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -43,53 +48,38 @@ const ItemsList: React.FC = () => {
         setItems(response.data);
       } catch (err) {
         setError(true);
+        console.error("Error fetching items:", err);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchItems();
   }, []);
 
-  // Handlers for editing items
-  const handleEditItem = (item: Item) => {
-    setEditingItem(item);
+  // Handle item click to open view modal
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
   };
 
-  const handleSaveItem = async (updatedItem: Item) => {
-    try {
-      await axios.put(`/api/items/${updatedItem._id}`, updatedItem);
-      setItems((prev) =>
-        prev.map((i) => (i._id === updatedItem._id ? updatedItem : i))
-      );
-      setEditingItem(null);
-    } catch (err) {
-      console.error("Error saving item:", err);
-      setError(true);
-    }
+  // Close view modal
+  const handleCloseModal = () => {
+    setSelectedItem(null);
   };
-
-  const handleCancelItem = () => {
-    setEditingItem(null);
-  };
-
+  
+  // Delete item
   const handleDeleteItem = async (item: Item) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      try {
-        await axios.delete(`/api/items/${item._id}`);
-
-        setItems((prev) => prev.filter((i) => i._id !== item._id));
-
-        // Clear editing state if needed
-        if (editingItem && editingItem._id === item._id) {
-          setEditingItem(null);
-        }
-      } catch (err) {
-        console.error("Error deleting item:", err);
-        setError(true);
-      }
+    try {
+      await axios.delete(`/api/items/${item._id}`);
+      setItems((prev) => prev.filter((i) => i._id !== item._id));
+      setSelectedItem(null);
+    } catch (err) {
+      console.error("Error deleting item:", err);
+      alert("Failed to delete item. Please try again.");
     }
   };
 
+  // Filter items based on selected filters
   const getFilteredItems = () => {
     return items.filter((item) => {
       // Apply category filter
@@ -126,18 +116,12 @@ const ItemsList: React.FC = () => {
       }
 
       // Apply price filter
+      const itemPrice = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
       if (
-        item.price &&
-        (item.price < filter.price.range[0] ||
-          item.price > filter.price.range[1])
-      ) {
-        return false;
-      }
-
-      // Apply search filter - case insensitive
-      if (
-        filter.searchTerm &&
-        !item.name.toLowerCase().includes(filter.searchTerm.toLowerCase())
+        itemPrice !== undefined &&
+        !isNaN(Number(itemPrice)) &&
+        (Number(itemPrice) < filter.price.range[0] ||
+          Number(itemPrice) > filter.price.range[1])
       ) {
         return false;
       }
@@ -148,45 +132,117 @@ const ItemsList: React.FC = () => {
 
   const filteredItems = getFilteredItems();
 
+  // Sort items based on selected sort option
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (filter.sort === "price-asc") {
+      const priceA = typeof a.price === 'string' ? parseFloat(a.price) : (a.price || 0);
+      const priceB = typeof b.price === 'string' ? parseFloat(b.price) : (b.price || 0);
+      return Number(priceA) - Number(priceB);
+    } else if (filter.sort === "price-desc") {
+      const priceA = typeof a.price === 'string' ? parseFloat(a.price) : (a.price || 0);
+      const priceB = typeof b.price === 'string' ? parseFloat(b.price) : (b.price || 0);
+      return Number(priceB) - Number(priceA);
+    } else if (filter.sort === "name-asc") {
+      return (a.name || "").localeCompare(b.name || "");
+    } else if (filter.sort === "name-desc") {
+      return (b.name || "").localeCompare(a.name || "");
+    }
+    return 0;
+  });
+
+  // Render loading state
   if (loading) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
+  // Render error state
   if (error) {
-    return <div className="p-4 text-red-500">Error loading data.</div>;
+    return (
+      <div className="p-6 text-center">
+        <div className="text-error text-xl mb-4">Error loading products</div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn btn-primary"
+        >
+          Try Again
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      {/* Items Section */}
-      <section className="mb-10">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold mb-4">Items</h2>
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Products</h1>
+        <div className="flex items-center gap-2">
+          <select 
+            value={filter.sort}
+            onChange={(e) => setFilter({...filter, sort: e.target.value})}
+            className="select select-bordered select-sm"
+          >
+            <option value="none">Default Sort</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name-asc">Name: A to Z</option>
+            <option value="name-desc">Name: Z to A</option>
+          </select>
+          
+          {/* Your Filter Drawer Component */}
           <ItemFilters filter={filter} setFilter={setFilter} />
         </div>
-        {filteredItems.length === 0 ? (
-          <p>No products available.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map((item) => (
-              <div key={item._id} className="bg-white shadow rounded-lg p-4">
-                {editingItem && editingItem._id === item._id ? (
-                  <EditItemForm
-                    initialItem={editingItem}
-                    onSave={handleSaveItem}
-                    onCancel={handleCancelItem}
-                    onDelete={handleDeleteItem}
-                  />
-                ) : (
-                  <ItemCard item={item} onEdit={handleEditItem} />
-                )}
-              </div>
-            ))}
+      </div>
+      
+      <div className="w-full">
+        {sortedItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[400px] bg-base-200 rounded-lg p-8">
+            <p className="text-xl text-base-content mb-4">No items match your filters</p>
+            <button
+              onClick={() => setFilter({
+                sort: "none",
+                category: "all",
+                color: [],
+                material: [],
+                size: [],
+                price: { isCustom: false, range: [0, 500] as [number, number] },
+              })}
+              className="btn btn-primary"
+            >
+              Clear Filters
+            </button>
           </div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <p className="text-base-content opacity-70">{sortedItems.length} products found</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {sortedItems.map((item) => (
+                <div key={item._id} className="bg-base-100 shadow rounded-lg p-4 hover:shadow-lg transition">
+                  <ItemCard
+                    item={item}
+                    onClick={() => handleItemClick(item)}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
-      </section>
+      </div>
+      
+      {/* View Modal (instead of Edit Modal) */}
+      {selectedItem && (
+        <ItemViewModal
+          item={selectedItem}
+          onClose={handleCloseModal}
+          onDelete={handleDeleteItem}
+        />
+      )}
     </div>
   );
 };
 
-export default ItemsList;
+export default ItemsListSection;
