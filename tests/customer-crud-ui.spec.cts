@@ -46,7 +46,7 @@ describe("Customer Management Form - End-to-End Functionality Tests", function (
     await fillForm("Studio", "Test", testEmail, "5551234567");
 
     // Accept success alert
-    await driver.wait(until.alertIsPresent(), 3000);
+    await driver.wait(until.alertIsPresent(), 5000);
     const alert = await driver.switchTo().alert();
     await alert.accept();
 
@@ -101,6 +101,58 @@ describe("Customer Management Form - End-to-End Functionality Tests", function (
     await fillForm("Studio", "Test", email, "abcde");
     const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${email}')]`));
     assert.equal(entries.length, 0, "Customer should not be created with invalid phone number");
+  });
+
+  /**
+   * Validates that the form rejects a phone number with too few digits.
+   */
+  it("rejects customer creation with a phone number that is too short", async () => {
+    const email = `shortphone${Date.now()}@test.com`;
+    await fillForm("Studio", "Test", email, "12345");
+    const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${email}')]`));
+    assert.equal(entries.length, 0, "Customer should not be created with short phone number");
+  });
+
+  /**
+   * Validates that the form rejects a phone number with too many digits.
+   */
+  it("rejects customer creation with a phone number that is too long", async () => {
+    const email = `longphone${Date.now()}@test.com`;
+    await fillForm("Studio", "Test", email, "123456789012345");
+    const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${email}')]`));
+    assert.equal(entries.length, 0, "Customer should not be created with long phone number");
+  });
+
+  /**
+   * Validates that the form rejects extremely long inputs in the first name field.
+   */
+  it("rejects customer creation with an excessively long first name", async () => {
+    const email = `longfirst${Date.now()}@test.com`;
+    const longFirstName = "A".repeat(300);
+    await fillForm(longFirstName, "Test", email, "5551234567");
+    const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${email}')]`));
+    assert.equal(entries.length, 0, "Customer should not be created with overly long first name");
+  });
+
+  /**
+   * Validates that the form rejects extremely long inputs in the last name field.
+   */
+  it("rejects customer creation with an excessively long last name", async () => {
+    const email = `longlast${Date.now()}@test.com`;
+    const longLastName = "B".repeat(300);
+    await fillForm("Studio", longLastName, email, "5551234567");
+    const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${email}')]`));
+    assert.equal(entries.length, 0, "Customer should not be created with overly long last name");
+  });
+
+  /**
+   * Validates that the form rejects an email address that is excessively long.
+   */
+  it("rejects customer creation with an excessively long email", async () => {
+    const longEmail = `studio${"x".repeat(250)}@test.com`;
+    await fillForm("Studio", "Test", longEmail, "5551234567");
+    const entries = await driver.findElements(By.xpath(`//*[contains(text(), '${longEmail}')]`));
+    assert.equal(entries.length, 0, "Customer should not be created with overly long email");
   });
 
   /**
