@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse} from "next/server";
-// import { courseSchema } from "@/app/api/common/productSchema";
+import { NextRequest, NextResponse } from "next/server";
+import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
 import Lab from "@/app/models/Lab";
 
@@ -9,22 +9,23 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        // Log the received body to verify its contents
         console.log("Received in /api/lab:", body);
 
-        // const validation = labSchema.safeParse(body);
+        const validation = courseSchema.safeParse(body);
+        if (!validation.success) {
+            console.error("Validation Error: " + JSON.stringify(validation.error.errors, null, 2));
+            return NextResponse.json(validation.error.errors, { status: 400 })
+        }
 
-        // if (!validation.success) {
-        //     console.error("Validation Error: " + JSON.stringify(validation.error.errors, null, 2));
-        //     return NextResponse.json(validation.error.errors, { status: 400 })
-        // }
+        const checkProduct = await Lab.findOne({
+            name: body.name,
+            date: body.date
+        });
 
-        // const checkProduct = await Lab.findOne({ name: body.name });
-
-        // if (checkProduct) {
-        //     console.error("Duplicate product error: Product already exists");
-        //     return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
-        // }
+        if (checkProduct) {
+            console.error("Duplicate product error: Lab session already exists for this date");
+            return NextResponse.json({ error: 'Lab session already exists for this date' }, { status: 409 });
+        }
 
         const newProduct = new Lab(body);
         await newProduct.save();
@@ -44,13 +45,22 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
     try {
-        // Connect to the database
         await dbConnect();
 
-        // Retrieve all Courses from the database
-        const lab = await Lab.find({});
-        return NextResponse.json(lab);
+        const url = new URL(request.url);
+        const upcoming = url.searchParams.get('upcoming');
 
+        let query = {};
+        
+        if (upcoming === 'true') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            query = { date: { $gte: today.toISOString().split('T')[0] } };
+        }
+
+        const lab = await Lab.find({});
+
+        return NextResponse.json(lab);
     } catch (err: unknown) {
         // Handle any errors that occur during the GET operation
         if (err instanceof Error) {

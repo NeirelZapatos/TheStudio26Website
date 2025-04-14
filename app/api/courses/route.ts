@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         // Log the received body to verify its contents
-        console.log("Received in /api/products:", body);
+        console.log("Received in /api/courses:", body);
 
         const validation = courseSchema.safeParse(body);
 
@@ -19,12 +19,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
-        // const checkProduct = await Course.findOne({ name: body.name });
+        const checkProduct = await Course.findOne({ name: body.name });
 
-        // if (checkProduct) {
-        //     console.error("Duplicate product error: Product already exists");
-        //     return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
-        // }
+        if (checkProduct) {
+            console.error("Duplicate product error: Product already exists");
+            return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
+        }
 
         const newProduct = new Course(body);
         await newProduct.save();
@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        console.log("Applied filters:", filter);
-        console.log("Applied sort:", sort);
+        // console.log("Applied filters:", filter);
+        // console.log("Applied sort:", sort);
 
         const courses = await Course.find(filter).sort(sort);
         return NextResponse.json(courses);

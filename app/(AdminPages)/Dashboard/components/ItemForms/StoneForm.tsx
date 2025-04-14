@@ -324,6 +324,13 @@ export default function StoneForm({ onClose }: StoneFormProps) {
     }
   };
 
+  const handleAddS3Image = (imageUrl: string) => {
+    setPreviewUrls((prevUrls) => {
+      const filteredPreviewUrls = prevUrls.filter(url => !url.includes("ProductPlaceholder"));
+      return [...filteredPreviewUrls, imageUrl];
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !description || !price || !quantityInStock) {
@@ -457,6 +464,14 @@ export default function StoneForm({ onClose }: StoneFormProps) {
 
   return (
     <div className="bg-white p-6 border rounded shadow-lg overflow-auto max-h-screen">
+
+      {/* Close Button */}
+      <div className="flex justify-end mt-4">
+        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
+          Change Item Type
+        </button>
+      </div>
+
       <h3 className="text-2xl font-semibold mb-4 text-center">Stone Specifications</h3>
       <form onSubmit={handleSubmit}>
 
@@ -513,9 +528,10 @@ export default function StoneForm({ onClose }: StoneFormProps) {
             images={
               previewUrls.length > 0 ? previewUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]
             }
-            currentIndex={currentCarouselIndex} // Pass the current index
-            onIndexChange={setCurrentCarouselIndex} // Pass the setter function
+            currentIndex={currentCarouselIndex}
+            onIndexChange={setCurrentCarouselIndex}
             onRemoveImage={handleRemoveImage}
+            onAddS3Image={handleAddS3Image}
           />
           {/* File Input for Multiple Images */}
           <div>
@@ -1210,7 +1226,7 @@ export default function StoneForm({ onClose }: StoneFormProps) {
               ? "bg-blue-500 rounded hover:bg-blue-600"
               : "bg-gray-400 cursor-not-allowed"
               } text-white px-4 py-2 rounded`}
-            disabled={!areRequiredFieldsFilled()} // Disable if required fields are not filled  
+            disabled={!areRequiredFieldsFilled()}
           >
             Submit Stone Item
           </button>

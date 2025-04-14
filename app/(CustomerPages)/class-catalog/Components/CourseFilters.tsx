@@ -1,4 +1,4 @@
-// Define the new categories and class types
+import SearchBar from "../../StoreSearch/Components/SearchBar";
 const CATEGORIES = [
   { name: "Beginning Jewelry Class", selected: false, href: "#" },
   { name: "Specialty Class", selected: false, href: "#" },
@@ -30,9 +30,13 @@ interface CourseFilterState {
     isCustom: boolean;
     range: [number, number];
   };
+  searchTerm: string;
 }
 
-const CourseFilters = ({ courseFilter, setCourseFilter }: CourseFilterProps) => {
+const CourseFilters = ({
+  courseFilter,
+  setCourseFilter,
+}: CourseFilterProps) => {
   console.log(courseFilter);
 
   const handleCategoryChange = (category: string) => {
@@ -58,11 +62,27 @@ const CourseFilters = ({ courseFilter, setCourseFilter }: CourseFilterProps) => 
     }));
   };
 
-  const minPrice = Math.min(courseFilter.price.range[0], courseFilter.price.range[1]);
-  const maxPrice = Math.max(courseFilter.price.range[0], courseFilter.price.range[1]);
+  const minPrice = Math.min(
+    courseFilter.price.range[0],
+    courseFilter.price.range[1]
+  );
+  const maxPrice = Math.max(
+    courseFilter.price.range[0],
+    courseFilter.price.range[1]
+  );
 
   return (
     <div className="hidden lg:block overflow-y-auto">
+      <SearchBar
+        onSearch={(searchTerm: string) => {
+          setCourseFilter((prev) => ({
+            ...prev,
+            searchTerm,
+          }));
+        }}
+        className="mb-4"
+        placeholder="Search courses..."
+      />
       {/* Categories Filter */}
       <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
         <li>
@@ -72,7 +92,7 @@ const CourseFilters = ({ courseFilter, setCourseFilter }: CourseFilterProps) => 
               courseFilter.category === "all"
                 ? "text-gray-900"
                 : "text-gray-500 hover:text-gray-700"
-              }`}
+            }`}
           >
             All Classes
           </button>
@@ -81,10 +101,11 @@ const CourseFilters = ({ courseFilter, setCourseFilter }: CourseFilterProps) => 
           <li key={category.name}>
             <button
               onClick={() => handleCategoryChange(category.name)}
-              className={`w-full text-left ${courseFilter.category === category.name.toLowerCase()
+              className={`w-full text-left ${
+                courseFilter.category === category.name.toLowerCase()
                   ? "text-gray-900"
                   : "text-gray-500 hover:text-gray-700"
-                }`}
+              }`}
             >
               {category.name}
             </button>

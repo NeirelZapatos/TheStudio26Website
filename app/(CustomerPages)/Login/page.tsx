@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState, FormEvent } from "react";
 //import Head from "next/head";
@@ -91,44 +92,17 @@ export default function LoginPage() {
                   Remember me
                 </label> */}
               </div>
-              <a href="#" className="text-sm text-indigo-600 hover:underline">
+              <Link href="/ForgetPassword" className="text-sm text-indigo-600 hover:underline">
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
-            {/* Sign In Button */}
             <button
               type="submit"
               className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 mb-4"
             >
-              Sign in
+              Sign In
             </button>
-
-            {/* Sign Up & Google Sign-In */}
-            {/* <div className="text-center text-gray-600 mb-4">
-              Don’t have an account?{" "}
-              <a href="#" className="text-indigo-600 hover:underline">
-                Sign up
-              </a>
-            </div> */}
-
-            {/* <div className="flex items-center justify-center mb-4">
-              <span className="border-t w-1/4"></span>
-              <span className="mx-4 text-gray-500">or</span>
-              <span className="border-t w-1/4"></span>
-            </div> */}
-
-            {/* Google Sign In Button */}
-            {/* <button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-600">
-              <Image
-                src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
-                width={20}
-                height={20}
-                alt="Google Icon"
-                className="w-5 h-5 mr-2"
-              />
-              Continue with Google
-            </button> */}
           </form>
         </div>
       </div>
