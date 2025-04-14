@@ -1,79 +1,30 @@
-// CourseCard.tsx
-import React from "react";
+import { Class } from "./ClassTypes";
 
-export type Course = {
-  classType: string;
-  category: string;
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  location: string;
-  recurring: boolean;
-  image_url?: string;
-  date: string;
-  time: string;
-  instructor: string;
-  duration: string;
-  stripeProductId?: string;
-};
+interface CourseCardProps {
+  course: Class;
+  onClick: () => void;
+}
 
-type CourseCardProps = {
-  course: Course;
-  onEdit: (course: Course) => void;
-};
-
-const CourseCard: React.FC<CourseCardProps> = ({ course, onEdit }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, onClick }) => {
   return (
-    <div className="bg-white p-4 rounded">
-      {course.image_url && (
-        <img
-          src={course.image_url}
-          alt={course.name}
-          className="w-full h-48 object-cover rounded mb-4"
-        />
-      )}
-
-      {/* Course Name */}
-      <h3 className="text-xl font-semibold text-gray-800 mb-3">
-        {course.name}
-      </h3>
-
-      {/* Description */}
-      <p className="text-gray-700 mb-4">{course.description}</p>
-
-      {/* Key Details */}
-      <ul className="space-y-2 text-gray-700 mb-4">
-        <li>
-          <span className="font-semibold">Price:</span> ${course.price}
-        </li>
-        <li>
-          <span className="font-semibold">Location:</span> {course.location}
-        </li>
-        <li>
-          <span className="font-semibold">Purchase Type:</span>{" "}
-          {course.recurring ? "Recurring" : "One-Time"}
-        </li>
-        <li>
-          <span className="font-semibold">Date:</span> {course.date}
-        </li>
-        <li>
-          <span className="font-semibold">Time:</span> {course.time}
-        </li>
-        <li>
-          <span className="font-semibold">Instructor:</span> {course.instructor}
-        </li>
-        <li>
-          <span className="font-semibold">Duration:</span> {course.duration} minutes
-        </li>
-      </ul>
-
-      {/* Edit Button */}
+    <div className="flex flex-col h-full cursor-pointer" onClick={onClick}>
+      <div className="mb-2 h-48 bg-gray-200 flex items-center justify-center rounded-lg overflow-hidden">
+        {course.image_url ? (
+          <img
+            src={course.image_url}
+            alt={course.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="text-gray-400">Course Image</div>
+        )}
+      </div>
+      <h3 className="font-medium text-lg">{course.name}</h3>
+      <p className="text-gray-700">${course.price.toFixed(2)}</p>
       <button
-        onClick={() => onEdit(course)}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition"
       >
-        Edit
+        View Details
       </button>
     </div>
   );
