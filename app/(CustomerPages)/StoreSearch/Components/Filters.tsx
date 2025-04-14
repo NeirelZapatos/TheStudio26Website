@@ -138,7 +138,6 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
 
   return (
     <div className="overflow-y-auto pr-4">
-
       {/* Category Selection */}
       <ul className="space-y-2 border-b border-gray-200 pb-6 text-md font-medium">
         {CATEGORIES.map((category) => (

@@ -57,10 +57,8 @@ export default function ProductGrid({ filter }: ProductGridProps) {
       try {
         const params = new URLSearchParams();
 
-        if (filter.price.range[0] !== 0 || filter.price.range[1] !== 500) {
-          params.append("minPrice", filter.price.range[0].toString());
-          params.append("maxPrice", filter.price.range[1].toString());
-        }
+        params.append("minPrice", filter.price.range[0].toString());
+        params.append("maxPrice", filter.price.range[1].toString());
 
         if (filter.sort !== "none") {
           params.append("sort", filter.sort);
@@ -155,7 +153,9 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }
 
   const productsToDisplay =
-    filteredProducts.length > 0 || filter.searchTerm ? filteredProducts : products;
+    filteredProducts.length > 0 || filter.searchTerm
+      ? filteredProducts
+      : products;
   const lastPostIndex = currentPage * postPerPage;
   const firstPostIndex = lastPostIndex - postPerPage;
   const currentPosts = productsToDisplay.slice(firstPostIndex, lastPostIndex);
@@ -164,8 +164,12 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return (
       <div className="lg:col-span-3 text-center py-8">
         <div className="p-8 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No products match your search</h3>
-          <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No products match your search
+          </h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filter criteria
+          </p>
         </div>
       </div>
     );
@@ -175,7 +179,9 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return (
       <div className="lg:col-span-3 text-center py-8">
         <div className="p-8 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No products match your filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No products match your filters
+          </h3>
           <p className="text-gray-500">Try adjusting your filter criteria</p>
         </div>
       </div>

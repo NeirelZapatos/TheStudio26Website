@@ -82,7 +82,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
       {/* Breadcrumb */}
       <nav className="flex mb-6 text-sm text-gray-500">
         <a href="/" className="hover:text-amber-600">
@@ -90,8 +90,8 @@ export default function ProductPage() {
         </a>
         <span className="mx-2">/</span>
         <a href="/StoreSearch" className="hover:text-amber-600">
-         {/* {product.category} */}
-         Store
+          {/* {product.category} */}
+          Store
         </a>
         <span className="mx-2">/</span>
         <span className="text-gray-900">{product.name}</span>

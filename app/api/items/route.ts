@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
+      //console.log("Price filter set:", filter.price);
     }
 
     // Category filter
@@ -161,10 +162,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("Applied filters:", filter);
-    console.log("Applied sort:", sort);
+    //console.log("Applied filters:", JSON.stringify(filter, null, 2));
+    //console.log("Applied sort:", sort);
+
+    // // Debug query before execution
+    // const query = Item.find(filter).sort(sort);
+    // console.log("MongoDB query:", query.getFilter());
+
+    // const items = await query;
+    // console.log(`Found ${items.length} items matching criteria`);
 
     const items = await Item.find(filter).sort(sort);
+
     return NextResponse.json(items);
   } catch (err: unknown) {
     if (err instanceof Error) {

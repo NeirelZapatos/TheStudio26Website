@@ -219,12 +219,12 @@ export const PRICE_FILTER: PriceFilterDefinition = {
   id: "price",
   name: "Price",
   options: [
-    { value: [0, 500], label: "Any price" },
+    { value: [0, 999999], label: "Any price" },
     { value: [0, 49.99], label: "$0 - $49" },
     { value: [50, 99.99], label: "$50 - $99" },
     { value: [100, 499.99], label: "$100 - $499" },
     { value: [500, 999.99], label: "$500 - $999" },
-    { value: [1000, 10000000], label: "$1000+" },
+    { value: [1000, 999999], label: "$1000+" },
   ],
 };
 
@@ -244,7 +244,7 @@ export const DEFAULT_FILTER_STATE = {
   essentials_type: [],
   price: {
     isCustom: false,
-    range: [0, 500] as [number, number],
+    range: [0, 999999] as [number, number],
   },
   searchTerm: "",
 };
