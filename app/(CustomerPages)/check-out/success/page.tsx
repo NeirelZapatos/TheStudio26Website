@@ -71,6 +71,7 @@ export default function OrderSuccessPage() {
       return;
     }
 
+    // Retrieve cart items from localStorage before making the API call
     try {
       const storedCart = localStorage.getItem("cart");
       if (storedCart) {
@@ -91,10 +92,20 @@ export default function OrderSuccessPage() {
         }
 
         const data = await response.json();
+        
+        // Add debug logging to see the full response
+        console.log("Order details response:", data);
+        
+        // Ensure we preserve the original delivery method from the API
+        if (data && data.deliveryMethod) {
+          console.log("Delivery method from API:", data.deliveryMethod);
+        }
+        
         setOrderDetails(data);
         setLoading(false);
 
         if (data.success) {
+          // Clear the cart after successful order
           clearCart();
         }
 
@@ -111,14 +122,30 @@ export default function OrderSuccessPage() {
   const formatAddress = (address: any) => {
     if (!address) return "Not provided";
 
-    const addressParts = [
-      address.line1,
-      address.line2,
-      `${address.city}, ${address.state} ${address.postal_code}`,
-      address.country
-    ].filter(Boolean);
+    // Safe handling of address properties
+    const line1 = address.line1 || '';
+    const line2 = address.line2 || '';
+    
+    // Format the city, state, zip as a group
+    let cityStateZip = '';
+    if (address.city || address.state || address.postal_code) {
+      const city = address.city || '';
+      const state = address.state || '';
+      const zip = address.postal_code || '';
+      
+      if (city && (state || zip)) {
+        cityStateZip = `${city}, ${state} ${zip}`.trim();
+      } else {
+        cityStateZip = `${city}${state}${zip}`.trim();
+      }
+    }
+    
+    const country = address.country || '';
 
-    return addressParts.join(", ");
+    // Filter out empty strings
+    const addressParts = [line1, line2, cityStateZip, country].filter(part => part.length > 0);
+    
+    return addressParts.length > 0 ? addressParts.join(", ") : "Not provided";
   };
 
   const formatPrice = (price: number | string): string => {
@@ -144,6 +171,25 @@ export default function OrderSuccessPage() {
     return (numPrice * quantity).toFixed(2);
   };
 
+  // Get delivery address, properly handling both shipping_details and customer_details
+  const getDeliveryAddress = () => {
+    if (!orderDetails) return "Not provided";
+    
+    // For delivery orders, use shipping_details.address as primary source
+    if (orderDetails.deliveryMethod === 'delivery') {
+      if (orderDetails.session.shipping_details && orderDetails.session.shipping_details.address) {
+        return formatAddress(orderDetails.session.shipping_details.address);
+      }
+    }
+    
+    // Fallback to customer_details.address
+    if (orderDetails.session.customer_details && orderDetails.session.customer_details.address) {
+      return formatAddress(orderDetails.session.customer_details.address);
+    }
+    
+    return "Not provided";
+  };
+
   if (loading) {
     return <div className="text-center py-16">Loading order details...</div>;
   }
@@ -163,8 +209,10 @@ export default function OrderSuccessPage() {
     );
   }
 
-  const deliveryMethod = orderDetails.deliveryMethod === 'pickup' ? 'pickup' : 'delivery';
+  // Make sure we're using the delivery method from the API
+  const deliveryMethod = orderDetails.deliveryMethod;
 
+  // Use stored cart items if available, otherwise use items from API
   const items = cartItems.length > 0 ? cartItems : (orderDetails.items || []);
 
   return (
@@ -180,7 +228,9 @@ export default function OrderSuccessPage() {
             Order Confirmed!
           </h1>
           <p className="text-gray-600">
-            Your order has been placed successfully. We've sent a confirmation to {orderDetails.session.customer_details.email}.
+            Your order has been placed successfully.
+            {orderDetails.session.customer_details && orderDetails.session.customer_details.email && 
+              ` We've sent a confirmation to ${orderDetails.session.customer_details.email}.`}
           </p>
         </div>
 
@@ -196,13 +246,14 @@ export default function OrderSuccessPage() {
 
               <div className="flex items-start">
                 <TruckIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                <span>{orderDetails.deliveryMethod === 'pickup' ? 'Pickup in Store' : 'Delivery'}</span>
+                <span>{deliveryMethod === 'pickup' ? 'Pickup in Store' : 'Delivery'}</span>
               </div>
 
-              {orderDetails.deliveryMethod === 'delivery' && (
+              {/* Only show address for delivery orders */}
+              {deliveryMethod === 'delivery' && (
                 <div className="flex items-start">
                   <MapPinIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
-                  <span>{formatAddress(orderDetails.session.customer_details.address)}</span>
+                  <span>{getDeliveryAddress()}</span>
                 </div>
               )}
 
