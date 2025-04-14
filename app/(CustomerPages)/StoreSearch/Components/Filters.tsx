@@ -1,4 +1,3 @@
-import SearchBar from "./SearchBar";
 import { useEffect } from "react";
 import {
   CATEGORIES,
@@ -104,7 +103,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
       <div className="collapse collapse-arrow">
         <input type="checkbox" name="price-accordion" />
         <div className="collapse-title text-med text-gray-400 hover:text-gray-500">
-          <span className="font-medium text-gray-900">{PRICE_FILTER.name}</span>
+          <span className="font-medium text-gray-900">Price</span>
         </div>
         <div className="collapse-content animate-none">
           <ul className="space-y-4">
@@ -138,18 +137,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
   };
 
   return (
-    <div className="h-[calc(100vh-2rem)] sticky top-5 overflow-y-auto pr-4">
-      <SearchBar
-        onSearch={(searchTerm: string) => {
-          setFilter((prev) => ({
-            ...prev,
-            searchTerm,
-          }));
-        }}
-        value={filter.searchTerm}
-        className="mb-4"
-        placeholder="Search products..."
-      />
+    <div className="overflow-y-auto pr-4">
 
       {/* Category Selection */}
       <ul className="space-y-2 border-b border-gray-200 pb-6 text-md font-medium">

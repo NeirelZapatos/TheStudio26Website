@@ -7,10 +7,13 @@ interface ProductCardProps {
   name: string;
   price: number;
   image_url: string;
+  quantity_in_stock?: number;
   compact?: boolean;
 }
 
-function ProductCard({ name, price, image_url, _id, compact }: ProductCardProps) {
+function ProductCard({ name, price, image_url, _id, quantity_in_stock = 0, compact }: ProductCardProps) {
+  const isInStock = quantity_in_stock > 0;
+  
   return (
     <div className={`group relative h-full ${compact ? "h-48" : "h-64"}`}>
       <div className="relative aspect-square">
@@ -25,12 +28,18 @@ function ProductCard({ name, price, image_url, _id, compact }: ProductCardProps)
             alt="Product Image"
             className="rounded-md h-full w-full object-cover group-hover:opacity-90 duration-200"
           />
-          <AddToCartButton product={{ _id, name, price, image_url, }}/>
+          
+          {isInStock && (
+            <AddToCartButton product={{ _id, name, price, image_url, quantity_in_stock }} />
+          )}
         </Link>
       </div>
       <div className="mt-3 px-1">
         <h3 className="text-sm text-gray-700">{name}</h3>
         <p className="mt-1 text-md text-gray-900">${Number(price).toFixed(2)}</p>
+        {!isInStock && (
+          <p className="text-xs text-red-500 mt-1">Out of stock</p>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ interface SearchBarProps {
   placeholder?: string;
   delay?: number;
   className?: string;
-  value?: string;
+  value: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -14,27 +14,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search products...",
   delay = 300,
   className = "",
-  value = "",
+  value,
 }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  //Effect to sync with the "reset filters" button
+  // Local state for immediate UI updates
+  const [localSearchTerm, setLocalSearchTerm] = useState(value);
+  
+  // Sync local state with parent value when it changes externally
   useEffect(() => {
-    if (value !== undefined) {
-      setSearchTerm(value);
-    }
+    setLocalSearchTerm(value);
   }, [value]);
-
-  // Debounce search to avoid too many re-renders
+  
+  // Debounce the search term updates to parent
   useEffect(() => {
+    // Skip the effect if we're just initializing or syncing with parent
+    if (localSearchTerm === value) return;
+    
     const handler = setTimeout(() => {
-      onSearch(searchTerm);
+      onSearch(localSearchTerm);
     }, delay);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [searchTerm, delay, onSearch]);
+  }, [localSearchTerm, delay, onSearch, value]);
 
   return (
     <div className={`relative ${className}`}>
@@ -42,14 +44,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <Search className="h-5 w-5 text-gray-400" />
         <input
           type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={localSearchTerm}
+          onChange={(e) => setLocalSearchTerm(e.target.value)}
           placeholder={placeholder}
           className="ml-2 block w-full border-0 bg-transparent focus:outline-none focus:ring-0 sm:text-sm"
         />
-        {searchTerm && (
+        {localSearchTerm && (
           <button
-            onClick={() => setSearchTerm("")}
+            onClick={() => {
+              setLocalSearchTerm("");
+              onSearch("");
+            }}
             className="ml-1 text-gray-400 hover:text-gray-600"
           >
             <X className="h-4 w-4" />

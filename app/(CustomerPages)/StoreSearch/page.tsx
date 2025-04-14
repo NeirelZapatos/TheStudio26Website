@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import ProductGrid from "./Components/ProductGrid";
 import Filters from "./Components/Filters";
-import { ChevronDown, Filter, X, SlidersHorizontal } from "lucide-react";
+import SearchBar from "./Components/SearchBar";
+import { ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import {
   DEFAULT_FILTER_STATE,
   FilterState,
@@ -17,6 +18,13 @@ export default function StorePage() {
     setFilter((prev) => ({
       ...prev,
       sort: sortValue,
+    }));
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    setFilter((prev) => ({
+      ...prev,
+      searchTerm,
     }));
   };
 
@@ -70,6 +78,13 @@ export default function StorePage() {
       <section className="pb-24 pt-6">
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
           <div className="hidden sticky  top-5 h-[calc(100vh-2rem)] overflow-y-auto lg:block">
+            <div className="mb-3 mr-4 hidden lg:block">
+              <SearchBar
+                onSearch={handleSearch}
+                value={filter.searchTerm}
+                placeholder="Search products..."
+              />
+            </div>
             <Filters filter={filter} setFilter={setFilter} />
           </div>
           <div className="drawer drawer-end lg:hidden z-50">
@@ -93,6 +108,13 @@ export default function StorePage() {
                   >
                     <X className="h-5 w-5" />
                   </label>
+                </div>
+                <div className="mb-4 mr-4">
+                  <SearchBar
+                    onSearch={handleSearch}
+                    value={filter.searchTerm}
+                    placeholder="Search products..."
+                  />
                 </div>
                 <Filters filter={filter} setFilter={setFilter} />
               </div>

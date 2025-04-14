@@ -10,6 +10,7 @@ interface AddToCartButtonProps {
     name: string;
     price: number;
     image_url: string;
+    quantity_in_stock?: number;
   };
 }
 
