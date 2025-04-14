@@ -89,6 +89,7 @@ const ItemTemplateSchema: Schema = new Schema(
     // Jewelry
     jewelry_type: { type: String },
     color: { type: String },
+    inlayed_stone: { type: String },
     metal_type: { type: String },
     metal_purity: { type: String },
     metal_finish: { type: String },

@@ -1,87 +1,30 @@
-// ItemCard.tsx
-import React from "react";
+import { Item } from './ItemTypes';
 
-export type Item = {
-  _id: string;
-  name: string;
-  description?: string;
-  price: number;
-  category?: string;
-  material?: string;
-  image_url?: string;
-  size?: string;
-  color?: string;
-  purchaseType?: "Item" | "Course";
-  itemType?: string;
-  quantity_in_stock?: number;
-};
-
-type ItemCardProps = {
+interface ItemCardProps {
   item: Item;
-  onEdit: (item: Item) => void;
-};
+  onClick: () => void;
+}
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, onEdit }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
   return (
-    <div className="bg-white p-4 rounded">
-      {item.image_url && (
-        <img
-          src={item.image_url}
-          alt={item.name}
-          className="w-full h-48 object-cover rounded mb-4"
-        />
-      )}
-      <h3 className="text-xl font-semibold text-gray-800 mb-3">
-        {item.name}
-      </h3>
-      {item.description && (
-        <p className="text-gray-700 mb-4">{item.description}</p>
-      )}
-      <ul className="space-y-2 text-gray-700 mb-4">
-        <li>
-          <span className="font-semibold">Price:</span> ${item.price}
-        </li>
-        {item.category && (
-          <li>
-            <span className="font-semibold">Category:</span> {item.category}
-          </li>
+    <div className="flex flex-col h-full cursor-pointer" onClick={onClick}>
+      <div className="mb-2 h-48 bg-gray-200 flex items-center justify-center rounded-lg overflow-hidden">
+        {item.image_url ? (
+          <img 
+            src={item.image_url} 
+            alt={item.name} 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="text-gray-400">Product Image</div>
         )}
-        {item.material && (
-          <li>
-            <span className="font-semibold">Material:</span> {item.material}
-          </li>
-        )}
-        {item.color && (
-          <li>
-            <span className="font-semibold">Color:</span> {item.color}
-          </li>
-        )}
-        {item.size && (
-          <li>
-            <span className="font-semibold">Size:</span> {item.size}
-          </li>
-        )}
-        {item.purchaseType && (
-          <li>
-            <span className="font-semibold">Purchase Type:</span>{" "}
-            {item.purchaseType}
-          </li>
-        )}
-        {item.itemType && (
-          <li>
-            <span className="font-semibold">Item Type:</span> {item.itemType}
-          </li>
-        )}
-        <li>
-          <span className="font-semibold">Quantity:</span>{" "}
-          {item.quantity_in_stock}
-        </li>
-      </ul>
-      <button
-        onClick={() => onEdit(item)}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      </div>
+      <h3 className="font-medium text-lg">{item.name}</h3>
+      <p className="text-gray-700">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</p>
+      <button 
+        className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition"
       >
-        Edit
+        View Details
       </button>
     </div>
   );
