@@ -435,8 +435,7 @@ export default function ClassBookingPage() {
                       name="participants"
                       min="1"
                       max={availableSpots}
-                      className="join-item input input-bordered text-center w-16 focus:outline-none appearance-none"
-                      value={contactInfo.participants}
+                      className="join-item input input-bordered text-center w-16 focus:outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" value={contactInfo.participants}
                       onChange={handleInfoChange}
                       required
                       style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
@@ -470,7 +469,7 @@ export default function ClassBookingPage() {
                     </span>
                   </label>
                 </div>
-                
+
               </form>
             </div>
           </div>
