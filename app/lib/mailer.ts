@@ -82,7 +82,7 @@ export const sendOrderEmail = async (
             <tr><th>Item</th><th>Quantity</th><th>Price</th></tr>
             ${itemsTable}
         </table>
-        <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
+        <p><strong>Total Amount:</strong> $${totalAmount}</p>
         <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
         ${
             trackingLink
