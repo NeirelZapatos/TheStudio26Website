@@ -1,8 +1,8 @@
 "use client";
 
 import { addToCart } from "@/services/cartService";
-import { useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingCart, CheckCircle } from "lucide-react";
 
 interface AddToCartButtonProps {
   product: {
@@ -15,8 +15,16 @@ interface AddToCartButtonProps {
 }
 
 export default function AddToCartButton({ product }: AddToCartButtonProps) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [buttonText, setButtonText] = useState("Add to Cart");
+  const [showAlert, setShowAlert] = useState(false);
+
+  // Clean up any lingering alerts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (showAlert) {
+        setShowAlert(false);
+      }
+    };
+  }, []);
 
   const handleAddToCart = () => {
     const item = {
@@ -28,27 +36,47 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
     };
 
     addToCart(item);
-
-    setIsAdding(true);
-    setButtonText("Added to Cart!");
-
+    setShowAlert(true);
+    
+    // Hide alert after 5 seconds
     setTimeout(() => {
-      setIsAdding(false);
-      setButtonText("Add to Cart");
-    }, 2000); // Change the button text after 2 seconds
+      setShowAlert(false);
+    }, 5000);
   };
 
   return (
-    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-    <button
-      onClick={(e) => {
-        e.preventDefault(); //prevents navigation when button is clicked
-        handleAddToCart();
-      }}
-      className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-amber-500 hover:text-gray transition-colors duration-200"
-    >
-      <ShoppingCart size={20} />
-    </button>
-  </div>
+    <>
+      {/* Alert notification */}
+      {showAlert && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 w-11/12 max-w-6xl z-50 animate-slideDown">
+          <div className="alert alert-success flex items-center bg-green-100 border-l-4 border-green-500 p-4 rounded shadow-md">
+            <CheckCircle className="text-green-500 mr-3" size={20} />
+            <div className="flex-1">
+              <span className="font-medium text-green-800">Success!</span>
+              <p className="text-green-700">{product.name} has been added to your cart.</p>
+            </div>
+            <button 
+              className="text-green-500 hover:text-green-700" 
+              onClick={() => setShowAlert(false)}
+            >
+              <span className="text-xl">&times;</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add to cart button */}
+      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          onClick={(e) => {
+            e.preventDefault(); // prevents navigation when button is clicked
+            handleAddToCart();
+          }}
+          className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-amber-500 hover:text-gray transition-colors duration-200"
+        >
+          <ShoppingCart size={20} />
+        </button>
+      </div>
+    </>
   );
 }

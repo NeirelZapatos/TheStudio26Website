@@ -113,7 +113,7 @@ export default function ProductSpecifications({ product }: ProductSpecsProps) {
           </div>
           <div className="collapse-content bg-white">
             <p className="text-sm text-gray-700 mt-4">
-              We offer a 30-day return policy for new and unworn jewelry in
+              We offer a 30-day return policy for new and unworn products in
               original condition with tags attached for a refund to the original
               form of purchase.
             </p>
