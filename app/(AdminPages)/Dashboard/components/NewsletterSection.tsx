@@ -142,12 +142,11 @@ const NewsletterSection: React.FC = () => {
                     </select>
                 )}
                 
-                <button 
+                <Link
+                    href="/EmailBuilder"
                     className="bg-gray-200 block w-full my-4 p-2 rounded-lg hover:bg-gray-300 text-center"> 
-                    <Link href="/EmailBuilder">
-                        Edit Templates
-                    </Link>
-                </button>
+                    Edit Templates
+                </Link>
                 
                 <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
                 
