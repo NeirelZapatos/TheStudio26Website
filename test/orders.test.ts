@@ -1,4 +1,5 @@
-import { GET, POST } from '../app/api/orders/route';
+import { GET as ordersGET, POST as ordersPOST } from '../app/api/orders/route';
+import { GET as idGET, PUT as idPUT, DELETE as idDELETE } from '../app/api/orders/[id]/route';
 import { NextRequest } from 'next/server';
 import dbConnect from '../app/lib/dbConnect';
 import Order from '../app/models/Order';
@@ -18,6 +19,10 @@ jest.mock('../app/models/Order', () => {
     };
   };
   mockOrder.find = jest.fn();
+  mockOrder.findById = jest.fn ();
+  mockOrder.findByIdAndUpdate = jest.fn();
+  mockOrder.findByIdAndDelete = jest.fn();
+  mockOrder.deleteOne = jest.fn();
   return mockOrder;
 });
 
@@ -40,7 +45,7 @@ describe('GET /api/orders', () => {
     console.log(`${process.env.NEXTAUTH_URL}/api/orders`);
 
     const request = { url: `${process.env.NEXTAUTH_URL}/api/orders` } as NextRequest;
-    const response = await GET(request);
+    const response = await ordersGET(request);
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -54,7 +59,7 @@ describe('GET /api/orders', () => {
       url: `${process.env.NEXTAUTH_URL}/api/orders?start=2025-01-01&end=2025-01-31`,
     } as NextRequest;
 
-    const response = await GET(request);
+    const response = await ordersGET(request);
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -65,7 +70,7 @@ describe('GET /api/orders', () => {
     (Order.find as jest.Mock).mockRejectedValue(new Error('DB error'));
 
     const request = { url: `${process.env.NEXTAUTH_URL}/api/orders` } as NextRequest;
-    const response = await GET(request);
+    const response = await ordersGET(request);
     const json = await response.json();
 
     expect(response.status).toBe(500);
@@ -91,7 +96,7 @@ describe('POST /api/orders', () => {
       json: async () => body,
     } as unknown as NextRequest;
 
-    const response = await POST(mockRequest);
+    const response = await ordersPOST(mockRequest);
     const json = await response.json();
 
     expect(response.status).toBe(201);
@@ -114,7 +119,7 @@ describe('POST /api/orders', () => {
       json: async () => body,
     } as unknown as NextRequest;
 
-    const response = await POST(mockRequest);
+    const response = await ordersPOST(mockRequest);
     const json = await response.json();
 
     expect(response.status).toBe(400);
@@ -141,7 +146,7 @@ describe('POST /api/orders', () => {
       json: async () => body,
     } as unknown as NextRequest;
 
-    const response = await POST(mockRequest);
+    const response = await ordersPOST(mockRequest);
     const json = await response.json();
 
     expect(response.status).toBe(500);
@@ -149,5 +154,132 @@ describe('POST /api/orders', () => {
 
     // Restore original method if needed
     // (Item.findById as jest.Mock).mockImplementation(originalFindById);
+  });
+});
+
+describe('GET /api/orders/[id]', () => {
+  it('returns order by id', async () => {
+    const orderId = '12345';
+
+    // Mock the findById to return a sample order
+    (Order.findById as jest.Mock).mockResolvedValue({
+      _id: orderId,
+      customer_id: '67f07f533af3b60571ea2adf',
+      product_items: ['67eb2857426d567905c67bc3'],
+      total_amount: 150
+    });
+    
+    // Create a request with params (Next.js context structure)
+    const request = { 
+      url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}`
+    } as NextRequest;
+    
+    // Context object for dynamic route
+    const context = {
+      params: { id: Number(orderId) }
+    };
+    
+    const response = await idGET(request, context);
+    const json = await response.json();
+    
+    expect(response.status).toBe(200);
+    expect(json).toHaveProperty('_id', orderId);
+  });
+
+  it('handles GET errors', async () => {
+    const orderId = '12345';
+    (Order.findById as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+    const context = {
+      params: { id: Number(orderId) }
+    };
+
+    const request = { url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}` } as NextRequest;
+    const response = await idGET(request, context);
+    const json = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(json).toEqual({ error: 'DB error' });
+  });
+
+  it('returns 404 when order does not exist', async () => {
+    const orderId = 'nonexistent123';
+    
+    // Mock findById to return null (simulating no order found)
+    (Order.findById as jest.Mock).mockResolvedValue(null);
+  
+    const context = {
+      params: { id: Number(orderId) }
+    };
+  
+    const request = { url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}` } as NextRequest;
+    const response = await idGET(request, context);
+    const json = await response.json();
+  
+    expect(response.status).toBe(404);
+    expect(json).toEqual({ error: 'Order not found' });
+  });
+});
+
+describe('DELETE /api/orders/[id]', () => {
+  it('successfully deletes an existing order', async () => {
+    const orderId = '12345';
+    
+    // Mock findByIdAndDelete to return the deleted order (indicating success)
+    (Order.findById as jest.Mock).mockResolvedValue({
+      _id: orderId,
+      customer_id: '67f07f533af3b60571ea2adf',
+      product_items: ['67eb2857426d567905c67bc3'],
+      total_amount: 150
+    });
+
+    (Order.deleteOne as jest.Mock).mockResolvedValue({ acknowledged: true, deletedCount: 1 });
+
+
+    const context = {
+      params: { id: Number(orderId) }
+    };
+
+    const request = { url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}` } as NextRequest;
+    const response = await idDELETE(request, context);
+    
+    // Typically DELETE returns 200 No Content when successful
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 404 when trying to delete non-existent order', async () => {
+    const orderId = 'nonexistent123';
+    
+    // Mock findByIdAndDelete to return null (no document found to delete)
+    (Order.findById as jest.Mock).mockResolvedValue(null);
+
+    const context = {
+      params: { id: Number(orderId) }
+    };
+
+    const request = { url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}` } as NextRequest;
+    const response = await idDELETE(request, context);
+    const json = await response.json();
+    
+    expect(response.status).toBe(404);
+    expect(json).toEqual({ error: 'Product not found' });
+  });
+
+  it('handles errors during deletion', async () => {
+    const orderId = '12345';
+    
+    // Mock findByIdAndDelete to throw an error
+    (Order.findById as jest.Mock).mockRejectedValue(new Error('Database connection error'));
+
+    const context = {
+      params: { id: Number(orderId) }
+    };
+
+    const request = { url: `${process.env.NEXTAUTH_URL}/api/orders/${orderId}` } as NextRequest;
+    const response = await idDELETE(request, context);
+    const json = await response.json();
+    
+    expect(response.status).toBe(500);
+    expect(json).toEqual({ error: 'Database connection error' });
   });
 });

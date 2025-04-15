@@ -55,29 +55,29 @@ export const usePackageManagement = (
   };
 
   const handlePackageDetailsSubmit = (details: PackageDetails) => {
-    console.log("Submitting package details for index", currentPackageIndex, details);
+    console.log("Submitting final package details for printing", details);
     
-    // Store in modifiedDetails
-    setModifiedDetails({
-      ...modifiedDetails,
-      [currentPackageIndex]: details
+    // Update packageDetails array with all modified details
+    const newPackageDetails = [...packageDetails];
+    
+    // Include the current package
+    newPackageDetails[currentPackageIndex] = details;
+    
+    // Also include any other modified packages
+    Object.entries(modifiedDetails).forEach(([index, packageData]) => {
+      const idx = parseInt(index, 10);
+      if (idx !== currentPackageIndex) { // Skip current package as we already added it
+        newPackageDetails[idx] = packageData;
+      }
     });
     
-    // Update packageDetails array
-    const newPackageDetails = [...packageDetails];
-    newPackageDetails[currentPackageIndex] = details;
     setPackageDetails(newPackageDetails);
-
-    if (currentPackageIndex < selectedOrders.size - 1) {
-      // Move to next package
-      setCurrentPackageIndex(currentPackageIndex + 1);
-    } else {
-      // All packages are done, print labels
-      printLabels(newPackageDetails);
-      setPackageModalOpen(false);
-      setCurrentPackageIndex(0);
-      setModifiedDetails({});
-    }
+    
+    // Only when Print button is clicked, print the labels
+    printLabels(newPackageDetails);
+    setPackageModalOpen(false);
+    setCurrentPackageIndex(0);
+    setModifiedDetails({});
   };
 
   const printLabels = async (details: PackageDetails[]) => {
@@ -99,27 +99,16 @@ export const usePackageManagement = (
   };
 
   const handlePrintShippingLabels = () => {
-    if (selectedOrders.size === 0) {
+    if (selectedOrders.size === 0 ) {
       alert('Please select at least one order to print shipping labels.');
       return;
     }
     
-    // Check if all packages have details, either in packageDetails or modifiedDetails
-    const allPackagesHaveDetails = Array.from({ length: selectedOrders.size }).every((_, index) => {
-      const details = modifiedDetails[index] || packageDetails[index];
-      return details && details.length > 0 && details.width > 0 && details.height > 0 && details.weight > 0;
-    });
+    // Always reset and open the modal regardless of existing details
+    setCurrentPackageIndex(0);
+    setPackageModalOpen(true);
     
-    if (allPackagesHaveDetails) {
-      // Create a combined array of all package details
-      const combinedDetails = Array.from({ length: selectedOrders.size }, (_, index) => 
-        modifiedDetails[index] || packageDetails[index]
-      );
-      printLabels(combinedDetails);
-    } else {
-      setCurrentPackageIndex(0);
-      setPackageModalOpen(true);
-    }
+    // Do NOT clear modified details when reopening the modal - preserve user input
   };
 
   return {

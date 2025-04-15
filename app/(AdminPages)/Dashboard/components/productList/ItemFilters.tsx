@@ -4,41 +4,42 @@ import SearchBar from "./SearchBar";
 const SUBCATEGORIES = [
   { name: "Stones", selected: false, href: "#" },
   { name: "Jewelry", selected: false, href: "#" },
-  { name: "Supplies", selected: false, href: "#" },
+  { name: "Essentials", selected: false, href: "#" },
 ];
 
-const COLOR_FILTERS = {
-  id: "color",
-  name: "Color",
+const JEWELRY_TYPE = {
+  id: "jewelry_type",
+  name: "Jewelry Type",
   options: [
-    { value: "white", label: "White" },
-    { value: "beige", label: "Beige" },
-    { value: "silver", label: "Silver" },
-    { value: "gold", label: "Gold" },
-    { value: "black", label: "Black" },
-    { value: "blue", label: "Blue" },
-    { value: "green", label: "Green" },
-    { value: "red", label: "Red" },
+    { value: "ring", label: "Ring" },
+    { value: "necklace", label: "Necklace" },
+    { value: "bracelet", label: "Bracelet" },
+    { value: "earrings", label: "Earrings" },
+    { value: "cuffs", label: "Cuffs" },
+    { value: "pendants", label: "Pendants" },
+    { value: "other", label: "Other" },
   ] as const,
 };
 
-const MATERIAL_FILTERS = {
-  id: "material",
-  name: "Material",
+const ESSENTIALS_TYPE = {
+  id: "essentials_type",
+  name: "Essentials Types",
   options: [
-    { value: "gold", label: "Gold" },
-    { value: "copper", label: "Copper" },
-    { value: "silver", label: "Silver" },
-  ] as const,
+    { value: "Tools", label: "Tools" },
+    { value: "Supplies", label: "Supplies" },
+    { value: "Jewelry Kits", label: "Jewelry Kits" },
+    { value: "Material and Components", label: "Materials and Components" },
+  ],
 };
 
-const SIZE_FILTERS = {
-  id: "size",
-  name: "Size",
+const STONE_CUT = {
+  id: "cut_category",
+  name: "Stone Cut",
   options: [
-    { value: "S", label: "S" },
-    { value: "M", label: "M" },
-    { value: "L", label: "L" },
+    { value: "Cabochons", label: "Cabochons" },
+    { value: "Faceted Stones", label: "Faceted Stones" },
+    { value: "Slabs & Rough Cuts", label: "Slabs & Rough Cuts" },
+    { value: "Beads & Drilled Stones", label: "Beads & Drilled Stones" },
   ] as const,
 };
 
@@ -46,25 +47,12 @@ const PRICE_FILTERS = {
   id: "price",
   name: "Price",
   options: [
-    { value: [0, 500], label: "Any price" },
-    { value: [0, 49], label: "$0 - $49" },
-    { value: [50, 99], label: "$50 - $99" },
-    { value: [100, 500], label: "$100 - $500" },
-  ] as const,
-};
-
-const CUT_FILTERS = {
-  id: "cut",
-  name: "Cut",
-  options: [
-    { value: "round", label: "Round" },
-    { value: "oval", label: "Oval" },
-    { value: "pear", label: "Pear" },
-    { value: "emerald", label: "Emerald" },
-    { value: "princess", label: "Princess" },
-    { value: "marquise", label: "Marquise" },
-    { value: "heart", label: "Heart" },
-    { value: "cushion", label: "Cushion" },
+    { value: [0, 999999], label: "Any price" },
+    { value: [0, 49.99], label: "$0 - $49" },
+    { value: [50, 99.99], label: "$50 - $99" },
+    { value: [100, 499.99], label: "$100 - $499" },
+    { value: [500, 999.99], label: "$500 - $999" },
+    { value: [1000, 999999], label: "$1000+" },
   ] as const,
 };
 
@@ -79,6 +67,9 @@ interface FilterState {
   color: string[];
   material: string[];
   size: string[];
+  jewelry_type: string[];
+  essentials_type: string[];
+  cut_category: string[];
   price: {
     isCustom: boolean;
     range: [number, number];
@@ -98,7 +89,15 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
     category,
     value,
   }: {
-    category: keyof Pick<FilterState, "color" | "material" | "size">;
+    category: keyof Pick<
+      FilterState,
+      | "color"
+      | "material"
+      | "size"
+      | "jewelry_type"
+      | "essentials_type"
+      | "cut_category"
+    >;
     value: string;
   }) => {
     const isFilterApplied = filter[category].includes(value);
@@ -131,9 +130,9 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+        <div className="p-4 w-80 min-h-full bg-base-200 text-base-content">
           {/* Sidebar content */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold text-lg">Filters</h3>
             <label htmlFor="filter-drawer" className="btn btn-sm btn-circle">
               ✕
@@ -155,7 +154,7 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
           {/* Categories */}
           <div className="mb-0">
             <h4 className="font-bold">Categories</h4>
-            <ul className="space-y-4 pb-6 text-md font-medium text-gray-900">
+            <ul className="space-y-4 pb-2 text-md font-medium text-gray-900">
               <li>
                 <button
                   onClick={() => handleCategoryChange("all")}
@@ -188,150 +187,14 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
           </div>
           <div className="divider"></div>
 
-          {/* Color Filter */}
-          <div className="collapse collapse-arrow">
-            <input type="checkbox" className="peer" />
-            <div className="collapse-title font-medium peer-checked:mb-1">
-              Color
-            </div>
-            <div className="collapse-content animate-none">
-              <ul className="grid grid-cols-4 gap-2">
-                {COLOR_FILTERS.options.map((option, optionIdx) => (
-                  <li key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`color-filter-${optionIdx}`}
-                      className="checkbox checkbox-sm"
-                      checked={filter.color.includes(option.value)}
-                      onChange={() => {
-                        applyArrayFilter({
-                          category: "color",
-                          value: option.value,
-                        });
-                      }}
-                    />
-                    <label
-                      htmlFor={`color-filter-${optionIdx}`}
-                      className="px-2 text-sm"
-                    >
-                      {option.label}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Material Filter */}
-          <div className="collapse collapse-arrow border-t pt-2">
-            <input type="checkbox" className="peer" />
-            <div className="collapse-title font-medium peer-checked:mb-1">
-              Material
-            </div>
-            <div className="collapse-content px-1 pt-0">
-              <ul className="grid grid-cols-4 gap-2">
-                {MATERIAL_FILTERS.options.map((option, optionIdx) => (
-                  <li key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`material-filter-${optionIdx}`}
-                      className="checkbox checkbox-sm"
-                      checked={filter.material.includes(option.value)}
-                      onChange={() => {
-                        applyArrayFilter({
-                          category: "material",
-                          value: option.value,
-                        });
-                      }}
-                    />
-                    <label
-                      htmlFor={`material-filter-${optionIdx}`}
-                      className="px-2 text-sm cursor-pointer flex-1"
-                    >
-                      {option.label}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Size Filter */}
-          <div className="collapse collapse-arrow border-t pt-2">
-            <input type="checkbox" className="peer" />
-            <div className="collapse-title font-medium peer-checked:mb-1">
-              Size
-            </div>
-            <div className="collapse-content px-1 pt-0">
-              <ul className="grid grid-cols-4 gap-2">
-                {SIZE_FILTERS.options.map((option, optionIdx) => (
-                  <li key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`size-filter-${optionIdx}`}
-                      className="checkbox checkbox-sm"
-                      checked={filter.size.includes(option.value)}
-                      onChange={() => {
-                        applyArrayFilter({
-                          category: "size",
-                          value: option.value,
-                        });
-                      }}
-                    />
-                    <label
-                      htmlFor={`size-filter-${optionIdx}`}
-                      className="px-2 text-sm cursor-pointer flex-1"
-                    >
-                      {option.label}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Cut Filter */}
-          <div className="collapse collapse-arrow border-t pt-2">
-            <input type="checkbox" className="peer" />
-            <div className="collapse-title font-medium peer-checked:mb-1">
-              Cut Type
-            </div>
-            <div className="collapse-content px-1 pt-0">
-              <ul className="grid grid-cols-4 gap-2">
-                {CUT_FILTERS.options.map((option, optionIdx) => (
-                  <li key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`cut-filter-${optionIdx}`}
-                      className="checkbox checkbox-sm"
-                      checked={filter.size.includes(option.value)}
-                      onChange={() => {
-                        applyArrayFilter({
-                          category: "size",
-                          value: option.value,
-                        });
-                      }}
-                    />
-                    <label
-                      htmlFor={`cut-filter-${optionIdx}`}
-                      className="px-2 text-sm cursor-pointer flex-1"
-                    >
-                      {option.label}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
           {/* Price Filter */}
-          <div className="collapse collapse-arrow border-t pt-2">
+          <div className="collapse collapse-arrow pt-2">
             <input type="checkbox" className="peer" />
             <div className="collapse-title font-medium peer-checked:mb-1">
               Price
             </div>
-            <div className="collapse-content px-1 pt-0">
-              <ul className="grid grid-cols-4 gap-2">
+            <div className="collapse-content animate-none">
+              <ul className="grid gap-2">
                 {PRICE_FILTERS.options.map((option, optionIdx) => (
                   <li key={option.label} className="flex items-center">
                     <input
@@ -366,6 +229,108 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
             </div>
           </div>
 
+          {/* Jewelry Type Filter */}
+          <div className="collapse collapse-arrow">
+            <input type="checkbox" className="peer" />
+            <div className="collapse-title font-medium peer-checked:mb-1">
+              Jewelry Type
+            </div>
+            <div className="collapse-content animate-none">
+              <ul className="grid gap-2">
+                {JEWELRY_TYPE.options.map((option, optionIdx) => (
+                  <li key={option.value} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`jewelry_type-filter-${optionIdx}`}
+                      className="checkbox checkbox-sm"
+                      checked={filter.jewelry_type.includes(option.value)}
+                      onChange={() => {
+                        applyArrayFilter({
+                          category: "jewelry_type",
+                          value: option.value,
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`jewelry_type-filter-${optionIdx}`}
+                      className="px-2 text-sm"
+                    >
+                      {option.label}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Essentials Type Filter */}
+          <div className="collapse collapse-arrow pt-2">
+            <input type="checkbox" className="peer" />
+            <div className="collapse-title font-medium peer-checked:mb-1">
+              Essentials Types
+            </div>
+            <div className="collapse-content animate-none">
+              <ul className="grid gap-2">
+                {ESSENTIALS_TYPE.options.map((option, optionIdx) => (
+                  <li key={option.value} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`essentials_type-filter-${optionIdx}`}
+                      className="checkbox checkbox-sm"
+                      checked={filter.essentials_type.includes(option.value)}
+                      onChange={() => {
+                        applyArrayFilter({
+                          category: "essentials_type",
+                          value: option.value,
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`essentials_type-filter-${optionIdx}`}
+                      className="px-2 text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Stone Cut Filter */}
+          <div className="collapse collapse-arrow pt-2">
+            <input type="checkbox" className="peer" />
+            <div className="collapse-title font-medium peer-checked:mb-1">
+              Stone Cut
+            </div>
+            <div className="collapse-content animate-none">
+              <ul className="grid gap-2">
+                {STONE_CUT.options.map((option, optionIdx) => (
+                  <li key={option.value} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`cut_category-filter-${optionIdx}`}
+                      className="checkbox checkbox-sm"
+                      checked={filter.cut_category.includes(option.value)}
+                      onChange={() => {
+                        applyArrayFilter({
+                          category: "cut_category",
+                          value: option.value,
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`cut_category-filter-${optionIdx}`}
+                      className="px-2 text-sm cursor-pointer flex-1"
+                    >
+                      {option.label}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
           {/* Clear Filters Button */}
           <div className="mt-6">
             <button
@@ -377,6 +342,9 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
                   color: [],
                   material: [],
                   size: [],
+                  jewelry_type: [],
+                  essentials_type: [],
+                  cut_category: [],
                   price: {
                     isCustom: false,
                     range: [0, 500] as [number, number],

@@ -86,9 +86,9 @@ export const courseSchema = baseProductSchema.extend({
     location: z.string().optional(),
     max_capacity: z.number().min(1, { message: "Max capacity must be at least 1" }).optional(),
     stripeProductId: z.string().optional(),
-    category: z.string().optional(),
+    class_category: z.string().optional(),
     prerequisite: z.boolean().optional(),
-    recurring_or_one_time: z.string().optional(),
+    prerequisiteClass: z.string().optional(), 
 });
 
 export const productSchema = z.union([itemSchema, courseSchema]);
