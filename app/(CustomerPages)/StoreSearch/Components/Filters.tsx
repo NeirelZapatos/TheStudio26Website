@@ -231,7 +231,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
               className={`w-full text-left px-3 py-2 rounded-md ${
                 filter.category === category.value
                   ? "bg-amber-500 text-gray-800 font-semibold border-amber-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-amber-200"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-200"
               }`}
             >
               {category.name}

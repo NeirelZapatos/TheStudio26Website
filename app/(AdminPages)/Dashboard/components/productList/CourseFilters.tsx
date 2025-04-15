@@ -85,7 +85,7 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+        <div className="p-4 w-80 min-h-full bg-base-200 text-base-content">
           {/* Sidebar content */}
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold text-lg">Filters</h3>
@@ -124,7 +124,7 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
               {CATEGORIES.map((category) => (
                 <li key={category.name}>
                   <button
-                    onClick={() => handleCategoryChange(category.name)}
+                    onClick={() => handleCategoryChange(category.name.toLowerCase())}
                     className={`w-full text-left px-2 py-1 rounded-md ${
                       filter.class_category === category.name.toLowerCase()
                         ? "bg-primary/10 text-primary"

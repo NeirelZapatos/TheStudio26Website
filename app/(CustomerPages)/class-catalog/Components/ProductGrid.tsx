@@ -9,8 +9,7 @@ interface Course {
   _id: string;
   name: string;
   price: number;
-  category: string;
-  classType: string[];
+  class_category: string;
   image_url: string;
   description: string;
   date?: string;
@@ -20,8 +19,7 @@ interface Course {
 interface ProductGridProps {
   filter: {
     sort: string;
-    category: string;
-    classType: string[];
+    class_category: string;
     price: { range: [number, number] };
     searchTerm?: string;
   };
@@ -32,25 +30,24 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [postPerPage, setPostsPerPage] = useState(24);
+  const [postPerPage] = useState(12);
+  const [noSearchResults, setNoSearchResults] = useState(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoading(true);
         const params = new URLSearchParams();
 
-        // Only add parameters if they have values
         if (filter.sort !== "none") {
           params.append("sort", filter.sort);
         }
-        if (filter.category && filter.category !== "all") {
-          params.append("category", filter.category);
+        if (filter.class_category && filter.class_category !== "all") {
+          params.append("class_category", filter.class_category);
         }
-        if (filter.classType.length > 0) {
-          params.append("classType", filter.classType.join(","));
-        }
+        params.append("minPrice", filter.price.range[0].toString());
+        params.append("maxPrice", filter.price.range[1].toString());
 
         console.log("Fetching with params:", params.toString());
         const response = await fetch(`/api/courses?${params.toString()}`);
@@ -61,7 +58,10 @@ export default function ProductGrid({ filter }: ProductGridProps) {
         }
 
         const data = await response.json();
+        console.log(`Fetched ${data.length} courses`);
         setCourses(data);
+        setNoSearchResults(false); // Reset search results state
+        setCurrentPage(1); // Reset to first page when filters change
       } catch (err) {
         console.error("Error fetching courses:", err);
         setError(err instanceof Error ? err.message : "Failed to load courses");
@@ -71,9 +71,9 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     };
 
     fetchCourses();
-  }, [filter.sort, filter.category, filter.classType]);
+  }, [filter.sort, filter.class_category, filter.price.range]);
 
-  //Client side search filter
+  // Client side search filter
   useEffect(() => {
     if (!filter.searchTerm || filter.searchTerm.trim() === "") {
       setFilteredCourses(courses);
@@ -82,17 +82,18 @@ export default function ProductGrid({ filter }: ProductGridProps) {
 
     const searchTermLower = filter.searchTerm.toLowerCase().trim();
     const filtered = courses.filter((course) =>
-      course.name.toLowerCase().includes(searchTermLower)
+      course.name.toLowerCase().includes(searchTermLower) || 
+      (course.description && course.description.toLowerCase().includes(searchTermLower))
     );
 
     setFilteredCourses(filtered);
-    setCurrentPage(1); // Reset to the first page when filtering
+    setCurrentPage(1); // Reset to first page when search changes
   }, [courses, filter.searchTerm]);
 
   if (loading) {
     return (
-      <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
-        {Array(postPerPage).fill(0).map((_, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 min-h-0">
+        {Array(6).fill(0).map((_, index) => (
           <ProductSkeleton key={index} />
         ))}
       </div>
@@ -100,44 +101,77 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+    return (
+      <div className="text-center py-8 text-red-500">
+        <p className="mb-4">Error: {error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn btn-outline btn-error"
+        >
+          Try Again
+        </button>
+      </div>
+    );
   }
 
-  const coursesToDisplay =
-    filteredCourses.length > 0 ? filteredCourses : courses;
+  const coursesToDisplay = filteredCourses.length > 0 || filter.searchTerm ? filteredCourses : courses;
   const lastPostIndex = currentPage * postPerPage;
   const firstPostIndex = lastPostIndex - postPerPage;
   const currentPosts = coursesToDisplay.slice(firstPostIndex, lastPostIndex);
 
-  if (filteredCourses.length === 0) {
+  if (noSearchResults) {
     return (
       <div className="lg:col-span-3 text-center py-8">
-        No products match your search criteria.
+        <div className="p-8 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No products match your search
+          </h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filter criteria
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (coursesToDisplay.length === 0) {
+    return (
+      <div className="lg:col-span-3 text-center py-8">
+        <div className="p-8 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No products match your filters
+          </h3>
+          <p className="text-gray-500">Try adjusting your filter criteria</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 min-h-0">
-      {currentPosts.map((course) => (
-        <ProductCard
-          key={course._id}
-          _id={course._id}
-          name={course.name}
-          price={course.price}
-          image_url={course.image_url}
-          date={course.date}
-          time={course.time}
-        />
-      ))}
-      <div className="col-span-full flex justify-center mt-8">
-        <Pagination
-          totalPosts={coursesToDisplay.length}
-          postsPerPage={postPerPage}
-          setCurrentPage={setCurrentPage}
-          currentPage={currentPage}
-        />
+    <div>
+      <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 min-h-0">
+        {currentPosts.map((course) => (
+          <ProductCard
+            key={course._id}
+            _id={course._id}
+            name={course.name}
+            price={course.price}
+            image_url={course.image_url}
+            date={course.date}
+            time={course.time}
+          />
+        ))}
       </div>
+      {coursesToDisplay.length > postPerPage && (
+        <div className="col-span-full flex justify-center mt-8">
+          <Pagination
+            totalPosts={coursesToDisplay.length}
+            postsPerPage={postPerPage}
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }
