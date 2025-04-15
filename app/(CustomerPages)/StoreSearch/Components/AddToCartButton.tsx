@@ -45,7 +45,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
         e.preventDefault(); //prevents navigation when button is clicked
         handleAddToCart();
       }}
-      className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-blue-500 hover:text-white transition-colors duration-200"
+      className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-amber-500 hover:text-gray transition-colors duration-200"
     >
       <ShoppingCart size={20} />
     </button>

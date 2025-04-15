@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   CATEGORIES,
   FILTER_DEFINITIONS,
@@ -45,11 +45,59 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
   };
 
   const handlePriceFilter = (range: [number, number]) => {
+    // If range is [-1, -1], it's our custom price range option
+    if (range[0] === -1 && range[1] === -1) {
+      setFilter((prev: FilterState) => ({
+        ...prev,
+        price: {
+          ...prev.price,
+          isCustom: true,
+        },
+      }));
+    } else {
+      setFilter((prev: FilterState) => ({
+        ...prev,
+        price: {
+          ...prev.price,
+          isCustom: false,
+          range: range,
+        },
+      }));
+    }
+  };
+
+  const handleCustomMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ? parseFloat(e.target.value) : 0;
     setFilter((prev: FilterState) => ({
       ...prev,
       price: {
-        isCustom: false,
-        range: range,
+        ...prev.price,
+        customMin: value,
+      },
+    }));
+  };
+
+  const handleCustomMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ? parseFloat(e.target.value) : 0;
+    setFilter((prev: FilterState) => ({
+      ...prev,
+      price: {
+        ...prev.price,
+        customMax: value,
+      },
+    }));
+  };
+
+  const applyCustomPriceFilter = () => {
+    const min = filter.price.customMin || 0;
+    const max = filter.price.customMax || 999999;
+    
+    setFilter((prev: FilterState) => ({
+      ...prev,
+      price: {
+        ...prev.price,
+        isCustom: true,
+        range: [min, max] as [number, number],
       },
     }));
   };
@@ -116,9 +164,11 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
                     handlePriceFilter(option.value);
                   }}
                   checked={
-                    !filter.price.isCustom &&
-                    filter.price.range[0] === option.value[0] &&
-                    filter.price.range[1] === option.value[1]
+                    option.value[0] === -1
+                      ? filter.price.isCustom
+                      : !filter.price.isCustom &&
+                        filter.price.range[0] === option.value[0] &&
+                        filter.price.range[1] === option.value[1]
                   }
                   className="radio"
                 />
@@ -131,6 +181,40 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
               </li>
             ))}
           </ul>
+          
+          {/* Custom price range inputs - only show when custom is selected */}
+          {filter.price.isCustom && (
+            <div className="mt-4 space-y-4">
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600"></span>
+                  <input
+                    type="number"
+                    placeholder="$ Min"
+                    value={filter.price.customMin || ""}
+                    onChange={handleCustomMinChange}
+                    className="input input-bordered input-sm w-full"
+                    min="0"
+                  />
+                  <span className="text-sm text-gray-600">to</span>
+                  <input
+                    type="number"
+                    placeholder="$ Max"
+                    value={filter.price.customMax || ""}
+                    onChange={handleCustomMaxChange}
+                    className="input input-bordered input-sm w-full"
+                    min="0"
+                  />
+                </div>
+                <button
+                  className="btn btn-sm bg-amber-500 hover:bg-amber-600 w-full mt-2"
+                  onClick={applyCustomPriceFilter}
+                >
+                  Apply Price Range
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -146,8 +230,8 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
               onClick={() => handleCategoryChange(category.value)}
               className={`w-full text-left px-3 py-2 rounded-md ${
                 filter.category === category.value
-                  ? "bg-blue-100 text-blue-700 font-semibold border-blue-500"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  ? "bg-amber-500 text-gray-800 font-semibold border-amber-200"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-amber-200"
               }`}
             >
               {category.name}
@@ -164,7 +248,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
       {/* Clear Filters Button */}
       <div className="mt-6">
         <button
-          className="btn btn-outline btn-sm w-full"
+          className="btn btn-sm text-black bg-amber-500 hover:bg-amber-700 btn-sm w-full"
           onClick={resetFilters}
         >
           Clear All Filters

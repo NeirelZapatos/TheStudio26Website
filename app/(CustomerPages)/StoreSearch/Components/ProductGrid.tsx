@@ -34,7 +34,12 @@ interface FilterConfig {
   clarity: string[];
   certification_available: string[];
   essentials_type: string[];
-  price: { range: [number, number] };
+  price: { 
+    range: [number, number];
+    isCustom: boolean;
+    customMin: number;
+    customMax: number;
+  };
   searchTerm?: string;
 }
 
@@ -57,6 +62,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
       try {
         const params = new URLSearchParams();
 
+        // Always use the range from the filter state
         params.append("minPrice", filter.price.range[0].toString());
         params.append("maxPrice", filter.price.range[1].toString());
 
@@ -90,9 +96,6 @@ export default function ProductGrid({ filter }: ProductGridProps) {
             params.append(key, filterValue.join(","));
           }
         });
-
-        // params.append("minPrice", filter.price.range[0].toString());
-        // params.append("maxPrice", filter.price.range[1].toString());
 
         console.log("Fetching with params:", params.toString());
         const response = await fetch(`/api/items?${params.toString()}`);

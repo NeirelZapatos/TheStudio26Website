@@ -97,16 +97,25 @@ export const FILTER_DEFINITIONS: FilterDefinition[] = [
     type: "checkbox",
     category: "color",
     options: [
-      { value: "white", label: "White" },
+      { value: "gold", label: "Gold" },
+      { value: "rose gold", label: "Rose Gold" },
+      { value: "white gold", label: "White Gold" },
+      { value: "silver", label: "Silver" },
+      { value: "platinum", label: "Platinum" },
+      { value: "black", label: "Black" },
+      { value: "bronze", label: "Bronze" },
+      { value: "copper", label: "Copper" },
+      { value: "red", label: "Red" },
+      { value: "pink", label: "Pink" },
       { value: "blue", label: "Blue" },
       { value: "green", label: "Green" },
-      { value: "red", label: "Red" },
+      { value: "purple", label: "Purple" },
       { value: "yellow", label: "Yellow" },
-      { value: "pink", label: "Pink" },
+      { value: "orange", label: "Orange" },
+      { value: "white/clear", label: "White/Clear" },
       { value: "brown", label: "Brown" },
-      { value: "black", label: "Black" },
-      { value: "gray", label: "Gray" },
-      { value: "colorless", label: "Colorless" },
+      { value: "multicolor", label: "Multicolor" },
+      { value: "other", label: "Other" },
     ],
   },
   {
@@ -215,6 +224,7 @@ export const FILTER_DEFINITIONS: FilterDefinition[] = [
   },
 ];
 
+
 export const PRICE_FILTER: PriceFilterDefinition = {
   id: "price",
   name: "Price",
@@ -225,6 +235,7 @@ export const PRICE_FILTER: PriceFilterDefinition = {
     { value: [100, 499.99], label: "$100 - $499" },
     { value: [500, 999.99], label: "$500 - $999" },
     { value: [1000, 999999], label: "$1000+" },
+    { value: [-1, -1], label: "Custom"},
   ],
 };
 
@@ -245,6 +256,8 @@ export const DEFAULT_FILTER_STATE = {
   price: {
     isCustom: false,
     range: [0, 999999] as [number, number],
+    customMin: 0,
+    customMax: 0,
   },
   searchTerm: "",
 };

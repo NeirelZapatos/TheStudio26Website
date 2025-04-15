@@ -94,7 +94,14 @@ export default function ProductSpecifications({ product }: ProductSpecsProps) {
             Shipping Information
           </div>
           <div className="collapse-content bg-white">
-            <p className="mt-2">placeholder text</p>
+            <p className="text-sm text-gray-700 mt-4">
+              All orders are processed within 1-2 business days. Shipping
+              options will be calculated during checkout.
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc list-inside">
+              <li>Standard shipping: 5-7 business days</li>
+              <li>Express shipping: 2-3 business days</li>
+            </ul>
           </div>
         </div>
 
@@ -105,7 +112,16 @@ export default function ProductSpecifications({ product }: ProductSpecsProps) {
             Return & Refund Policy
           </div>
           <div className="collapse-content bg-white">
-            <p className="mt-2">placeholder text</p>
+            <p className="text-sm text-gray-700 mt-4">
+              We offer a 30-day return policy for new and unworn jewelry in
+              original condition with tags attached for a refund to the original
+              form of purchase.
+            </p>
+            <p className="text-sm text-gray-700 font-bold">Custom orders are final sale.</p>
+            <p className="mt-2 text-sm text-gray-700">
+              To initiate a return, please contact our customer service team at
+              thestudio26@gmail.com.
+            </p>
           </div>
         </div>
 
@@ -116,10 +132,10 @@ export default function ProductSpecifications({ product }: ProductSpecsProps) {
             Questions?
           </div>
           <div className="collapse-content bg-white">
-            <p className="py-2 mt-2">Contact us at</p>
-            <h3>Email: thestudio26@gmail.com</h3>
+            <p className="text-sm mt-4">Contact us at</p>
+            <h3 className="text-sm">Email: thestudio26@gmail.com</h3>
 
-            <h3>Phone: (916) 350-0546</h3>
+            <h3 className="text-sm">Phone: (916) 350-0546</h3>
           </div>
         </div>
       </div>
