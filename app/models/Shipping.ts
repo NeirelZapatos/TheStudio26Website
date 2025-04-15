@@ -8,6 +8,7 @@ export interface IShipping extends Document {
     company?: string;
     street1: string;
     street2?: string;
+    street3?: string;
     city: string;
     state: string;
     zip: string;
@@ -21,6 +22,7 @@ export interface IShipping extends Document {
     company?: string;
     street1: string;
     street2?: string;
+    street3?: string;
     city: string;
     state: string;
     zip: string;
@@ -33,27 +35,28 @@ export interface IShipping extends Document {
     length: number;
     width: number;
     height: number;
-    distance_unit: 'in' | 'cm';
+    distanceUnit: 'in' | 'cm';
     weight: number;
-    mass_unit: 'lb' | 'kg';
+    massUnit: 'lb' | 'kg';
   };
   shipment: {
     carrier_account: string;
     servicelevel_token: string;
-    servicelevel_name?: string;
-    label_file_type: 'pdf' | 'png';
+    name?: string;
     metadata?: Record<string, any>;
-    shippo_shipment_id?: string;  // New field to store Shippo's shipment ID
+    shippo_shipment_id?: string;  // Store Shippo's shipment ID
   };
-  transaction?: {
+  transaction: {
     shippo_id: string;
     tracking_number?: string;
+    tracking_status?: string;      // Added tracking_status field
     tracking_url?: string;
+    tracking_provider?: string;    // Added tracking provider URL
     label_url?: string;
     rate?: {
       currency: string;
       amount: number;
-      provider?: string;  // Added to store carrier information
+      provider?: string;
     };
     status?: 'SUCCESS' | 'ERROR' | 'QUEUED' | 'WAITING' | 'REFUNDED' | 'REFUNDPENDING';
   };
@@ -62,8 +65,20 @@ export interface IShipping extends Document {
     message?: string;
     date: Date;
   }[];
-  estimated_delivery_date?: Date;  // Optional field for delivery estimation
-  insurance_amount?: number;       // Optional field for shipping insurance
+  estimated_delivery_date?: Date;
+  insurance_amount?: number;
+  object_id?: string;              // Shippo's object ID
+  object_owner?: string;           // Shippo user email
+  object_created?: Date;           // When created in Shippo
+  object_updated?: Date;           // When updated in Shippo
+  eta?: Date;                      // Estimated time of arrival
+  messages?: string[];             // Any messages from Shippo
+  webhook_events?: {               // Track webhook events
+    event: string;
+    data: any;
+    timestamp: Date;
+  }[];
+  commercial_invoice_url?: string; // URL for commercial invoice if applicable
 }
 
 const shippingSchema = new Schema({
@@ -75,6 +90,8 @@ const shippingSchema = new Schema({
   address_from: {
     name: { type: String, required: false },
     street1: { type: String, required: false },
+    street2: { type: String, required: false },
+    street3: { type: String, required: false },
     city: { type: String, required: false },
     state: { type: String, required: false },
     zip: { type: String, required: false },
@@ -86,7 +103,8 @@ const shippingSchema = new Schema({
   address_to: {
     name: { type: String, required: true },
     street1: { type: String, required: true },
-    // Make these optional for development
+    street2: { type: String, required: false},
+    street3: { type: String, required: false },
     city: { type: String, required: false },
     state: { type: String, required: false },
     zip: { type: String, required: false },
@@ -98,24 +116,27 @@ const shippingSchema = new Schema({
     length: { type: Number, required: true },
     width: { type: Number, required: true },
     height: { type: Number, required: true },
-    distance_unit: { type: String, default: 'in', enum: ['in', 'cm'] },
+    distanceUnit: { type: String, default: 'in', enum: ['in', 'cm'] },
     weight: { type: Number, required: true },
-    mass_unit: { type: String, default: 'lb', enum: ['lb', 'kg'] }
+    massUnit: { type: String, default: 'lb', enum: ['lb', 'kg'] }
   },
   shipment: {
     carrier_account: { type: String, required: true },
     servicelevel_token: { type: String, required: true },
-    label_file_type: { type: String, default: 'pdf', enum: ['pdf', 'png'] },
+    shippo_shipment_id: String,
     metadata: Schema.Types.Mixed
   },
   transaction: {
     shippo_id: String,
     tracking_number: String,
+    tracking_status: String,
     tracking_url: String,
+    tracking_provider: String,
     label_url: String,
     rate: {
       currency: String,
-      amount: Number
+      amount: Number,
+      provider: String
     },
     status: {
       type: String,
@@ -126,7 +147,21 @@ const shippingSchema = new Schema({
     status: { type: String, required: true },
     message: String,
     date: { type: Date, default: Date.now }
-  }]
+  }],
+  estimated_delivery_date: Date,
+  insurance_amount: Number,
+  object_id: String,
+  object_owner: String,
+  object_created: Date,
+  object_updated: Date,
+  eta: Date,
+  messages: [String],
+  webhook_events: [{
+    event: { type: String, required: true },
+    data: Schema.Types.Mixed,
+    timestamp: { type: Date, default: Date.now }
+  }],
+  commercial_invoice_url: String
 }, {
   timestamps: true
 });

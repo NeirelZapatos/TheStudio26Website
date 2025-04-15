@@ -1,28 +1,58 @@
+// Updated useOrderActions hook
 import { useState } from 'react';
 import { ProcessPickup } from '@/utils/orderUtils/ProcessPickup';
 import exportOrdersToCSV from '@/utils/docUtils/ExportReport';
 import generateReceiptPDF from '@/utils/docUtils/GenerateReceipt';
-import { IOrder } from '@/app/models/Order'; // Updated import path
+import { IOrder } from '@/app/models/Order';
 
 type MutateFunction = () => Promise<any>;
 
 export const useOrderActions = (
   orders: IOrder[] | null, 
   selectedOrders: Set<string>, 
-  mutate: MutateFunction, // Use the updated MutateFunction type
+  mutate: MutateFunction,
   setSelectedOrders: React.Dispatch<React.SetStateAction<Set<string>>>
-) =>  {
+) => {
+      // Check if all selected orders are pickup orders
+const hasOnlyPickupOrders = () => {
+  if (!orders) return false;
+  
+  const selectedOrderIds = Array.from(selectedOrders);
+  if (selectedOrderIds.length === 0) return false;
+  
+  const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+  return selectedOrdersData.every(order => 
+    order.shipping_method?.toLowerCase() === 'pickup'
+  );
+};
+
+  
+  // Check if any selected order is a delivery order
+const hasDeliveryOrders = () => {
+  if (!orders) return false;
+  
+  const selectedOrderIds = Array.from(selectedOrders);
+  if (selectedOrderIds.length === 0) return false;
+  
+  const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+  return selectedOrdersData.some(order => 
+    order.shipping_method?.toLowerCase() === 'delivery'
+  );
+};
+
   const handleMarkAsFulfilled = async () => {
     if (!orders) {
       alert('Orders data not loaded yet');
       return;
     }
 
+
+
     const selectedOrderIds = Array.from(selectedOrders);
     const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
 
-    const nonPickupOrders = selectedOrdersData.filter(order => order.shipping_method !== 'Pickup');
-    if (nonPickupOrders.length > 0) {
+    // Double-check that all selected orders are pickup orders
+    if (!selectedOrdersData.every(order => order.shipping_method === 'pickup')) {
       alert('Cannot fulfill delivery orders. Select only pickup orders.');
       return;
     }
@@ -72,5 +102,7 @@ export const useOrderActions = (
     handleExportReport,
     handlePrintReceipt,
     getTimeElapsed,
+    hasOnlyPickupOrders,
+    hasDeliveryOrders
   };
 };
