@@ -5,7 +5,7 @@ export enum OrderFilter {
   PICKUP = 'pickup', 
   PRIORITY = 'priority',
   PENDING = 'pending',
-  DELIVERIES = 'deliveries',
+  DELIVERY = 'delivery',
   FULFILLED = 'fulfilled'
 }
 
@@ -16,7 +16,7 @@ export const filterOrders = (orders: IOrder[], filter: OrderFilter): IOrder[] =>
     
     case OrderFilter.PICKUP:
       return orders.filter(order => 
-        order.shipping_method === 'Pickup' && 
+        order.shipping_method === 'pickup' && 
         order.order_status !== 'fulfilled'
       );
     
@@ -24,12 +24,8 @@ export const filterOrders = (orders: IOrder[], filter: OrderFilter): IOrder[] =>
       return orders.filter((order) => {
         const orderAge = (Date.now() - new Date(order.order_date).getTime()) / (1000 * 60 * 60 * 24);
         return (
-          order.order_status === 'pending' &&
-          (order.shipping_method === 'Express' ||
-            order.shipping_method === 'Next Day' ||
-            order.shipping_method === 'Priority' ||
-            ((order.shipping_method === 'Standard' || order.shipping_method === 'Ground') &&
-              orderAge > 3))
+          (order.shipping_method === 'pickup' && order.order_status === 'pending') ||
+          (order.shipping_method !== 'pickup' && orderAge > 2 && order.order_status === 'pending')
         );
       });
     
@@ -38,9 +34,9 @@ export const filterOrders = (orders: IOrder[], filter: OrderFilter): IOrder[] =>
         order.order_status === 'pending'
       );
     
-    case OrderFilter.DELIVERIES:
+    case OrderFilter.DELIVERY:
       return orders.filter(order => 
-        order.shipping_method !== 'Pickup' && 
+        order.shipping_method != 'pickup' && 
         order.order_status === 'pending'
       );
     

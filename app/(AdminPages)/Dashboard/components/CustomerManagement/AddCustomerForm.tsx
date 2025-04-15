@@ -54,10 +54,10 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Add New Customer</h3>
+    <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
+      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 border-b pb-2 sm:pb-3">Add New Customer</h3>
       
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {/* Input for first name */}
         <input
           type="text"
@@ -96,7 +96,7 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({ addCustomer, loading 
         {/* Submit button */}
         <button
           type="submit"
-          className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors col-span-1 md:col-span-2"
+          className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors col-span-1 sm:col-span-2"
           disabled={loading} // Disable button when loading
         >
           <Plus className="mr-2" size={18} />

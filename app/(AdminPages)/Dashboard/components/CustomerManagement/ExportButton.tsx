@@ -95,7 +95,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({ customers, orders }) => {
   return (
     <button
     onClick={exportOrdersToCSV}
-    className="bg-green-500 text-white py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-green-600 transition-colors"
+    className={`flex items-center bg-green-500 text-white py-2 px-4 rounded-xl hover:bg-green-600 transition-colors min-w-[130px]`}
   >
     <Download size={18} />
     Export Orders

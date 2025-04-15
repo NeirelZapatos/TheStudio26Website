@@ -48,6 +48,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [stoneArrangement, setStoneArrangement] = useState("");
   const [customizationOptions, setCustomizationOptions] = useState("");
 
+  const [inlayedStone, setInlayedStone] = useState<string>("");
+  const [customStone, setCustomStone] = useState<string>("");
+  const [showCustomStoneInput, setShowCustomStoneInput] = useState(false);
+
   // --------------- Template Search State --------------- //
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
   const [searchText, setSearchText] = useState("");
@@ -63,7 +67,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
   const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar"];
   const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity"];
-  const customizationOptionsList = ["engraving", "custom stone setting", "personalized design"];
+  const customizationOptionsList = ["engraving available", "custom stone setting available", "personalized design available"];
+
+  const colorOptions = ["Gold", "Rose Gold", "White Gold", "Silver", "Platinum", "Black", "Bronze", "Copper", "Red",
+    "Pink", "Blue", "Green", "Purple", "Yellow", "Orange", "White/Clear", "Black", "Brown", "Multicolor", "Other"];
+
+  const [stoneOptions, setStoneOptions] = useState<string[]>([
+    "diamond", "emerald", "ruby", "sapphire", "amethyst",
+    "opal", "turquoise", "topaz", "pearl", "moonstone", "jade"
+  ]);
 
   const requiredFields = [
     name,
@@ -122,6 +134,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setQuantityInStock(template.quantity_in_stock);
       setJewelryType(template.jewelry_type);
       setColor(template.color || "");
+      setInlayedStone(template.inlayed_stone || "");
       setWeight(template.weight || "");
       setSize(template.size || "");
       setRingSize(template.ring_size || "");
@@ -165,6 +178,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       metal_type: metalType,
       metal_purity: metalPurity,
       metal_finish: metalFinish,
+      inlayed_stone: inlayedStone,
       color,
       plating,
       size,
@@ -205,11 +219,23 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const latestIndex = handleFileChange(e); // Get the index of the latest uploaded image
+    const latestIndex = handleFileChange(e);
     if (latestIndex !== -1) {
-      setCurrentCarouselIndex(latestIndex); // Update the carousel index
+      setCurrentCarouselIndex(latestIndex);
     }
   };
+
+  const handleAddS3Image = (imageUrl: string) => {
+    const filteredPreviewUrls = previewUrls.filter(url => !url.includes("ProductPlaceholder"));
+    let newPreviewUrls = [...filteredPreviewUrls, imageUrl];
+    if (newPreviewUrls.length === 1) {
+      setCurrentCarouselIndex(0);
+    } else {
+      setCurrentCarouselIndex(newPreviewUrls.length - 1);
+    }
+    setPreviewUrls(newPreviewUrls);
+  };
+
 
   const handleRemoveImage = (index: number) => {
     const newFiles = [...files];
@@ -228,6 +254,15 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     // move the carousel index back if the last image is removed
     if (currentCarouselIndex >= newPreviewUrls.length) {
       setCurrentCarouselIndex(newPreviewUrls.length - 1);
+    }
+  };
+
+  const handleAddCustomStone = () => {
+    if (customStone && !stoneOptions.includes(customStone)) {
+      setStoneOptions([...stoneOptions, customStone]);
+      setInlayedStone(customStone);
+      setCustomStone("");
+      setShowCustomStoneInput(false);
     }
   };
 
@@ -292,6 +327,8 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       metal_purity: metalPurity,
       metal_finish: metalFinish,
       plating,
+      color,
+      inlayed_stone: inlayedStone,
       category: "Jewelry",
       ...designData,
     };
@@ -302,7 +339,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     setMessage("Jewelry item successfully submitted!");
 
     try {
-      // Send a POST request to the backend API
       const response = await fetch("/api/items", {
         method: "POST",
         headers: {
@@ -353,6 +389,14 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
   return (
     <div className="bg-white p-6 border rounded shadow-lg">
+
+      {/* Close Button */}
+      <div className="flex justify-end mt-4">
+        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
+          Change Item Type
+        </button>
+      </div>
+
       <h3 className="text-xl font-semibold mb-4 text-center">Jewelry Specifications</h3>
       <form onSubmit={handleSubmit}>
 
@@ -409,9 +453,10 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
             images={
               previewUrls.length > 0 ? previewUrls : ["https://tests26bucket.s3.us-east-2.amazonaws.com/ProductPlaceholder.png"]
             }
-            currentIndex={currentCarouselIndex} // Pass the current index
-            onIndexChange={setCurrentCarouselIndex} // Pass the setter function
+            currentIndex={currentCarouselIndex}
+            onIndexChange={setCurrentCarouselIndex}
             onRemoveImage={handleRemoveImage}
+            onAddS3Image={handleAddS3Image}
           />
           {/* File Input for Multiple Images */}
           <div>
@@ -419,7 +464,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
               type="file"
               onChange={handleFileUpload}
               className="file-input file-input-bordered file-input-sm"
-              multiple // Allow multiple file selection
+              multiple
             />
           </div>
         </div>
@@ -516,7 +561,54 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           <label className="label">
             <span className="label-text font-semibold">Color</span>
           </label>
-          <input type="string" className="input input-bordered w-full" value={color} onChange={e => setColor(e.target.value)} placeholder="Enter color" />
+          <select className="select select-bordered w-full" value={color} onChange={e => setColor(e.target.value)}>
+            <option value="" disabled>Select Color</option>
+            {colorOptions.map(colorOption => <option key={colorOption} value={colorOption}>{colorOption}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text font-semibold">Inlayed Stone</span>
+          </label>
+          <div className="flex flex-col space-y-2">
+            <select
+              className="select select-bordered w-full"
+              value={inlayedStone}
+              onChange={(e) => {
+                if (e.target.value === "custom") {
+                  setShowCustomStoneInput(true);
+                  setInlayedStone("");
+                } else {
+                  setInlayedStone(e.target.value);
+                  setShowCustomStoneInput(false);
+                }
+              }}
+            >
+              <option value="" disabled>Select Stone Type</option>
+              {stoneOptions.map(stone => <option key={stone} value={stone}>{stone}</option>)}
+              <option value="custom">+ Add Custom Stone</option>
+            </select>
+
+            {showCustomStoneInput && (
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  className="input input-bordered flex-grow"
+                  value={customStone}
+                  onChange={(e) => setCustomStone(e.target.value)}
+                  placeholder="Enter custom stone name"
+                />
+                <button
+                  type="button"
+                  className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
+                  onClick={handleAddCustomStone}
+                  disabled={!customStone}
+                >
+                  Add
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div>
           <label className="label">
@@ -725,13 +817,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
           </p>
         )}
       </form>
-
-      {/* Close Button */}
-      <div className="flex justify-end mt-4">
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
-          Change Item Type
-        </button>
-      </div>
     </div>
   );
 }

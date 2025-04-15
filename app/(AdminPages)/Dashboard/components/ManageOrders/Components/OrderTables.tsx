@@ -162,7 +162,7 @@ const OrderTables: React.FC<{
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      {order.shipping_method === 'Pickup' ? (
+                      {order.shipping_method === 'pickup' ? (
                         <ShoppingBag className="w-4 h-4" />
                       ) : (
                         <Truck className="w-4 h-4" />

@@ -4,7 +4,7 @@ import { IOrder } from '@/app/models/Order'; // Import the IOrder interface from
 export enum OrderFilter {
   ALL = 'all', // Filter for all orders
   PENDING = 'pending', // Filter for pending orders
-  DELIVERIES = 'deliveries', // Filter for delivery orders
+  DELIVERY = 'delivery', // Filter for delivery orders
   FULFILLED = 'fulfilled', // Filter for fulfilled orders
   PICKUP = 'pickup', // Filter for pickup orders
   PRIORITY = 'priority', // Filter for priority orders
@@ -14,15 +14,11 @@ export enum OrderFilter {
 
 export enum PriorityLevel {
   PICKUP = 1, // Priority level for pickup orders (highest priority)
-  URGENT_NEXT_DAY = 2, // Priority level for urgent next-day orders
-  URGENT_EXPRESS = 3, // Priority level for urgent express orders
-  URGENT_STANDARD = 4, // Priority level for urgent standard orders
-  NEXT_DAY = 5, // Priority level for next-day orders
-  EXPRESS = 6, // Priority level for express orders
-  STANDARD = 7, // Priority level for standard orders
-  SHIPPED = 8, // Priority level for shipped orders
-  FULFILLED = 9, // Priority level for fulfilled orders
-  DELIVERED = 10 // Priority level for delivered orders (lowest priority)
+  URGENT_DELIVERY = 2, // Priority level for urgent next-day orders
+  DELIVERY = 3, // Priority level for urgent express orders
+  SHIPPED = 4, // Priority level for shipped orders
+  FULFILLED = 5, // Priority level for fulfilled orders
+  DELIVERED = 6 // Priority level for delivered orders (lowest priority)
 }
 
 // Get the priority level for an order based on its status and shipping method
@@ -32,7 +28,7 @@ export const getOrderPriority = (order: IOrder): number => {
   const isUrgent = orderAge > 1; // Order is urgent if waiting more than 1 day
 
   // Always prioritize pickup orders at the top
-  if (order.shipping_method === 'Pickup' && isPending) {
+  if (order.shipping_method === 'pickup' && isPending) {
     return PriorityLevel.PICKUP;
   }
 
@@ -40,15 +36,13 @@ export const getOrderPriority = (order: IOrder): number => {
   if (isPending) {
     // Urgent orders (waiting more than 1 day) - maintain shipping method hierarchy
     if (isUrgent) {
-      if (order.shipping_method === 'Next Day') return PriorityLevel.URGENT_NEXT_DAY;
-      if (order.shipping_method === 'Express') return PriorityLevel.URGENT_EXPRESS;
-      return PriorityLevel.URGENT_STANDARD; // Standard, Ground, or any other shipping method
+      if (order.shipping_method === 'delivery') return PriorityLevel.URGENT_DELIVERY;
+      return PriorityLevel.URGENT_DELIVERY; // Standard, Ground, or any other shipping method
     }
     
     // Normal priority orders (less than 1 day old)
-    if (order.shipping_method === 'Next Day') return PriorityLevel.NEXT_DAY;
-    if (order.shipping_method === 'Express') return PriorityLevel.EXPRESS;
-    return PriorityLevel.STANDARD; // Standard, Ground, or any other shipping method
+    if (order.shipping_method === 'delivery') return PriorityLevel.DELIVERY;
+    return PriorityLevel.DELIVERY; // Standard, Ground, or any other shipping method
   }
 
   // Non-pending orders go to the bottom with their own hierarchy
@@ -56,7 +50,7 @@ export const getOrderPriority = (order: IOrder): number => {
     case 'shipped': return PriorityLevel.SHIPPED;
     case 'fulfilled': return PriorityLevel.FULFILLED;
     case 'delivered': return PriorityLevel.DELIVERED;
-    default: return PriorityLevel.STANDARD; // Fallback for any other status
+    default: return PriorityLevel.DELIVERY; // Fallback for any other status
   }
 };
 

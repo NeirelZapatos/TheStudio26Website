@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         // Log the received body to verify its contents
-        console.log("Received in /api/products:", body);
+        console.log("Received in /api/courses:", body);
 
         const validation = courseSchema.safeParse(body);
 
@@ -19,12 +19,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(validation.error.errors, { status: 400 })
         }
 
-        // const checkProduct = await Course.findOne({ name: body.name });
+        const checkProduct = await Course.findOne({ name: body.name });
 
-        // if (checkProduct) {
-        //     console.error("Duplicate product error: Product already exists");
-        //     return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
-        // }
+        if (checkProduct) {
+            console.error("Duplicate product error: Product already exists");
+            return NextResponse.json({ error: 'Product already exists' }, { status: 409 });
+        }
 
         const newProduct = new Course(body);
         await newProduct.save();
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: err.message }, { status: 500 })
         }
 
-        return NextResponse.json({ error: 'An Unkown error occurred' }, { status: 500 })
+        return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 })
     }
 }
 
@@ -46,12 +46,13 @@ export async function GET(request: NextRequest) {
     try {
         await dbConnect();
 
-        // Get the URL search params
         const { searchParams } = new URL(request.url);
-
         const filter: any = {};
 
-        // Price filter (convert string to number for comparison)
+        // Log the incoming request parameters for debugging
+        console.log("Search params:", Object.fromEntries(searchParams.entries()));
+
+        // Price filter
         const minPrice = searchParams.get("minPrice");
         const maxPrice = searchParams.get("maxPrice");
         if (minPrice || maxPrice) {
@@ -60,16 +61,10 @@ export async function GET(request: NextRequest) {
             if (maxPrice) filter.price.$lte = Number(maxPrice);
         }
 
-        // Category filter
-        const category = searchParams.get("category");
-        if (category && category !== "all") {
-            filter.category = category; // Filter by category if not "all"
-        }
-
-        // Class Type Filter
-        const classType = searchParams.get("classType");
-        if (classType && classType !== "") {
-            filter.classType = { $in: classType.split(",") };
+        // Class category filter - using case-insensitive regex for better matching
+        const class_category = searchParams.get("class_category");
+        if (class_category && class_category !== "all") {
+            filter.class_category = { $regex: new RegExp(class_category, "i") };
         }
 
         // Sorting
@@ -88,19 +83,18 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // console.log("Applied filters:", filter);
-        // console.log("Applied sort:", sort);
+        console.log("MongoDB filter:", filter);
+        console.log("MongoDB sort:", sort);
 
         const courses = await Course.find(filter).sort(sort);
+        console.log(`Found ${courses.length} courses matching the criteria`);
+        
         return NextResponse.json(courses);
     } catch (err: unknown) {
-        // Handle any errors that occur during the GET operation
         if (err instanceof Error) {
-            console.error("Error in GET /api/courses:", err); // Added for better debugging
+            console.error("Error in GET /api/courses:", err);
             return NextResponse.json({ error: err.message }, { status: 500 });
         }
-
-        // Catch-all for unknown errors
         return NextResponse.json({ error: 'An Unknown error occurred' }, { status: 500 });
     }
 }

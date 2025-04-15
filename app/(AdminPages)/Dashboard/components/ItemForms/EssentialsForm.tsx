@@ -241,6 +241,17 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
     }
   };
 
+  const handleAddS3Image = (imageUrl: string) => {
+    const filteredPreviewUrls = previewUrls.filter(url => !url.includes("ProductPlaceholder"));
+    let newPreviewUrls = [...filteredPreviewUrls, imageUrl];
+        if (newPreviewUrls.length === 1) {
+      setCurrentCarouselIndex(0);
+    } else {
+      setCurrentCarouselIndex(newPreviewUrls.length - 1);
+    }
+    setPreviewUrls(newPreviewUrls);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || !quantityInStock || !essentialsType) {
@@ -337,6 +348,14 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
 
   return (
     <div className="bg-white p-6 border rounded shadow-lg">
+
+      {/* Close Button */}
+      <div className="flex justify-end mt-4">
+        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
+          Change Item Type
+        </button>
+      </div>
+
       <h3 className="text-xl font-semibold mb-4 text-center">Jewelry Essentials Specifications</h3>
       <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -396,6 +415,7 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
             currentIndex={currentCarouselIndex} // Pass the current index
             onIndexChange={setCurrentCarouselIndex} // Pass the setter function
             onRemoveImage={handleRemoveImage}
+            onAddS3Image={handleAddS3Image}
           />
           {/* File Input for Multiple Images */}
           <div>
@@ -677,13 +697,6 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
           </p>
         )}
       </form>
-
-      {/* Close Button */}
-      <div className="flex justify-end mt-4">
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={onClose}>
-          Change Item Type
-        </button>
-      </div>
     </div>
   );
 }

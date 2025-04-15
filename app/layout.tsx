@@ -32,6 +32,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
           rel="stylesheet"
         />
+        <script src="https://kit.fontawesome.com/687e41fb58.js" crossOrigin="anonymous"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
