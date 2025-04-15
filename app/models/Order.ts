@@ -2,6 +2,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 import { ICustomer } from "./Customer";
 import { IItem } from "./Item";
 import { ICourse } from "./Course";
+import { IShipping } from "./Shipping";
 
 interface IParsedShippingAddress {
     street?: string;
@@ -63,11 +64,12 @@ export interface IOrder extends Document {
     parsedShippingAddress?: IParsedShippingAddress; // ! made optional in case pickup
     shippingDetails?: IShippingDetails;
     is_pickup: boolean;
-
+    
     order_type: 'product' | 'class_booking'; // Distinguish between product orders and class bookings
     class_booking_details?: IClassBookingDetails; // Details for class bookings
     stripe_session_id?: string; // Store Stripe session ID
 
+    shipping_id?: Types.ObjectId | IShipping; // Reference to Shipping document
 }
 
 const orderSchema: Schema = new mongoose.Schema({

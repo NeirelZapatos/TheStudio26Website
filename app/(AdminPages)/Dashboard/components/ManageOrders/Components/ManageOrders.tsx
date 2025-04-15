@@ -2,11 +2,11 @@ import React from 'react'; // Import React and useState hook
 import Buttons from './Buttons'; // Import Buttons component
 import OrderTables from './OrderTables'; // Import OrderTables component
 import SearchBar from './SearchBar'; // Import SearchBar component
-import PackageDetailsModal from '@/utils/shippingUtils/PackageDetailsModal'; // Import PackageDetailsModal component
+import PackageDetailsModal from '@/app/(AdminPages)/Dashboard/components/ManageOrders/Components/PackageDetailsModal';  
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { usePackageManagement } from '../hooks/usePackageManagement';
-import { useOrderActions } from '../hooks/useOrderActions'; // Import the hook
-import { useOrderFilters } from '../hooks/useOrderFilters'; // Import the hook
+import { useOrderActions } from '../hooks/useOrderActions'; 
+import { useOrderFilters } from '../hooks/useOrderFilters'; 
 
 
 
@@ -76,7 +76,6 @@ const ManageOrders = () => {
     error,
     mutate,
     filteredOrders,
-    validOrders,
     handleSelectOrder,
     handleSelectAll,
     handleToggleDetails,
@@ -98,9 +97,11 @@ const ManageOrders = () => {
     handleMarkAsFulfilled,
     handlePrintReceipt,
     getTimeElapsed,
+    hasOnlyPickupOrders,
+    hasDeliveryOrders
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
 
-  const { filterButtons } = useOrderFilters(validOrders || []);
+  const { filterButtons } = useOrderFilters(orders || []);
 
   if (!orders) {
     return <div className="flex justify-center items-center h-64">Loading orders...</div>;
@@ -117,13 +118,15 @@ const ManageOrders = () => {
         selectedOrders={selectedOrders}
         filterButtons={filterButtons}
         activeFilter={activeFilter}
-        // Wrap setActiveFilter to ensure correct type
         setActiveFilter={(filter) => setActiveFilter(filter)}
         handlePrintShippingLabels={handlePrintShippingLabels}
         handlePrintReceipt={handlePrintReceipt}
         handleMarkAsFulfilled={handleMarkAsFulfilled}
         orders={orders || []}
+        hasOnlyPickupOrders={hasOnlyPickupOrders}
+        hasDeliveryOrders={hasDeliveryOrders}
       />
+      {/* Rest of the component remains the same */}
       <div className="mb-4">
         <SearchBar
           orders={orders}

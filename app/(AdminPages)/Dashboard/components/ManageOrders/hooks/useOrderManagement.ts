@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { IOrder } from '@/app/models/Order';
 import { SortOrders } from '@/utils/sortUtils/sortOrders';
@@ -17,7 +17,7 @@ export const useOrderManagement = () => {
     refreshInterval: 300000,
   });
 
-  // First filter orders based on search query
+  // First filter orders based on search query (this includes relevance sorting)
   const searchFilteredOrders = orders ? searchOrders(orders, searchQuery) : [];
   
   // Then apply additional filtering based on active filter
@@ -25,12 +25,17 @@ export const useOrderManagement = () => {
     ? filterOrders(searchFilteredOrders, activeFilter)
     : [];
   
-  // Finally, sort the filtered orders
-  const filteredOrders = filteredByFilter 
-    ? SortOrders(filteredByFilter, activeFilter)
-    : [];
+  // Apply different sorting based on whether we're searching or not
+  const filteredOrders = searchQuery.trim() 
+    ? filteredByFilter // Keep the search relevance sorting from searchOrders
+    : SortOrders(filteredByFilter, activeFilter); // Apply priority sorting only when not searching
   
   const validOrders = orders?.filter(order => order.customer?.first_name && order.customer?.last_name) || [];
+
+  // Update search results whenever filteredOrders changes
+  useEffect(() => {
+    setSearchResults(filteredOrders);
+  }, [filteredOrders]);
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrders((prev) => {
@@ -70,7 +75,7 @@ export const useOrderManagement = () => {
     orders,
     error,
     mutate,
-    filteredOrders, // Return the filtered, searched, and sorted orders
+    filteredOrders,
     validOrders,
     handleSelectOrder,
     handleSelectAll,
