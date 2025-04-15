@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from '@/app/lib/dbConnect';
-import Order from "@/app/models/Order";
-import Item from "@/app/models/Item";
-import Course from "@/app/models/Course";
+import dbConnect from '../../../lib/dbConnect';
+import Order from "../../../models/Order";
+import Item from "../../../models/Item";
+import Course from "../../../models/Course";
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
