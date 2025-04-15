@@ -10,7 +10,7 @@ interface Course {
   _id: string;
   name: string;
   description: string;
-  classCategory: string;
+  class_category: string;
   price: number;
   date?: string;
   time?: string;
@@ -27,7 +27,7 @@ interface Course {
 const CoursesListSection: React.FC = () => {
   type FilterState = {
     sort: string;
-    category: string;
+    class_category: string;
     classType: string[];
     price: {
       isCustom: boolean;
@@ -39,7 +39,7 @@ const CoursesListSection: React.FC = () => {
   // Data States
   const [filter, setFilter] = useState<FilterState>({
     sort: "none",
-    category: "all",
+    class_category: "all",
     classType: [],
     price: { isCustom: false, range: [0, 999999999] as [number, number] },
   });
@@ -55,7 +55,12 @@ const CoursesListSection: React.FC = () => {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/api/courses");
+        const response = await axios.get("/api/courses", {
+          params: {
+            search: filter.searchTerm,
+            class_category: filter.class_category,
+          },
+        });
         console.log("Fetched courses:", response.data); // ! Debugging line
         setCourses(response.data);
       } catch (err) {
@@ -66,7 +71,9 @@ const CoursesListSection: React.FC = () => {
       }
     };
 
-    fetchCourses();
+    const debounceTimer = setTimeout(() => {
+      fetchCourses();
+    }, 300);
   }, []);
 
   // Handle course click to open view modal
@@ -95,22 +102,29 @@ const CoursesListSection: React.FC = () => {
   const getFilteredCourses = () => {
     console.log("All courses before filtering:", courses); // Log all fetched courses
     const filtered = courses.filter((course) => {
+      if (
+        filter.searchTerm &&
+        !course.name?.toLowerCase().includes(filter.searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+
       // Apply category filter
       if (
-        filter.category !== "all" &&
-        course.classCategory?.toLowerCase() !== filter.category
+        filter.class_category !== "all" &&
+        course.class_category?.toLowerCase() !== filter.class_category.toLowerCase()
       ) {
         return false;
       }
   
-      // Apply class type filter
-      if (
-        filter.classType.length > 0 &&
-        (!course.classCategory ||
-          !filter.classType.includes(course.classCategory.toLowerCase()))
-      ) {
-        return false;
-      }
+      // // Apply class type filter
+      // if (
+      //   filter.classType.length > 0 &&
+      //   (!course.classCategory ||
+      //     !filter.classType.includes(course.classCategory.toLowerCase()))
+      // ) {
+      //   return false;
+      // }
   
       // Apply price filter
       if (
@@ -198,7 +212,7 @@ const CoursesListSection: React.FC = () => {
               onClick={() =>
                 setFilter({
                   sort: "none",
-                  category: "all",
+                  class_category: "all",
                   classType: [],
                   price: { isCustom: false, range: [0, 500] as [number, number] },
                 })

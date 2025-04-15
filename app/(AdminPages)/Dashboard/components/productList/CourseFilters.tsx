@@ -4,6 +4,11 @@ import SearchBar from "./SearchBar";
 const CATEGORIES = [
   { name: "Beginning Jewelry Class", selected: false, href: "#" },
   { name: "Specialty Class", selected: false, href: "#" },
+  { name: "Ring Class", selected: false, href: "#"},
+  { name: "Earring Class", selected: false, href: "#"},
+  { name: "Bracelet Class", selected: false, href: "#"},
+  { name: "Pendant Class", selected: false, href: "#"},
+  { name: "Other", selected: false, href: "#"},
 ];
 
 const CLASS_TYPES = {
@@ -26,7 +31,7 @@ interface FilterProps {
 
 interface FilterState {
   sort: string;
-  category: string;
+  class_category: string;
   classType: string[]; // Allow multiple selections
   price: {
     isCustom: boolean;
@@ -36,10 +41,10 @@ interface FilterState {
 }
 
 const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = (class_category: string) => {
     setFilter((prev) => ({
       ...prev,
-      category, // Update the selected category
+      class_category, // Update the selected category
     }));
   };
 
@@ -59,8 +64,8 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
     }));
   };
 
-  const minPrice = Math.min(filter.price.range[0], filter.price.range[1]);
-  const maxPrice = Math.max(filter.price.range[0], filter.price.range[1]);
+  // const minPrice = Math.min(filter.price.range[0], filter.price.range[1]);
+  // const maxPrice = Math.max(filter.price.range[0], filter.price.range[1]);
 
   return (
     <div className="drawer drawer-end">
@@ -80,9 +85,9 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+        <div className="p-4 w-80 min-h-full bg-base-200 text-base-content">
           {/* Sidebar content */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-2">
             <h3 className="font-semibold text-lg">Filters</h3>
             <label htmlFor="filter-drawer" className="btn btn-sm btn-circle">
               ✕
@@ -101,16 +106,16 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
             placeholder="Search courses..."
           />
           {/* Categories Filter */}
-          <div className="mb-6">
+          <div className="mb-0">
             <h4 className="font-bold">Categories</h4>
-            <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
+            <ul className="space-y-4 pb-2 text-md font-medium text-gray-900">
               <li>
                 <button
                   onClick={() => handleCategoryChange("all")}
-                  className={`w-full text-left ${
-                    filter.category === "all"
-                      ? "text-gray-900"
-                      : "text-gray-500 hover:text-gray-700"
+                  className={`w-full text-left px-2 py-1 rounded-md ${
+                    filter.class_category === "all"
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-base-300"
                   }`}
                 >
                   All Classes
@@ -119,11 +124,11 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
               {CATEGORIES.map((category) => (
                 <li key={category.name}>
                   <button
-                    onClick={() => handleCategoryChange(category.name)}
-                    className={`w-full text-left ${
-                      filter.category === category.name.toLowerCase()
-                        ? "text-gray-900"
-                        : "text-gray-500 hover:text-gray-700"
+                    onClick={() => handleCategoryChange(category.name.toLowerCase())}
+                    className={`w-full text-left px-2 py-1 rounded-md ${
+                      filter.class_category === category.name.toLowerCase()
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-base-300"
                     }`}
                   >
                     {category.name}
@@ -133,39 +138,8 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
             </ul>
           </div>
 
-          {/* Class Types Filter */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-900">
-              Class Type
-            </label>
-            <ul className="space-y-4 mt-2">
-              {CLASS_TYPES.options.map((option, optionIdx) => (
-                <li key={option.value} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`classType-${optionIdx}`}
-                    onChange={() => {
-                      applyArrayFilter({
-                        category: "classType",
-                        value: option.value,
-                      });
-                    }}
-                    checked={filter.classType.includes(option.value)}
-                    className="checkbox checkbox-sm"
-                  />
-                  <label
-                    htmlFor={`classType-${optionIdx}`}
-                    className="px-2 text-sm text-gray-600"
-                  >
-                    {option.label}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Clear Filters Button */}
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <button
               className="btn btn-outline btn-sm w-full"
               onClick={() =>
@@ -183,7 +157,7 @@ const CourseListFilters = ({ filter, setFilter }: FilterProps) => {
             >
               Clear All Filters
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
