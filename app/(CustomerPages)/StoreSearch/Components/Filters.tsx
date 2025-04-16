@@ -207,7 +207,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
                   />
                 </div>
                 <button
-                  className="btn btn-sm bg-amber-500 hover:bg-amber-600 w-full mt-2"
+                  className="btn btn-sm bg-blue-400 hover:bg-blue-500 w-full mt-2"
                   onClick={applyCustomPriceFilter}
                 >
                   Apply Price Range
@@ -230,8 +230,8 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
               onClick={() => handleCategoryChange(category.value)}
               className={`w-full text-left px-3 py-2 rounded-md ${
                 filter.category === category.value
-                  ? "bg-amber-500 text-gray-800 font-semibold border-amber-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-200"
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               }`}
             >
               {category.name}
@@ -248,7 +248,7 @@ const Filters = ({ filter, setFilter, mobileOpen, onClose }: FilterProps) => {
       {/* Clear Filters Button */}
       <div className="mt-6">
         <button
-          className="btn btn-sm text-black bg-amber-500 hover:bg-amber-700 btn-sm w-full"
+          className="btn btn-sm text-black bg-blue-400 hover:bg-blue-500 btn-sm w-full"
           onClick={resetFilters}
         >
           Clear All Filters
