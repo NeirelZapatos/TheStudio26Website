@@ -40,12 +40,6 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
   customers,
   orders,
 }) => {
-  /**
-   * Validates and filters dates
-   * @param start Start date string
-   * @param end End date string
-   * @returns Filtered date range
-   */
   const filterDateRange = (start: string, end: string) => {
     if (!start && !end) return { start: '', end: '' };
 
@@ -74,7 +68,6 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
     return { start: '', end: '' };
   };
 
-  // Time interval options
   const timeIntervalOptions = [
     { value: '', label: 'All Time' },
     { value: 'last7days', label: 'Last 7 Days' },
@@ -83,7 +76,6 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
     { value: 'thisYear', label: 'This Year' }
   ];
 
-  // Handle time interval change
   const handleTimeIntervalChange = (interval: string) => {
     setTimeInterval(interval);
 
@@ -113,14 +105,13 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Customer Management</h3>
-      
-      {/* Date Range and Time Interval Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
+      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 border-b pb-2 sm:pb-3">Customer Management</h3>
+      {/* Date Range and Time Interval */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
         {/* Start Date Input */}
         <div>
-          <label className="block text-gray-700 text-sm mb-2">
+          <label className="block text-gray-700 text-sm mb-1 sm:mb-2">
             Start Date
           </label>
           <input
@@ -137,7 +128,7 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
 
         {/* End Date Input */}
         <div>
-          <label className="block text-gray-700 text-sm mb-2">
+          <label className="block text-gray-700 text-sm mb-1 sm:mb-2">
             End Date
           </label>
           <input
@@ -154,7 +145,7 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
 
         {/* Time Interval Dropdown */}
         <div>
-          <label className="block text-gray-700 text-sm mb-2">
+          <label className="block text-gray-700 text-sm mb-1 sm:mb-2">
             Time Interval
           </label>
           <select
@@ -171,29 +162,27 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons Row */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={fetchCustomers}
-            className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors"
-          >
-            <Filter className="mr-2" size={18} />
-            Apply Filters
-          </button>
-          <button
-            onClick={handleClearSearch}
-            className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-xl hover:bg-gray-600 transition-colors"
-          >
-            <RefreshCw className="mr-2" size={18} />
-            Clear Search
-          </button>
-          <ExportButton 
-            customers={customers} 
-            orders={orders} 
-          />
-        </div>
-      </div>
+     {/* Action Buttons Row */}
+<div className="flex flex-wrap gap-3 mb-4">
+  <button
+    onClick={fetchCustomers}
+    className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors min-w-[130px]"
+  >
+    <Filter className="mr-2" size={18} />
+    <span className="whitespace-nowrap">Apply Filters</span>
+  </button>
+  <button
+    onClick={handleClearSearch}
+    className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-xl hover:bg-gray-600 transition-colors min-w-[130px]"
+  >
+    <RefreshCw className="mr-2" size={18} />
+    <span className="whitespace-nowrap">Clear Search</span>
+  </button>
+  <ExportButton 
+    customers={customers} 
+    orders={orders} 
+  />
+</div>
     </div>
   );
 };

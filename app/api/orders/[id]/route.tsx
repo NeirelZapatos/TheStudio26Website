@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import schema from "../schema";
-import Order from "@/app/models/Order";
-import dbConnect from '@/app/lib/dbConnect';
+import Order from "../../../models/Order";
+import dbConnect from '../../../lib/dbConnect';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: number } }) {
     try {

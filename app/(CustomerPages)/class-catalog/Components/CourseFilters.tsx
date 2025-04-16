@@ -1,31 +1,33 @@
-import SearchBar from "../../StoreSearch/Components/SearchBar";
+import React from "react";
+
 const CATEGORIES = [
-  { name: "Beginning Jewelry Class", selected: false, href: "#" },
-  { name: "Specialty Class", selected: false, href: "#" },
+  { name: "All Classes", value: "all" },
+  { name: "Beginning Jewelry", value: "Beginning Jewelry Class" },
+  { name: "Specialty Classes", value: "Specialty Class" },
+  { name: "Ring Classes", value: "Ring Class" },
+  { name: "Earring Classes", value: "Earring Class" },
+  { name: "Bracelet Classes", value: "Bracelet Class" },
+  { name: "Pendant Classes", value: "Pendant Class" },
+  { name: "Other", value: "Other" },
 ];
 
-const CLASS_TYPES = {
-  id: "classType",
-  name: "Class Type",
-  options: [
-    { value: "ring", label: "Ring Classes" },
-    { value: "earring", label: "Earring Classes" },
-    { value: "pendant", label: "Pendant Classes" },
-    { value: "bracelet", label: "Bracelet (Cuff) Classes" },
-  ] as const,
-};
-
-const DEFAULT_CUSTOM_PRICE = [0, 50000] as [number, number];
+const PRICE_RANGES = [
+  { name: "All", value: [0, 999999] },
+  { name: "$0 - $99", value: [0, 99] },
+  { name: "$100 - $199", value: [100, 199] },
+  { name: "$200 - $299", value: [200, 299] },
+  { name: "$300+", value: [300, 999999] },
+];
 
 interface CourseFilterProps {
   courseFilter: CourseFilterState;
   setCourseFilter: React.Dispatch<React.SetStateAction<CourseFilterState>>;
+  onClose?: () => void;
 }
 
 interface CourseFilterState {
   sort: string;
-  category: string;
-  classType: string[]; // Allow multiple selections
+  class_category: string;
   price: {
     isCustom: boolean;
     range: [number, number];
@@ -36,113 +38,79 @@ interface CourseFilterState {
 const CourseFilters = ({
   courseFilter,
   setCourseFilter,
+  onClose,
 }: CourseFilterProps) => {
-  console.log(courseFilter);
-
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = (class_category: string) => {
     setCourseFilter((prev) => ({
       ...prev,
-      category, // Update the selected category
+      class_category,
     }));
+    
+    if (onClose && window.innerWidth < 1024) {
+      onClose();
+    }
   };
 
-  const applyArrayFilter = ({
-    category,
-    value,
-  }: {
-    category: keyof Pick<CourseFilterState, "classType">;
-    value: string;
-  }) => {
-    const isFilterApplied = courseFilter[category].includes(value);
-    setCourseFilter((prev: CourseFilterState) => ({
+  const handlePriceChange = (range: [number, number]) => {
+    setCourseFilter((prev) => ({
       ...prev,
-      [category]: isFilterApplied
-        ? prev[category].filter((v: string) => v !== value) // Remove the value if it's already selected
-        : [...prev[category], value], // Add the value if it's not selected
+      price: {
+        isCustom: false,
+        range,
+      },
     }));
+    
+    if (onClose && window.innerWidth < 1024) {
+      onClose();
+    }
   };
-
-  const minPrice = Math.min(
-    courseFilter.price.range[0],
-    courseFilter.price.range[1]
-  );
-  const maxPrice = Math.max(
-    courseFilter.price.range[0],
-    courseFilter.price.range[1]
-  );
 
   return (
-    <div className="hidden lg:block overflow-y-auto">
-      <SearchBar
-        onSearch={(searchTerm: string) => {
-          setCourseFilter((prev) => ({
-            ...prev,
-            searchTerm,
-          }));
-        }}
-        className="mb-4"
-        placeholder="Search courses..."
-      />
-      {/* Categories Filter */}
-      <ul className="space-y-4 border-b border-gray-200 pb-6 text-md font-medium text-gray-900">
-        <li>
-          <button
-            onClick={() => handleCategoryChange("all")}
-            className={`w-full text-left ${
-              courseFilter.category === "all"
-                ? "text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            All Classes
-          </button>
-        </li>
-        {CATEGORIES.map((category) => (
-          <li key={category.name}>
-            <button
-              onClick={() => handleCategoryChange(category.name)}
-              className={`w-full text-left ${
-                courseFilter.category === category.name.toLowerCase()
-                  ? "text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {category.name}
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="overflow-y-auto pb-6">
 
-      {/* Class Types Filter */}
-      <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-900">
-          Class Type
-        </label>
-        <ul className="space-y-4 mt-2">
-          {CLASS_TYPES.options.map((option, optionIdx) => (
-            <li key={option.value} className="flex items-center">
-              <input
-                type="checkbox"
-                id={`classType-${optionIdx}`}
-                onChange={() => {
-                  applyArrayFilter({
-                    category: "classType",
-                    value: option.value,
-                  });
-                }}
-                checked={courseFilter.classType.includes(option.value)}
-                className="checkbox checkbox-sm"
-              />
-              <label
-                htmlFor={`classType-${optionIdx}`}
-                className="px-2 text-sm text-gray-600"
+      {/* Categories Filter */}
+      <div className="mb-8">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Categories</h3>
+        <ul className="space-y-2">
+          {CATEGORIES.map((category) => (
+            <li key={category.value}>
+              <button
+                onClick={() => handleCategoryChange(category.value)}
+                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                  courseFilter.class_category === category.value
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                {option.label}
-              </label>
+                {category.name}
+              </button>
             </li>
           ))}
         </ul>
       </div>
+      
+      {/* Price Filter (needs design work) */} 
+      {/* <div className="mb-8">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Price Range</h3>
+        <ul className="space-y-2">
+          {PRICE_RANGES.map((range, idx) => (
+            <li key={idx}>
+              <button
+                onClick={() => handlePriceChange(range.value as [number, number])}
+                className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                  courseFilter.price.range[0] === range.value[0] && 
+                  courseFilter.price.range[1] === range.value[1]
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {range.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div> */}
+    
     </div>
   );
 };

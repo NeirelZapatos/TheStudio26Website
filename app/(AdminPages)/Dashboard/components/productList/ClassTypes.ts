@@ -2,7 +2,7 @@ export type Class = {
   _id: string;
   name: string;
   description: string;
-  classCategory: string;
+  class_category: string;
   price: number;
   date?: string;
   time?: string;

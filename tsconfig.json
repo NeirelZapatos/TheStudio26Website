@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "types": ["node", "selenium-webdriver"],
+    "types": ["node", "selenium-webdriver", "jest"],
     "plugins": [
       {
         "name": "next"

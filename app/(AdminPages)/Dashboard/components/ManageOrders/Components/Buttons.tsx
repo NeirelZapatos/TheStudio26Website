@@ -20,15 +20,17 @@ import { OrderFilter } from'@/utils/filterUtils/filterOrders'; // Import OrderFi
  */
 
 const Buttons: React.FC<{
-  selectedOrdersSize: number; // Number of selected orders
-  selectedOrders: Set<string>; // Set of selected order IDs
-  filterButtons: { label: string; value: OrderFilter; count: number }[]; // Filter buttons data
-  activeFilter: OrderFilter; // Currently active filter
-  setActiveFilter: (filter: OrderFilter) => void; // Function to set active filter
-  handlePrintShippingLabels: () => void; // Function to print shipping labels
-  handlePrintReceipt: () => void; // Function to print receipts
-  handleMarkAsFulfilled: () => void; // Function to mark orders as fulfilled
-  orders: IOrder[]; // Orders data
+  selectedOrdersSize: number;
+  selectedOrders: Set<string>;
+  filterButtons: { label: string; value: OrderFilter; count: number }[];
+  activeFilter: OrderFilter;
+  setActiveFilter: (filter: OrderFilter) => void;
+  handlePrintShippingLabels: () => void;
+  handlePrintReceipt: () => void;
+  handleMarkAsFulfilled: () => void;
+  orders: IOrder[];
+  hasOnlyPickupOrders: () => boolean;
+  hasDeliveryOrders: () => boolean;
 }> = ({
   selectedOrdersSize,
   filterButtons,
@@ -37,26 +39,31 @@ const Buttons: React.FC<{
   handlePrintShippingLabels,
   handlePrintReceipt,
   handleMarkAsFulfilled,
-  orders
+  orders,
+  hasOnlyPickupOrders,
+  hasDeliveryOrders
 }) => {
   const filterIcons: Record<OrderFilter, JSX.Element> = {
-    [OrderFilter.PRIORITY]: <AlertCircle size={24} />, // Priority filter icon
-    [OrderFilter.DELIVERIES]: <Truck size={24} />, // Deliveries filter icon
-    [OrderFilter.PENDING]: <Clock size={24} />, // Pending filter icon
-    [OrderFilter.PICKUP]: <Store size={24} />, // Pickup filter icon
-    [OrderFilter.FULFILLED]: <CheckSquare size={24} />, // Fulfilled filter icon
-    [OrderFilter.ALL]: <ShoppingBag size={24} />, // All orders filter icon
-
+    [OrderFilter.PRIORITY]: <AlertCircle size={24} />,
+    [OrderFilter.DELIVERIES]: <Truck size={24} />,
+    [OrderFilter.PENDING]: <Clock size={24} />,
+    [OrderFilter.PICKUP]: <Store size={24} />,
+    [OrderFilter.FULFILLED]: <CheckSquare size={24} />,
+    [OrderFilter.ALL]: <ShoppingBag size={24} />,
   };
+
+  // Check conditions for button activation
+  const canPrintShippingLabels = selectedOrdersSize > 0 && hasDeliveryOrders();
+  const canMarkAsFulfilled = selectedOrdersSize > 0 && hasOnlyPickupOrders();
 
   return (
     <div className="max-w-7xl mx-auto">
       {/* Top Section with Title and Export */}
       <div className="flex justify-between items-center mb-8 border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Manage Orders</h2> {/* Title */}
+        <h2 className="text-2xl font-bold text-gray-800">Manage Orders</h2>
         <div className="flex gap-4">
           <button 
-            onClick={() => exportOrdersToCSV(orders)} // Export orders to CSV
+            onClick={() => exportOrdersToCSV(orders)}
             className="flex items-center gap-2 px-6 py-3 bg-lightBlue-400 text-gray-700 rounded-lg hover:bg-lightBlue-500 transition-colors font-medium text-lg"
           >
             <DownloadIcon /> Export Orders
@@ -69,20 +76,20 @@ const Buttons: React.FC<{
         {/* Primary Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <button
-            onClick={handlePrintShippingLabels} // Print shipping labels
-            disabled={selectedOrdersSize === 0} // Disable if no orders selected
+            onClick={handlePrintShippingLabels}
+            disabled={!canPrintShippingLabels}
             className={`flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-lg font-medium transition-colors ${
-              selectedOrdersSize > 0
+              canPrintShippingLabels
                 ? 'bg-green-600 text-white hover:bg-green-700'
                 : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
           >
-            🏷️ Print Shipping Labels ({selectedOrdersSize}) {/* Label and count */}
+            🏷️ Print Shipping Labels ({selectedOrdersSize})
           </button>
 
           <button
-            onClick={handlePrintReceipt} // Print receipts
-            disabled={selectedOrdersSize === 0} // Disable if no orders selected
+            onClick={handlePrintReceipt}
+            disabled={selectedOrdersSize === 0}
             className={`flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-lg font-medium transition-colors ${
               selectedOrdersSize > 0
                 ? 'bg-red-600 text-white hover:bg-red-700'
@@ -90,32 +97,32 @@ const Buttons: React.FC<{
             }`}
           >
             <Receipt size={24} />
-            Print Receipt ({selectedOrdersSize}) {/* Label and count */}
+            Print Receipt ({selectedOrdersSize})
           </button>
         </div>
 
         {/* Order Status Filters */}
         <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Filter Orders</h3> {/* Filter title */}
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">Filter Orders</h3>
           <div className="grid grid-cols-3 gap-3">
             {filterButtons.map((button) => (
               <button
-                key={button.value} // Unique key for each button
-                onClick={() => setActiveFilter(button.value)} // Set active filter
+                key={button.value}
+                onClick={() => setActiveFilter(button.value)}
                 className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
                   activeFilter === button.value
-                    ? 'bg-blue-600 text-white' // Active filter style
-                    : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300' // Inactive filter style
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  {filterIcons[button.value]} {/* Filter icon */}
-                  <span className="text-base font-medium">{button.label}</span> {/* Filter label */}
+                  {filterIcons[button.value]}
+                  <span className="text-base font-medium">{button.label}</span>
                 </div>
                 <span className={`text-sm mt-1 ${
-                  activeFilter === button.value ? 'text-blue-100' : 'text-gray-500' // Count style
+                  activeFilter === button.value ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {button.count} orders {/* Filter count */}
+                  {button.count} orders
                 </span>
               </button>
             ))}
@@ -125,8 +132,13 @@ const Buttons: React.FC<{
         {/* Additional Actions */}
         <div className="flex gap-4">
           <button
-            onClick={handleMarkAsFulfilled} // Mark orders as fulfilled
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+            onClick={handleMarkAsFulfilled}
+            disabled={!canMarkAsFulfilled}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium text-lg ${
+              canMarkAsFulfilled
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <CheckCircle size={24} />
             Mark as Fulfilled
