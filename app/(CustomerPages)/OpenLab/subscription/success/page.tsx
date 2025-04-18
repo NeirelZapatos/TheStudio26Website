@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -25,7 +25,7 @@ interface SubscriptionData {
   };
 }
 
-export default function SubscriptionSuccessPage() {
+function SubscriptionSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -158,5 +158,15 @@ export default function SubscriptionSuccessPage() {
         </button>
       </Link>
     </div>
+  );
+}
+
+export default function SubscriptionSuccess() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {/* Your component logic */}
+      <SubscriptionSuccessPage />
+      {/* Add any other components or logic here */}
+    </Suspense>
   );
 }

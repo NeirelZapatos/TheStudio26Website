@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -20,7 +20,7 @@ interface SubscriptionData {
   interval: string;
 }
 
-export default function ManageSubscriptionPage() {
+function ManageSubscriptionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -244,5 +244,13 @@ export default function ManageSubscriptionPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SubscriptionCheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ManageSubscriptionPage />
+    </Suspense>
   );
 }

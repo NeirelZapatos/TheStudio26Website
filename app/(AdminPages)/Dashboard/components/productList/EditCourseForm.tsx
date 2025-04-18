@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { Course } from "./CourseCard";
+import Course from "./CourseCard";
+
+interface Course {
+  name: string;
+  description: string;
+  price: number;
+  location: string;
+  recurring: boolean;
+  date: string;
+  time: string;
+  instructor: string;
+  duration: string;
+}
 
 interface EditCourseFormProps {
   initialCourse: Course;

@@ -65,7 +65,7 @@ const ClassViewModal: React.FC<ClassViewModalProps> = ({
       const templateData = {
         name: classItem.name,
         description: classItem.description,
-        classCategory: classItem.classCategory,
+        classCategory: classItem.class_category,
         price: classItem.price,
         date: classItem.date,
         time: classItem.time,
@@ -188,7 +188,7 @@ const ClassViewModal: React.FC<ClassViewModalProps> = ({
                   <div className="p-4">
                     {renderProperty("Name", classItem.name)}
                     {renderProperty("Description", classItem.description)}
-                    {renderProperty("Category", classItem.classCategory)}
+                    {renderProperty("Category", classItem.class_category)}
                     {renderProperty("Price", `$${classItem.price.toFixed(2)}`)}
                     {renderProperty("Date", classItem.date)}
                     {renderProperty("Time", classItem.time)}

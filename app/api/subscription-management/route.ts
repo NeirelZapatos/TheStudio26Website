@@ -3,6 +3,9 @@ import Stripe from 'stripe';
 import { MongoClient } from 'mongodb';
 import mongoose from 'mongoose';
 
+// filepath: app/api/subscription-management/route.ts
+export const dynamic = 'force-dynamic';
+
 const uri = process.env.MONGODB_URI as string;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 

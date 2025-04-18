@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 
@@ -15,7 +15,7 @@ interface SubscriptionPlan {
   interval: string;
 }
 
-export default function SubscriptionCheckout() {
+function SubscriptionCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const subscriptionId = searchParams.get('id') || "67edc949208b99bf25cd4da0"; // Default to Silver Lab Bundle
@@ -206,5 +206,13 @@ export default function SubscriptionCheckout() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function SubscriptionCheckout() {
+  return (
+    <Suspense fallback={<div className="text-center">Loading...</div>}>
+      <SubscriptionCheckoutContent />
+    </Suspense>
   );
 }
