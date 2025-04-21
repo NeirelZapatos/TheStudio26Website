@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import env from "dotenv";
 import Header2 from "./Components/Header2";
 import Footer2 from "./Components/Footer2";
+import Link from "next/link";
 import { getHomepageSettings } from "./lib/homepageSettings";
 
 // Load environment variables
@@ -34,83 +35,135 @@ export default async function Page() {
   return (
     <StrictMode>
       <Header2 />
-      <header className="text-center py-5 bg-white text-black">
-        <h1 className="text-4xl font-bold text-red-600">The Studio 26</h1>
-        <p className="text-lg text-gray-400">
-          4100 Cameron Park Drive #118, Cameron Park, CA 95682
-        </p>
-      </header>
 
+      {/* Hero Section */}
       <div
-        className="relative w-full h-[300px] md:h-[400px] lg:h-[500px]"
+        className="hero min-h-[calc(100vh-64px)]"
         style={{
-          backgroundImage: `url('https://picsum.photos/id/527/4000/3000')`,
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1624585179018-25699030cb8f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
           backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
-      ></div>
-
-      <div className="bg-white">
-        {/* About Us Section */}
-        <section className="text-center p-10 bg-white">
-          <div
-            className="text-3xl font-bold text-yellow-700 mb-4"
-            dangerouslySetInnerHTML={{ __html: aboutTitle }}
-          />
-          <div
-            className="text-lg text-gray-700 max-w-3xl mx-auto"
-            dangerouslySetInnerHTML={{ __html: aboutText }}
-          />
-        </section>
-
-        {/* Jewelry Class Section */}
-        <section className="text-center p-10 bg-white border-t border-gray-300">
-          <div
-            className="text-2xl font-bold text-gray-800 mb-2"
-            dangerouslySetInnerHTML={{ __html: jewelryTitle }}
-          />
-          <div
-            className="text-lg text-gray-600 max-w-3xl mx-auto mb-6"
-            dangerouslySetInnerHTML={{ __html: jewelryDescription }}
-          />
-          <div
-            className="text-lg text-gray-600 mb-4"
-            dangerouslySetInnerHTML={{ __html: callToActionText }}
-          />
-          <a href={buttonUrl}>
-            <button className="bg-yellow-700 text-white text-lg py-3 px-8 rounded-lg hover:bg-yellow-600">
-              <div dangerouslySetInnerHTML={{ __html: buttonLabel }} />
-            </button>
-          </a>
-        </section>
+      >
+        <div className="hero-overlay bg-black bg-opacity-40"></div>
+        <div className="hero-content text-left text-white p-8 md:p-16 w-full">
+          <div className="max-w-xl">
+            <h1 className="font-special-gothic text-4xl md:text-5xl font-bold mb-2">
+              Welcome to
+            </h1>
+            <h1 className="font-special-gothic text-4xl md:text-5xl font-bold mb-6">
+              The Studio 26, LLC
+            </h1>
+            <p className="font-special-gothic text-xl md:text-2xl mb-8">
+              A Community of Passionate Educators and Learners
+            </p>
+            <Link href="/class-catalog">
+              <button className="btn btn-primary bg-red-700 hover:bg-red-600 border-none text-white">
+                View our classes
+              </button>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Projects Section */}
-      <section className="bg-white py-10">
-        <div
-          className="text-3xl font-bold text-center text-gray-800 mb-6"
-          // Render cleaned title
-          dangerouslySetInnerHTML={{
-            __html:
-              cleanedProjectsSectionTitle ||
-              "Past Projects Created At The Studio 26, LLC",
-          }}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
-          {displayedImages.map(
-            (img: { url: string; key: string }, index: number) => (
-              <div key={img.key} className="relative w-[300px] h-[300px]">
-                <Image
-                  src={img.url}
-                  alt={`Project Image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )
-          )}
-        </div>
-      </section>
+      <div className="bg-white">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-32 h-32 bg-yellow-700 opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-40 h-40 bg-yellow-700 opacity-5 rounded-full translate-x-1/2 translate-y-1/2"></div>
 
+          <div className="max-w-5xl mx-auto relative">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-black font-special-gothic mb-6">
+                Our Story
+              </h2>
+              <div className="w-24 h-1 bg-yellow-600 mx-auto mb-8"></div>
+            </div>
+            <div className="text-center">
+              <div
+                className="text-lg text-gray-700 leading-relaxed space-y-4"
+                dangerouslySetInnerHTML={{ __html: aboutText }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 relative">
+          {/* Decorative jewelry elements */}
+          <div className="absolute top-10 right-10 text-yellow-700 opacity-10 text-6xl">
+            ✧
+          </div>
+          <div className="absolute bottom-10 left-10 text-yellow-700 opacity-10 text-6xl">
+            ✧
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 font-special-gothic mb-4">
+                <div dangerouslySetInnerHTML={{ __html: jewelryTitle }} />
+              </h2>
+              <div className="w-20 h-1 bg-yellow-600 mx-auto mb-6"></div>
+              <div
+                className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: jewelryDescription }}
+              />
+            </div>
+            <div className="text-center">
+              <div
+                className="text-lg text-gray-700 mb-8"
+                dangerouslySetInnerHTML={{ __html: callToActionText }}
+              />
+              <a href={buttonUrl}>
+                <button className="btn bg-yellow-700 hover:bg-yellow-600 border-none text-white px-8 py-3 text-lg font-medium rounded-lg transition-all duration-300 transform hover:scale-105">
+                  <div dangerouslySetInnerHTML={{ __html: buttonLabel }} />
+                </button>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Projects Section */}
+        <section className="bg-white py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 font-special-gothic mb-4">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      cleanedProjectsSectionTitle ||
+                      "Past Projects Created At The Studio 26, LLC",
+                  }}
+                />
+              </h2>
+              <div className="w-24 h-1 bg-yellow-600 mx-auto mb-6"></div>
+            </div>
+
+            {/* Gallery Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayedImages.map(
+                (img: { url: string; key: string }, index: number) => (
+                  <div
+                    key={img.key}
+                    className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300"
+                  >
+                    {/* Image with hover effect */}
+                    <div className="relative w-full aspect-square">
+                      <Image
+                        src={img.url}
+                        alt={`Project Image ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
       <Footer2 />
     </StrictMode>
   );

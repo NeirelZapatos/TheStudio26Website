@@ -43,6 +43,7 @@ export const CATEGORIES = [
   { name: "Stones", value: "Stones" },
   { name: "Jewelry", value: "Jewelry" },
   { name: "Essentials", value: "Essentials" },
+  { name: "Miscellaneous", value: "Miscellaneous" },
 ];
 
 export const SORT_OPTIONS = [
@@ -201,17 +202,17 @@ export const FILTER_DEFINITIONS: FilterDefinition[] = [
       { value: "Near-Opaque", label: "Near-Opaque" },
     ],
   },
-  {
-    id: "customization_options",
-    name: "Customization Options",
-    type: "checkbox",
-    category: "customization_options",
-    options: [
-      { value: "engraving", label: "Engraving Available" },
-      { value: "stone setting", label: "Stone Setting Available" },
-      { value: "custom design", label: "Custom Design Available" },
-    ],
-  },
+  // {
+  //   id: "customization_options",
+  //   name: "Customization Options",
+  //   type: "checkbox",
+  //   category: "customization_options",
+  //   options: [
+  //     { value: "engraving", label: "Engraving Available" },
+  //     { value: "stone setting", label: "Stone Setting Available" },
+  //     { value: "custom design", label: "Custom Design Available" },
+  //   ],
+  // },
   {
     id: "certification_available",
     name: "Stone Certification Available",

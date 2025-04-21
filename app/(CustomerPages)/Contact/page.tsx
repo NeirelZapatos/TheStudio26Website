@@ -96,8 +96,7 @@ export default function Page() {
   return (
     <div data-theme="autumn">
       <div className="container mx-auto p-4 max-w-3xl py-6">
-        <h1 className="text-4xl md:text-5xl font-bold text-center text-[#8B0000] mb-2">The Studio 26</h1>
-        <p className="text-lg text-center text-gray-600 mb-8">4100 Cameron Park Drive #118, Cameron Park, CA 95682</p>
+        <h1 className="text-4xl md:text-5xl font-bold text-center text-black mb-8 mt-6">Contact Us</h1>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,7 +189,7 @@ export default function Page() {
           </div>
 
           <div className="flex items-center space-x-8">
-            <button className="btn btn-primary" type="submit" disabled={loading}>
+            <button className="btn text-white bg-red-700 hover:bg-red-500" type="submit" disabled={loading}>
               {loading ? "Sending..." : "Send Message"}
             </button>
 
