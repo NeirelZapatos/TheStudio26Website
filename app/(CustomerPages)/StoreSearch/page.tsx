@@ -77,7 +77,7 @@ export default function StorePage() {
 
       <section className="pb-24 pt-6">
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
-          <div className="hidden sticky top-5 h-[calc(100vh-2rem)] overflow-y-auto lg:block">
+          <div className="hidden sticky top-20 h-[calc(100vh-6rem)] overflow-y-auto lg:block">
             <div className="mb-3 mr-4 hidden lg:block">
               <SearchBar
                 onSearch={handleSearch}

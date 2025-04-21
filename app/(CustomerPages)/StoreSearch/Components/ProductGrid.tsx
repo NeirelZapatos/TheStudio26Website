@@ -115,6 +115,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
         );
       } finally {
         setLoading(false);
+        setCurrentPage(1);
       }
     };
 

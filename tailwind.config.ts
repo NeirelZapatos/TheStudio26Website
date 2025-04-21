@@ -15,6 +15,9 @@ const config: Config = {
         darkgray: '#ebebeb',
         lightgray: '#252728'
       },
+      fontFamily: {
+        'special-gothic': ['"Special Gothic Expanded One"', 'serif'],
+      },
     },
   },
   plugins: [

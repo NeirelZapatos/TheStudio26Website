@@ -65,7 +65,7 @@ const ClassViewModal: React.FC<ClassViewModalProps> = ({
       const templateData = {
         name: classItem.name,
         description: classItem.description,
-        classCategory: classItem.class_category,
+        class_category: classItem.class_category,
         price: classItem.price,
         date: classItem.date,
         time: classItem.time,
