@@ -14,7 +14,10 @@ export default function Page() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: string; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: string;
+    message: string;
+  } | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
 
   const initialPlaceholders = {
@@ -26,7 +29,9 @@ export default function Page() {
     message: "Write your message...",
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -83,7 +88,10 @@ export default function Page() {
         });
       } else {
         const errorData = await response.json();
-        setFeedback({ type: "error", message: errorData.error || "Failed to send message." });
+        setFeedback({
+          type: "error",
+          message: errorData.error || "Failed to send message.",
+        });
       }
     } catch (error) {
       setFeedback({ type: "error", message: "An unexpected error occurred." });
@@ -95,13 +103,17 @@ export default function Page() {
 
   return (
     <div data-theme="autumn">
-      <div className="container mx-auto p-4 max-w-3xl py-6">
-        <h1 className="text-4xl md:text-5xl font-bold text-center text-[#8B0000] mb-2">The Studio 26</h1>
-        <p className="text-lg text-center text-gray-600 mb-8">4100 Cameron Park Drive #118, Cameron Park, CA 95682</p>
+      <div className="container mx-auto p-4 max-w-3xl py-6 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-black font-special-gothic mb-4">
+          Contact Us
+        </h1>
+        <div className="w-24 h-1 bg-amber-600 mx-auto mb-6"></div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className={`form-control ${errors.firstName ? "border-red-500" : ""}`}>
+            <div
+              className={`form-control ${errors.firstName ? "border-red-500" : ""}`}
+            >
               <label className="label">
                 <span className="label-text">First Name - Optional</span>
               </label>
@@ -111,10 +123,14 @@ export default function Page() {
                 value={formData.firstName}
                 onChange={handleChange}
                 className={`input input-bordered w-full ${errors.firstName ? "border-red-500" : ""}`}
-                placeholder={formData.firstName ? "" : initialPlaceholders.firstName}
+                placeholder={
+                  formData.firstName ? "" : initialPlaceholders.firstName
+                }
               />
             </div>
-            <div className={`form-control ${errors.lastName ? "border-red-500" : ""}`}>
+            <div
+              className={`form-control ${errors.lastName ? "border-red-500" : ""}`}
+            >
               <label className="label">
                 <span className="label-text">Last Name - Optional</span>
               </label>
@@ -124,13 +140,17 @@ export default function Page() {
                 value={formData.lastName}
                 onChange={handleChange}
                 className={`input input-bordered w-full ${errors.lastName ? "border-red-500" : ""}`}
-                placeholder={formData.lastName ? "" : initialPlaceholders.lastName}
+                placeholder={
+                  formData.lastName ? "" : initialPlaceholders.lastName
+                }
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className={`form-control ${errors.email ? "border-red-500" : ""}`}>
+            <div
+              className={`form-control ${errors.email ? "border-red-500" : ""}`}
+            >
               <label className="label">
                 <span className="label-text">Email</span>
               </label>
@@ -142,9 +162,13 @@ export default function Page() {
                 className={`input input-bordered w-full ${errors.email ? "border-red-500" : ""}`}
                 placeholder={formData.email ? "" : initialPlaceholders.email}
               />
-              {errors.email && <p className="text-red-500 text-sm">* Required</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm">* Required</p>
+              )}
             </div>
-            <div className={`form-control ${errors.phone ? "border-red-500" : ""}`}>
+            <div
+              className={`form-control ${errors.phone ? "border-red-500" : ""}`}
+            >
               <label className="label">
                 <span className="label-text">Phone Number - Optional</span>
               </label>
@@ -156,11 +180,17 @@ export default function Page() {
                 className={`input input-bordered w-full ${errors.phone ? "border-red-500" : ""}`}
                 placeholder={formData.phone ? "" : initialPlaceholders.phone}
               />
-              {errors.phone && <p className="text-red-500 text-sm">Must be in the format 123-456-7890</p>}
+              {errors.phone && (
+                <p className="text-red-500 text-sm">
+                  Must be in the format 123-456-7890
+                </p>
+              )}
             </div>
           </div>
 
-          <div className={`form-control ${errors.subject ? "border-red-500" : ""}`}>
+          <div
+            className={`form-control ${errors.subject ? "border-red-500" : ""}`}
+          >
             <label className="label">
               <span className="label-text">Subject</span>
             </label>
@@ -172,10 +202,14 @@ export default function Page() {
               className={`input input-bordered w-full ${errors.subject ? "border-red-500" : ""}`}
               placeholder={formData.subject ? "" : initialPlaceholders.subject}
             />
-            {errors.subject && <p className="text-red-500 text-sm">* Required</p>}
+            {errors.subject && (
+              <p className="text-red-500 text-sm">* Required</p>
+            )}
           </div>
 
-          <div className={`form-control ${errors.message ? "border-red-500" : ""}`}>
+          <div
+            className={`form-control ${errors.message ? "border-red-500" : ""}`}
+          >
             <label className="label">
               <span className="label-text">Message</span>
             </label>
@@ -186,11 +220,17 @@ export default function Page() {
               className={`textarea textarea-bordered h-24 ${errors.message ? "border-red-500" : ""}`}
               placeholder={formData.message ? "" : initialPlaceholders.message}
             />
-            {errors.message && <p className="text-red-500 text-sm">* Required</p>}
+            {errors.message && (
+              <p className="text-red-500 text-sm">* Required</p>
+            )}
           </div>
 
           <div className="flex items-center space-x-8">
-            <button className="btn btn-primary" type="submit" disabled={loading}>
+            <button
+              className="btn text-white bg-red-700 hover:bg-red-500"
+              type="submit"
+              disabled={loading}
+            >
               {loading ? "Sending..." : "Send Message"}
             </button>
 
