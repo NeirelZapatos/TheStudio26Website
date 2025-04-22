@@ -27,7 +27,8 @@ export async function GET(request:NextRequest) {
 
     try {
         await dbConnect();
-        const validCategories = ["Courses", "Jewelry", "Stones", "Supplies"];
+        //const validCategories = ["Courses", "Jewelry", "Stones", "Supplies"];
+        const validCategories = ["Courses", "Jewelry", "Stones", "Essentials"]; // Supplies --> Essentials update
 
         //Orders from Date Range
         const orders = await Order.find({
@@ -81,8 +82,8 @@ export async function GET(request:NextRequest) {
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
-        const sortedSupplies = Object.values(itemSales)
-            .filter(item => item.category === "Supplies")
+        const sortedEssentials = Object.values(itemSales)
+            .filter(item => item.category === "Essentials")
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
@@ -94,7 +95,7 @@ export async function GET(request:NextRequest) {
             bestSellingItems: {
                 "Jewelry": sortedJewelry,
                 "Stones": sortedStones,
-                "Supplies": sortedSupplies,
+                "Essentials": sortedEssentials,
                 "Courses": sortedCourses
             }
         }, { status: 200 })
