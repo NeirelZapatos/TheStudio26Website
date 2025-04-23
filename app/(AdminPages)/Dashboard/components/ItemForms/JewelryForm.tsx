@@ -157,6 +157,31 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     }
   };
 
+  const handleDeleteTemplate = async (templateId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this template?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/item-templates?id=${templateId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete template");
+      }
+
+      // Remove the deleted template from the state
+      setTemplates((prev) => prev.filter((template) => template._id !== templateId));
+      setFilteredTemplateList((prev) => prev.filter((template) => template._id !== templateId));
+
+      alert("Template deleted successfully.");
+    } catch (error: any) {
+      console.error("Error deleting template:", error.message);
+      alert(error.message || "Failed to delete template.");
+    }
+  };
+  
   const handleSaveAsTemplate = async () => {
     let uploadedImageUrls = await uploadImages(jewelryType.toLowerCase());
 
@@ -431,10 +456,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 {filteredTemplateList.map((template, index) => (
                   <li
                     key={index}
-                    onClick={() => loadTemplate(index.toString())}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    className="p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
                   >
-                    {template.name}
+                    <span onClick={() => loadTemplate(index.toString())}>
+                      {template.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the loadTemplate function
+                        handleDeleteTemplate(template._id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
