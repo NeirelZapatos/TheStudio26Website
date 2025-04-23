@@ -75,9 +75,10 @@ export default async function Page() {
 
           <div className="max-w-5xl mx-auto relative">
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold text-black font-special-gothic mb-6">
-                Our Story
-              </h2>
+              <div className="text-4xl md:text-5xl font-bold text-black font-special-gothic mb-6"
+                dangerouslySetInnerHTML={{ __html: aboutTitle }}
+              >
+              </div>
               <div className="w-24 h-1 bg-yellow-600 mx-auto mb-8"></div>
             </div>
             <div className="text-center">
