@@ -35,7 +35,7 @@ interface BestSellingItem {
 interface BestSellingItems {
   Jewelry: BestSellingItem[];
   Stones: BestSellingItem[];
-  Supplies: BestSellingItem[];
+  Essentials: BestSellingItem[];
   Courses: BestSellingItem[]; 
 }
 
@@ -54,14 +54,14 @@ const useFinancialData = () => {
   const [bestSellingItems, setBestSellingItems] = useState<BestSellingItems>({
     Jewelry: [],
     Stones: [],
-    Supplies: [],
+    Essentials: [],
     Courses: [],
   });
 
    const [categorySales, setCategorySales] = useState<CategorySales>({
     Jewelry: {},
     Stones: {},
-    Supplies: {},
+    Essentials: {},
     Courses: {},
    })
 
