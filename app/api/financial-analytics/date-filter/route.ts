@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
         let totalRevenue = 0;
         let jewelryRevenue = 0;
-        let suppliesRevenue = 0;
+        let essentialsRevenue = 0;
         let stonesRevenue = 0;
         let courseRevenue = 0;
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
                         totalRevenue += Number(product.price);
                         break;
                     case "Essentials":
-                        suppliesRevenue += Number(product.price);
+                        essentialsRevenue += Number(product.price);
                         totalRevenue += Number(product.price);
                         break;
                 }
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
         categoryRevenue["Jewelry"] = { revenue: jewelryRevenue };
         categoryRevenue["Stones"] = { revenue: stonesRevenue };
-        categoryRevenue["Essentials"] = { revenue: suppliesRevenue };
+        categoryRevenue["Essentials"] = { revenue: essentialsRevenue };
         categoryRevenue["Courses"] = { revenue: courseRevenue };
 
         return NextResponse.json({
