@@ -60,21 +60,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
   // --------------- Options for selects --------------- //
   const jewelryTypes = ["ring", "earring", "bracelet", "cuff", "pendant", "other"];
-  const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals"];
-  const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver"];
-  const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized"];
-  const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique"];
-  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
-  const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar"];
-  const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity"];
-  const customizationOptionsList = ["engraving available", "custom stone setting available", "personalized design available"];
+  const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals", "N/A"];
+  const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver", "N/A"];
+  const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized", "N/A"];
+  const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique", "N/A"];
+  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15", "N/A"];
+  const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar", "N/A"];
+  const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity", "N/A"];
 
   const colorOptions = ["Gold", "Rose Gold", "White Gold", "Silver", "Platinum", "Black", "Bronze", "Copper", "Red",
-    "Pink", "Blue", "Green", "Purple", "Yellow", "Orange", "White/Clear", "Black", "Brown", "Multicolor", "Other"];
+    "Pink", "Blue", "Green", "Purple", "Yellow", "Orange", "White/Clear", "Black", "Brown", "Multicolor", "Other", "N/A"];
 
   const [stoneOptions, setStoneOptions] = useState<string[]>([
     "diamond", "emerald", "ruby", "sapphire", "amethyst",
-    "opal", "turquoise", "topaz", "pearl", "moonstone", "jade"
+    "opal", "turquoise", "topaz", "pearl", "moonstone", "jade", "N/A"
   ]);
 
   const requiredFields = [
@@ -715,15 +714,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
               </select>
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
-              </select>
-            </div>
           </>
         )}
 
@@ -748,15 +738,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
               <select className="select select-bordered w-full" value={stoneArrangement} onChange={e => setStoneArrangement(e.target.value)}>
                 <option value="" disabled>Select Stone Arrangement</option>
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
               </select>
             </div>
           </>
@@ -805,15 +786,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
               <select className="select select-bordered w-full" value={stoneArrangement} onChange={e => setStoneArrangement(e.target.value)}>
                 <option value="" disabled>Select Stone Arrangement</option>
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
               </select>
             </div>
           </>
