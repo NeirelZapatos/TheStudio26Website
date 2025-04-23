@@ -40,3 +40,39 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  await dbConnect();
+  
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id');
+  
+  if (!id) {
+    return NextResponse.json(
+      { success: false, error: 'Template ID is required' },
+      { status: 400 }
+    );
+  }
+  
+  try {
+    const deletedTemplate = await ClassTemplate.findByIdAndDelete(id);
+    
+    if (!deletedTemplate) {
+      return NextResponse.json(
+        { success: false, error: 'Template not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(
+      { success: true, data: deletedTemplate },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error('Error deleting class template:', error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
