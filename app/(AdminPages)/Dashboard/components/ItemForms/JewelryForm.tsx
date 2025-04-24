@@ -49,8 +49,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [customizationOptions, setCustomizationOptions] = useState("");
 
   const [inlayedStone, setInlayedStone] = useState<string>("");
-  const [customStone, setCustomStone] = useState<string>("");
-  const [showCustomStoneInput, setShowCustomStoneInput] = useState(false);
 
   // --------------- Template Search State --------------- //
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -180,7 +178,7 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       alert(error.message || "Failed to delete template.");
     }
   };
-  
+
   const handleSaveAsTemplate = async () => {
     let uploadedImageUrls = await uploadImages(jewelryType.toLowerCase());
 
@@ -278,15 +276,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     // move the carousel index back if the last image is removed
     if (currentCarouselIndex >= newPreviewUrls.length) {
       setCurrentCarouselIndex(newPreviewUrls.length - 1);
-    }
-  };
-
-  const handleAddCustomStone = () => {
-    if (customStone && !stoneOptions.includes(customStone)) {
-      setStoneOptions([...stoneOptions, customStone]);
-      setInlayedStone(customStone);
-      setCustomStone("");
-      setShowCustomStoneInput(false);
     }
   };
 
@@ -602,46 +591,13 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         </div>
         <div>
           <label className="label">
-            <span className="label-text font-semibold">Inlayed Stone</span>
+            <span className="label-text font-semibold">Stone Inlay</span>
           </label>
           <div className="flex flex-col space-y-2">
-            <select
-              className="select select-bordered w-full"
-              value={inlayedStone}
-              onChange={(e) => {
-                if (e.target.value === "custom") {
-                  setShowCustomStoneInput(true);
-                  setInlayedStone("");
-                } else {
-                  setInlayedStone(e.target.value);
-                  setShowCustomStoneInput(false);
-                }
-              }}
-            >
+            <select className="select select-bordered w-full" value={inlayedStone} onChange={(e) => setInlayedStone(e.target.value)}>
               <option value="" disabled>Select Stone Type</option>
-              {stoneOptions.map(stone => <option key={stone} value={stone}>{stone}</option>)}
-              <option value="custom">+ Add Custom Stone</option>
+              {stoneOptions.map(stoneOption => <option key={stoneOption} value={stoneOption}>{stoneOption}</option>)}
             </select>
-
-            {showCustomStoneInput && (
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  className="input input-bordered flex-grow"
-                  value={customStone}
-                  onChange={(e) => setCustomStone(e.target.value)}
-                  placeholder="Enter custom stone name"
-                />
-                <button
-                  type="button"
-                  className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
-                  onClick={handleAddCustomStone}
-                  disabled={!customStone}
-                >
-                  Add
-                </button>
-              </div>
-            )}
           </div>
         </div>
         <div>
