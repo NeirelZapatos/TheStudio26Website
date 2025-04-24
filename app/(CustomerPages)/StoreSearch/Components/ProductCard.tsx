@@ -15,18 +15,18 @@ function ProductCard({ name, price, image_url, _id, quantity_in_stock = 0, compa
   const isInStock = quantity_in_stock > 0;
   
   return (
-    <div className={`group relative h-full ${compact ? "h-48" : "h-64"}`}>
+    <div className={`group relative h-full p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white ${compact ? "h-48" : "h-64"}`}>
       <div className="relative aspect-square">
         <Link
           href={`/StoreSearch/products/${_id}`}
-          className="block w-full h-full"
+          className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
         >
           <Image
             src={image_url}
             width={compact ? 200 : 300}
             height={compact ? 200 : 300}
             alt="Product Image"
-            className="rounded-md h-full w-full object-cover group-hover:opacity-90 duration-200"
+            className="rounded-md h-full w-full object-cover group-hover:opacity-75 duration-200"
           />
           
           {isInStock && (
@@ -34,7 +34,7 @@ function ProductCard({ name, price, image_url, _id, quantity_in_stock = 0, compa
           )}
         </Link>
       </div>
-      <div className="mt-3 px-1">
+      <div className="mt-4">
         <h3 className="text-sm text-gray-700">{name}</h3>
         <p className="mt-1 text-md text-gray-900">${Number(price).toFixed(2)}</p>
         {!isInStock && (

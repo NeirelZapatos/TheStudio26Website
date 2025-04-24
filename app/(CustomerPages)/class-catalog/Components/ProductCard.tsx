@@ -20,7 +20,7 @@ function ProductCard({ _id, name, price, image_url, date, time }: ProductCardPro
     year: 'numeric'
   }) : null;
   return (
-    <div className="group relative h-full">
+    <div className="group relative h-full p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white">
       <Link
         href={`/class-catalog/courses/${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
@@ -34,19 +34,21 @@ function ProductCard({ _id, name, price, image_url, date, time }: ProductCardPro
             className="rounded-md h-full w-full object-cover group-hover:opacity-75 duration-200"
           />
         </div>
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4">
           <div>
             <h3 className="text-sm text-gray-700">{name}</h3>
-            <p className="mt-1 text-sm text-gray-500">${price}</p>
+            <p className="mt-1 text-md text-gray-500">${price}</p>
             {formattedDate && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-sm text-gray-500">
                 {formattedDate} {time && `• ${time}`}
               </p>
             )}
           </div>
         </div>
       </Link>
-      <BookNowButton classId={_id} />
+      <div className="mt-4">
+        <BookNowButton classId={_id} />
+      </div>
     </div>
   );
 }
