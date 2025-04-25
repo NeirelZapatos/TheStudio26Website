@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     }
 
     // Get the origin for the management URL
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
 
     // Process each subscription
     for (const subscription of subscriptions) {
