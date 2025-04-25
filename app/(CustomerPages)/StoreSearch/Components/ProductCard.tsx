@@ -15,7 +15,7 @@ function ProductCard({ name, price, image_url, _id, quantity_in_stock = 0, compa
   const isInStock = quantity_in_stock > 0;
   
   return (
-    <div className={`group relative h-full p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white ${compact ? "h-48" : "h-64"}`}>
+    <div className={`group relative h-full p-4 rounded-lg hover:shadow-lg transition-shadow bg-white ${compact ? "h-48" : "h-64"}`}>
       <div className="relative aspect-square">
         <Link
           href={`/StoreSearch/products/${_id}`}

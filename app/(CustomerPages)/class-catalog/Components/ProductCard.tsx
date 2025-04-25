@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import BookNowButton from "./BookNowButton";
 import { useEffect, useState } from "react";
 
 interface ProductCardProps {
@@ -41,10 +40,18 @@ function ProductCard({ _id, name, price, image_url, date, time }: ProductCardPro
     year: 'numeric'
   }) : null;
 
+  const formattedTime = time
+  ? new Date(`1970-01-01T${time}`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    })
+  : null;
+
   return (
-    <div className="group relative h-full p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white">
+    <div className="group relative h-full p-4 rounded-lg hover:shadow-lg transition-shadow bg-white">
       <Link
-        href={`/class-catalog/courses/${_id}`}
+        href={`/class-booking?id=${_id}`}
         className="aspect-h-1 aspect-w-1 w-full rounded-md overflow-hidden bg-gray-200 lg:aspect-none lg:h-80"
       >
         <div className="relative aspect-square">
@@ -62,15 +69,15 @@ function ProductCard({ _id, name, price, image_url, date, time }: ProductCardPro
             <p className="mt-1 text-md text-gray-500">${price}</p>
             {formattedDate && (
               <p className="mt-1 text-sm text-gray-500">
-                {formattedDate} {time && `• ${time}`}
+                {formattedDate} {formattedTime && `• ${formattedTime}`}
               </p>
+            )}
+            {isFull && (
+              <p className="mt-1 text-sm text-red-500 font-medium">Fully Booked</p>
             )}
           </div>
         </div>
       </Link>
-      <div className="mt-4">
-        <BookNowButton classId={_id} disabled={isFull}/>
-      </div>
     </div>
   );
 }
