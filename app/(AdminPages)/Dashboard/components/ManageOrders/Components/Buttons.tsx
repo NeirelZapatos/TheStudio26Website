@@ -45,7 +45,7 @@ const Buttons: React.FC<{
 }) => {
   const filterIcons: Record<OrderFilter, JSX.Element> = {
     [OrderFilter.PRIORITY]: <AlertCircle size={24} />,
-    [OrderFilter.DELIVERIES]: <Truck size={24} />,
+    [OrderFilter.DELIVERY]: <Truck size={24} />,
     [OrderFilter.PENDING]: <Clock size={24} />,
     [OrderFilter.PICKUP]: <Store size={24} />,
     [OrderFilter.FULFILLED]: <CheckSquare size={24} />,
