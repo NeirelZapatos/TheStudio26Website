@@ -230,7 +230,7 @@ export async function POST(request: Request) {
       quantity: product.quantity,
     }));
 
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
 
     // * Create a checkout session
     const sessionParams: Stripe.Checkout.SessionCreateParams = {

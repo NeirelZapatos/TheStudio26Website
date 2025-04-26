@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     );
 
     // Get origin for email links
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
     
     // Send cancellation confirmation email
     try {

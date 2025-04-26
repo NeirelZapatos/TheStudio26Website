@@ -82,7 +82,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
 
     const searchTermLower = filter.searchTerm.toLowerCase().trim();
     const filtered = courses.filter((course) =>
-      course.name.toLowerCase().includes(searchTermLower) || 
+      course.name.toLowerCase().includes(searchTermLower) ||
       (course.description && course.description.toLowerCase().includes(searchTermLower))
     );
 
@@ -104,8 +104,8 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     return (
       <div className="text-center py-8 text-red-500">
         <p className="mb-4">Error: {error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="btn btn-outline btn-error"
         >
           Try Again
@@ -162,16 +162,14 @@ export default function ProductGrid({ filter }: ProductGridProps) {
           />
         ))}
       </div>
-      {coursesToDisplay.length > postPerPage && (
-        <div className="col-span-full flex justify-center mt-8">
-          <Pagination
-            totalPosts={coursesToDisplay.length}
-            postsPerPage={postPerPage}
-            setCurrentPage={setCurrentPage}
-            currentPage={currentPage}
-          />
-        </div>
-      )}
+      <div className="col-span-full flex justify-center mt-8">
+        <Pagination
+          totalPosts={coursesToDisplay.length}
+          postsPerPage={postPerPage}
+          setCurrentPage={setCurrentPage}
+          currentPage={currentPage}
+        />
+      </div>
     </div>
   );
 }

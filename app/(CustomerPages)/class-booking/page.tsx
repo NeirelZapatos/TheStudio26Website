@@ -275,6 +275,14 @@ function ClassBookingPage() {
 
   const totalPrice = classDetails.price * contactInfo.participants;
 
+  const formattedTime = classDetails.time
+  ? new Date(`1970-01-01T${classDetails.time}`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    })
+  : null;
+  
   return (
     <div className="max-w-5xl mx-auto p-4">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Book Your Class</h1>
@@ -310,7 +318,7 @@ function ClassBookingPage() {
               <div>
                 <h3 className="font-medium text-gray-700">Date & Time</h3>
                 <p>{formatDate(classDetails.date)}</p>
-                <p>{classDetails.time} ({classDetails.duration} hours)</p>
+                <p>{formattedTime} ({classDetails.duration} hours)</p>
               </div>
               <div>
                 <h3 className="font-medium text-gray-700">Location</h3>
@@ -477,7 +485,7 @@ function ClassBookingPage() {
 
         {/* Right Column: Booking Summary */}
         <div>
-          <div className="bg-white rounded-md px-4 py-6 shadow-[0_2px_12px_-3px_rgba(61,63,68,0.3)] sticky top-4">
+          <div className="bg-white rounded-md px-4 py-6 shadow-[0_2px_12px_-3px_rgba(61,63,68,0.3)] sticky top-[80px]">
             <h2 className="text-2xl text-center font-semibold mb-4">Booking Summary</h2>
             <hr className="py-2"></hr>
             <ul className="text-slate-900 space-y-4">
@@ -490,7 +498,7 @@ function ClassBookingPage() {
               </li>
               <li className="flex justify-between text-base">
                 <span>Time</span>
-                <span>{classDetails.time}</span>
+                <span>{formattedTime}</span>
               </li>
               <li className="flex justify-between text-base">
                 <span>Price per person</span>

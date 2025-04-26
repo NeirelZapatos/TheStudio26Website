@@ -78,38 +78,38 @@ export default function StoneForm({ onClose }: StoneFormProps) {
   const [syntheticGem, setSyntheticGem] = useState("");
 
   // --------------- Options for selects --------------- //
-  const stoneStockTypes = ["Old stock", "New stock", "Vintage", "Antique", "Estate", "Limited edition", "Rare find", "Collector's item", "Discontinued"];
-  const shapeVariationsOptions = ["Asymmetrical", "Calibrated sizes", "Freeform", "Irregular"];
-  const mineTypesOptions = ["Open-pit", "Underground", "Artisanal", "River/mined", "Marine extraction"];
-  const ethicalSourcingOptions = ["Conflict-free", "Fair trade", "Ethically sourced", "Recycled"];
-  const locationStatusOptions = ["Domestic", "Imported", "Out-of-state", "Region-specific"];
-  const stockAvailabilityOptions = ["In stock", "Out of stock", "Pre-order", "Limited stock", "Made-to-order", "One-of-a-kind"];
+  const stoneStockTypes = ["Old stock", "New stock", "Vintage", "Antique", "Estate", "Limited edition", "Rare find", "Collector's item", "Discontinued", "N/A"];
+  const shapeVariationsOptions = ["Asymmetrical", "Calibrated sizes", "Freeform", "Irregular", "N/A"];
+  const mineTypesOptions = ["Open-pit", "Underground", "Artisanal", "River/mined", "Marine extraction", "N/A"];
+  const ethicalSourcingOptions = ["Conflict-free", "Fair trade", "Ethically sourced", "Recycled", "N/A"];
+  const locationStatusOptions = ["Domestic", "Imported", "Out-of-state", "Region-specific", "N/A"];
+  const stockAvailabilityOptions = ["In stock", "Out of stock", "Pre-order", "Limited stock", "Made-to-order", "One-of-a-kind", "N/A"];
 
-  const clarityOptions = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3", "Cloudy", "Heavily Included", "Near-Opaque"];
-  const primaryHueOptions = ["White", "Blue", "Green", "Red", "Yellow", "Pink", "Brown", "Black", "Gray", "Colorless"];
-  const colorSaturationOptions = ["Vivid", "Intense", "Deep", "Medium", "Pastel", "Pale"];
-  const lusterOptions = ["High Shine", "Vitreous (Glassy)", "Dull", "Satin", "Pearly", "Silky", "Waxy", "Resinous", "Metallic", "Adamantine"];
-  const transparencyOptions = ["Transparent", "Semi-Transparent", "Translucent", "Semi-Opaque", "Opaque"];
-  const treatmentOptions = ["Natural/Untreated", "Heat-Treated", "Dye-Enhanced", "Resin-Filled", "Irradiated", "Oiled/Wax Treated", "Coated", "Fracture-Filled"];
+  const clarityOptions = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3", "Cloudy", "Heavily Included", "Near-Opaque", "N/A"];
+  const primaryHueOptions = ["White", "Blue", "Green", "Red", "Yellow", "Pink", "Brown", "Black", "Gray", "Colorless", "N/A"];
+  const colorSaturationOptions = ["Vivid", "Intense", "Deep", "Medium", "Pastel", "Pale", "N/A"];
+  const lusterOptions = ["High Shine", "Vitreous (Glassy)", "Dull", "Satin", "Pearly", "Silky", "Waxy", "Resinous", "Metallic", "Adamantine", "N/A"];
+  const transparencyOptions = ["Transparent", "Semi-Transparent", "Translucent", "Semi-Opaque", "Opaque", "N/A"];
+  const treatmentOptions = ["Natural/Untreated", "Heat-Treated", "Dye-Enhanced", "Resin-Filled", "Irradiated", "Oiled/Wax Treated", "Coated", "Fracture-Filled", "N/A"];
 
-  const certificationAvailableOptions = ["Yes", "No"];
-  const gradingAuthorityOptions = ["GIA", "IGI", "AGS", "EGL"];
-  const originVerificationOptions = ["Mine of Origin Report", "Ethical Sourcing Certificate"];
+  const certificationAvailableOptions = ["Yes", "No", "N/A"];
+  const gradingAuthorityOptions = ["GIA", "IGI", "AGS", "EGL", "N/A"];
+  const originVerificationOptions = ["Mine of Origin Report", "Ethical Sourcing Certificate", "N/A"];
 
-  const cutCategories = ["Cabochons", "Faceted Stones", "Slabs & Rough Cuts", "Beads & Drilled Stones"];
-  const cabochonShapes = ["Round", "Oval", "Square", "Pear", "Teardrop", "Freeform", "Marquise", "Rectangle", "Heart", "Trillion", "Hexagon"];
-  const facetedCuts = ["Round Brilliant", "Oval", "Step Cut", "Princess Cut", "Cushion Cut", "Radiant Cut", "Baguette", "Rose Cut", "Asscher Cut", "Old Mine Cut", "Unique Fancy Cuts"];
-  const slabCuts = ["Uncut", "Sliced", "Polished", "Raw", "Geode Slabs", "Drusy", "Layered Slabs"];
-  const beadsTypesOptions = ["Round beads", "Faceted beads", "Teardrop beads", "Tumbled beads", "Nugget beads"];
-  const holeTypesOptions = ["Center-drilled", "Side-drilled", "Top-drilled", "Undrilled"];
+  const cutCategories = ["Cabochons", "Faceted Stones", "Slabs & Rough Cuts", "Beads & Drilled Stones", "N/A"];
+  const cabochonShapes = ["Round", "Oval", "Square", "Pear", "Teardrop", "Freeform", "Marquise", "Rectangle", "Heart", "Trillion", "Hexagon", "N/A"];
+  const facetedCuts = ["Round Brilliant", "Oval", "Step Cut", "Princess Cut", "Cushion Cut", "Radiant Cut", "Baguette", "Rose Cut", "Asscher Cut", "Old Mine Cut", "Unique Fancy Cuts", "N/A"];
+  const slabCuts = ["Uncut", "Sliced", "Polished", "Raw", "Geode Slabs", "Drusy", "Layered Slabs", "N/A"];
+  const beadsTypesOptions = ["Round beads", "Faceted beads", "Teardrop beads", "Tumbled beads", "Nugget beads", "N/A"];
+  const holeTypesOptions = ["Center-drilled", "Side-drilled", "Top-drilled", "Undrilled", "N/A"];
 
-  const preciousStoneOptions = ["Diamond", "Sapphire", "Ruby", "Emerald"];
-  const semiPreciousQuartzOptions = ["Amethyst", "Citrine", "Rose Quartz", "Smoky Quartz", "Rutilated Quartz"];
-  const semiPreciousBerylOptions = ["Aquamarine", "Morganite", "Heliodor"];
-  const semiPreciousFeldsparOptions = ["Labradorite", "Moonstone", "Sunstone"];
-  const otherSemiPreciousOptions = ["Peridot", "Garnet", "Tourmaline", "Topaz", "Spinel", "Zircon", "Tanzanite"];
-  const organicGemOptions = ["Amber", "Coral", "Jet", "Pearl"];
-  const syntheticGemOptions = ["Lab-Grown Diamonds", "Moissanite", "Cubic Zirconia", "Synthetic Sapphire", "Synthetic Ruby", "Synthetic Emerald", "Opalite"];
+  const preciousStoneOptions = ["Diamond", "Sapphire", "Ruby", "Emerald", "N/A"];
+  const semiPreciousQuartzOptions = ["Amethyst", "Citrine", "Rose Quartz", "Smoky Quartz", "Rutilated Quartz", "N/A"];
+  const semiPreciousBerylOptions = ["Aquamarine", "Morganite", "Heliodor", "N/A"];
+  const semiPreciousFeldsparOptions = ["Labradorite", "Moonstone", "Sunstone", "N/A"];
+  const otherSemiPreciousOptions = ["Peridot", "Garnet", "Tourmaline", "Topaz", "Spinel", "Zircon", "Tanzanite", "N/A"];
+  const organicGemOptions = ["Amber", "Coral", "Jet", "Pearl", "N/A"];
+  const syntheticGemOptions = ["Lab-Grown Diamonds", "Moissanite", "Cubic Zirconia", "Synthetic Sapphire", "Synthetic Ruby", "Synthetic Emerald", "Opalite", "N/A"];
 
   // --------------- Template Search State --------------- //
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
