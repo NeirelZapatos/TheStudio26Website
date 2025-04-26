@@ -122,6 +122,32 @@ export default function Page() {
     }
   }, [instructor]);
 
+  const handleDeleteTemplate = async (templateId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this template?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/course-templates?id=${templateId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete template");
+      }
+
+      // Remove the deleted template from the state
+      setTemplates((prev) => prev.filter((template) => template._id !== templateId));
+      setFilteredTemplateList((prev) => prev.filter((template) => template._id !== templateId));
+
+      alert("Template deleted successfully.");
+    } catch (error: any) {
+      console.error("Error deleting template:", error.message);
+      alert(error.message || "Failed to delete template.");
+    }
+  };
+
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const latestIndex = handleFileChange(e);
     if (latestIndex !== -1) {
@@ -165,10 +191,10 @@ export default function Page() {
     const convertedPrice = price ? parseFloat(price) : 0;
     const convertedDuration = duration ? parseInt(duration) : undefined;
     const convertedMaxCapacity = maxCapacity ? parseInt(maxCapacity) : undefined;
-    
+
     // If "Other" is selected, use the user-input text. Otherwise, use the chosen category.
     const finalCategory = classCategory === "Other" ? otherCategory : classCategory;
-    
+
     // If "Other" is selected for instructor, use the user-input text. Otherwise, use the chosen instructor.
     const finalInstructor = instructor === "Other" ? otherInstructor : instructor;
 
@@ -354,7 +380,7 @@ export default function Page() {
 
       // If "Other" is selected, use the user-input text. Otherwise, use the chosen category.
       const finalCategory = classCategory === "Other" ? otherCategory : classCategory;
-      
+
       // If "Other" is selected for instructor, use the user-input text. Otherwise, use the chosen instructor.
       const finalInstructor = instructor === "Other" ? otherInstructor : instructor;
 
@@ -406,7 +432,7 @@ export default function Page() {
         <h2 className="text-2xl font-semibold mb-6 text-center">
           Create a Class
         </h2>
-        
+
         {/* Template Search Toggle */}
         <div className="flex justify-center mb-6">
           <button
@@ -438,10 +464,20 @@ export default function Page() {
                 {filteredTemplateList.map((template, index) => (
                   <li
                     key={index}
-                    onClick={() => loadTemplate(index.toString())}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    className="p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
                   >
-                    {template.name}
+                    <span onClick={() => loadTemplate(index.toString())}>
+                      {template.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the loadTemplate function
+                        handleDeleteTemplate(template._id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -495,7 +531,7 @@ export default function Page() {
                   required
                 />
               </div>
-              
+
               {/* Date & Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -519,7 +555,7 @@ export default function Page() {
                   />
                 </div>
               </div>
-              
+
               {/* Instructor */}
               <div>
                 <label className="label">
@@ -539,7 +575,7 @@ export default function Page() {
                   ))}
                 </select>
               </div>
-              
+
               {/* If "Other" is selected for instructor, show text input */}
               {instructor === "Other" && (
                 <div>
@@ -556,7 +592,7 @@ export default function Page() {
                   />
                 </div>
               )}
-              
+
               {/* Max Capacity */}
               <div>
                 <label className="label">
@@ -598,7 +634,7 @@ export default function Page() {
                   className="input input-bordered input-sm w-full"
                 />
               </div>
-              
+
               {/* Price */}
               <div>
                 <label className="label">
@@ -623,7 +659,7 @@ export default function Page() {
                   min="0"
                 />
               </div>
-              
+
               {/* Class Category */}
               <div>
                 <label className="label">
@@ -643,7 +679,7 @@ export default function Page() {
                   ))}
                 </select>
               </div>
-              
+
               {/* If "Other" is selected, show text input */}
               {classCategory === "Other" && (
                 <div>
@@ -660,7 +696,7 @@ export default function Page() {
                   />
                 </div>
               )}
-              
+
               {/* Prerequisite (Yes/No) */}
               <div>
                 <label className="label">
@@ -675,7 +711,7 @@ export default function Page() {
                   <option value="Yes">Yes</option>
                 </select>
               </div>
-              
+
               {/* If "Yes", show input for prerequisite class */}
               {hasPrerequisite && (
                 <div>
@@ -709,7 +745,7 @@ export default function Page() {
               required
             />
           </div>
-          
+
           {/* Location - Full Width */}
           <div className="mt-4">
             <label className="label">
@@ -741,7 +777,7 @@ export default function Page() {
             </button>
           </div>
         </form>
-        
+
         {/* Success / Error Message */}
         {message && (
           <p className={`text-center mt-4 font-semibold ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>

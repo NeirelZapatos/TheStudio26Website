@@ -58,7 +58,7 @@ const Pagination = ({
           <button
             key={index}
             onClick={() => handlePageClick(page)}
-            className={`px-4 py-2 rounded ${page === currentPage ? "bg-amber-500 text-black" : "bg-gray-200 hover:bg-gray-300"}`}
+            className={`px-4 py-2 rounded ${page === currentPage ? "bg-blue-500 text-black" : "bg-gray-200 hover:bg-gray-300"}`}
           >
             {page}
           </button>

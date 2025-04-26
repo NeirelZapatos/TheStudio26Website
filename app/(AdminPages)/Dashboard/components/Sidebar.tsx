@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   }`}
               >
                 <i className="fa-solid fa-plus text-gray-300 w-5"></i>
-                <span className="ml-2 font-semibold">Create OpenLab</span>
+                <span className="ml-2 font-semibold">Create an Open Lab</span>
               </button>
 
               <button

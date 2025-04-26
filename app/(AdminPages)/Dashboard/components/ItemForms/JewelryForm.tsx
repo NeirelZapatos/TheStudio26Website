@@ -49,8 +49,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
   const [customizationOptions, setCustomizationOptions] = useState("");
 
   const [inlayedStone, setInlayedStone] = useState<string>("");
-  const [customStone, setCustomStone] = useState<string>("");
-  const [showCustomStoneInput, setShowCustomStoneInput] = useState(false);
 
   // --------------- Template Search State --------------- //
   const [showTemplateSearch, setShowTemplateSearch] = useState<boolean>(false);
@@ -60,21 +58,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
 
   // --------------- Options for selects --------------- //
   const jewelryTypes = ["ring", "earring", "bracelet", "cuff", "pendant", "other"];
-  const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals"];
-  const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver"];
-  const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized"];
-  const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique"];
-  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15"];
-  const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar"];
-  const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity"];
-  const customizationOptionsList = ["engraving available", "custom stone setting available", "personalized design available"];
+  const metalTypesOptions = ["gold", "silver", "bronze", "copper", "platinum", "mixed metals", "N/A"];
+  const metalPuritiesOptions = ["10k", "14k", "18k", "22k", "24k", "sterling silver", "fine silver", "N/A"];
+  const metalFinishesOptions = ["polished", "matte", "brushed", "hammered", "textured", "oxidized", "N/A"];
+  const platingOptions = ["gold-plated", "rhodium-plated", "silver-plated", "rose gold-plated", "antique", "N/A"];
+  const ringSizesOptions = ["US 3", "US 4", "US 5", "US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12", "US 13", "US 14", "US 15", "N/A"];
+  const settingTypesOptions = ["bezel", "prong", "pave", "channel", "flush", "tension", "halo", "bar", "N/A"];
+  const stoneArrangementsOptions = ["single stone", "multi-stone", "cluster", "eternity", "N/A"];
 
   const colorOptions = ["Gold", "Rose Gold", "White Gold", "Silver", "Platinum", "Black", "Bronze", "Copper", "Red",
-    "Pink", "Blue", "Green", "Purple", "Yellow", "Orange", "White/Clear", "Black", "Brown", "Multicolor", "Other"];
+    "Pink", "Blue", "Green", "Purple", "Yellow", "Orange", "White/Clear", "Black", "Brown", "Multicolor", "Other", "N/A"];
 
   const [stoneOptions, setStoneOptions] = useState<string[]>([
     "diamond", "emerald", "ruby", "sapphire", "amethyst",
-    "opal", "turquoise", "topaz", "pearl", "moonstone", "jade"
+    "opal", "turquoise", "topaz", "pearl", "moonstone", "jade", "N/A"
   ]);
 
   const requiredFields = [
@@ -154,6 +151,31 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
       setCurrentCarouselIndex(0);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this template?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/item-templates?id=${templateId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete template");
+      }
+
+      // Remove the deleted template from the state
+      setTemplates((prev) => prev.filter((template) => template._id !== templateId));
+      setFilteredTemplateList((prev) => prev.filter((template) => template._id !== templateId));
+
+      alert("Template deleted successfully.");
+    } catch (error: any) {
+      console.error("Error deleting template:", error.message);
+      alert(error.message || "Failed to delete template.");
     }
   };
 
@@ -254,15 +276,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
     // move the carousel index back if the last image is removed
     if (currentCarouselIndex >= newPreviewUrls.length) {
       setCurrentCarouselIndex(newPreviewUrls.length - 1);
-    }
-  };
-
-  const handleAddCustomStone = () => {
-    if (customStone && !stoneOptions.includes(customStone)) {
-      setStoneOptions([...stoneOptions, customStone]);
-      setInlayedStone(customStone);
-      setCustomStone("");
-      setShowCustomStoneInput(false);
     }
   };
 
@@ -431,10 +444,20 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 {filteredTemplateList.map((template, index) => (
                   <li
                     key={index}
-                    onClick={() => loadTemplate(index.toString())}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    className="p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
                   >
-                    {template.name}
+                    <span onClick={() => loadTemplate(index.toString())}>
+                      {template.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the loadTemplate function
+                        handleDeleteTemplate(template._id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -568,46 +591,13 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
         </div>
         <div>
           <label className="label">
-            <span className="label-text font-semibold">Inlayed Stone</span>
+            <span className="label-text font-semibold">Stone Inlay</span>
           </label>
           <div className="flex flex-col space-y-2">
-            <select
-              className="select select-bordered w-full"
-              value={inlayedStone}
-              onChange={(e) => {
-                if (e.target.value === "custom") {
-                  setShowCustomStoneInput(true);
-                  setInlayedStone("");
-                } else {
-                  setInlayedStone(e.target.value);
-                  setShowCustomStoneInput(false);
-                }
-              }}
-            >
+            <select className="select select-bordered w-full" value={inlayedStone} onChange={(e) => setInlayedStone(e.target.value)}>
               <option value="" disabled>Select Stone Type</option>
-              {stoneOptions.map(stone => <option key={stone} value={stone}>{stone}</option>)}
-              <option value="custom">+ Add Custom Stone</option>
+              {stoneOptions.map(stoneOption => <option key={stoneOption} value={stoneOption}>{stoneOption}</option>)}
             </select>
-
-            {showCustomStoneInput && (
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  className="input input-bordered flex-grow"
-                  value={customStone}
-                  onChange={(e) => setCustomStone(e.target.value)}
-                  placeholder="Enter custom stone name"
-                />
-                <button
-                  type="button"
-                  className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
-                  onClick={handleAddCustomStone}
-                  disabled={!customStone}
-                >
-                  Add
-                </button>
-              </div>
-            )}
           </div>
         </div>
         <div>
@@ -680,15 +670,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
               </select>
             </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
-              </select>
-            </div>
           </>
         )}
 
@@ -713,15 +694,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
               <select className="select select-bordered w-full" value={stoneArrangement} onChange={e => setStoneArrangement(e.target.value)}>
                 <option value="" disabled>Select Stone Arrangement</option>
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
               </select>
             </div>
           </>
@@ -770,15 +742,6 @@ export default function JewelryForm({ onClose }: JewelryFormProps) {
               <select className="select select-bordered w-full" value={stoneArrangement} onChange={e => setStoneArrangement(e.target.value)}>
                 <option value="" disabled>Select Stone Arrangement</option>
                 {stoneArrangementsOptions.map(sa => <option key={sa} value={sa}>{sa}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">
-                <span className="label-text font-semibold">Customization Options</span>
-              </label>
-              <select className="select select-bordered w-full" value={customizationOptions} onChange={e => setCustomizationOptions(e.target.value)}>
-                <option value="" disabled>Select Customization Options</option>
-                {customizationOptionsList.map(co => <option key={co} value={co}>{co}</option>)}
               </select>
             </div>
           </>

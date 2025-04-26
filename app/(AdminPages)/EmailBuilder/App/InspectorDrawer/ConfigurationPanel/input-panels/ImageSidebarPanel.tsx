@@ -4,8 +4,9 @@ import {
   VerticalAlignBottomOutlined,
   VerticalAlignCenterOutlined,
   VerticalAlignTopOutlined,
+  FolderOpen,
 } from '@mui/icons-material';
-import { Stack, ToggleButton } from '@mui/material';
+import { Stack, ToggleButton, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { ImageProps, ImagePropsSchema } from '@usewaypoint/block-image';
 
 import BaseSidebarPanel from './helpers/BaseSidebarPanel';
@@ -13,6 +14,7 @@ import RadioGroupInput from './helpers/inputs/RadioGroupInput';
 import TextDimensionInput from './helpers/inputs/TextDimensionInput';
 import TextInput from './helpers/inputs/TextInput';
 import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import S3ImageExplorer from '@/app/Components/S3ImageExplorer';
 
 type ImageSidebarPanelProps = {
   data: ImageProps;
@@ -20,6 +22,7 @@ type ImageSidebarPanelProps = {
 };
 export default function ImageSidebarPanel({ data, setData }: ImageSidebarPanelProps) {
   const [, setErrors] = useState<Zod.ZodError | null>(null);
+  const [isExplorerOpen, setIsExplorerOpen] = useState(false);
 
   const updateData = (d: unknown) => {
     const res = ImagePropsSchema.safeParse(d);
@@ -31,16 +34,30 @@ export default function ImageSidebarPanel({ data, setData }: ImageSidebarPanelPr
     }
   };
 
+  const handleSelectImage = (imageUrl: string) => {
+    updateData({ ...data, props: { ...data.props, url: imageUrl } });
+    setIsExplorerOpen(false);
+  };
+
   return (
     <BaseSidebarPanel title="Image block">
-      <TextInput
-        label="Source URL"
-        defaultValue={data.props?.url ?? ''}
-        onChange={(v) => {
-          const url = v.trim().length === 0 ? null : v.trim();
-          updateData({ ...data, props: { ...data.props, url } });
-        }}
-      />
+      <div className="flex items-center space-x-2 mb-4">
+        <TextInput
+          label="Source URL"
+          defaultValue={data.props?.url ?? ''}
+          onChange={(v) => {
+            const url = v.trim().length === 0 ? null : v.trim();
+            updateData({ ...data, props: { ...data.props, url } });
+          }}
+        />
+        <Button 
+          variant="outlined" 
+          onClick={() => setIsExplorerOpen(true)}
+          sx={{ mt: 2 }}
+        >
+          <FolderOpen fontSize="small" />
+        </Button>
+      </div>
 
       <TextInput
         label="Alt text"
@@ -89,6 +106,22 @@ export default function ImageSidebarPanel({ data, setData }: ImageSidebarPanelPr
         value={data.style}
         onChange={(style) => updateData({ ...data, style })}
       />
+
+      {/* S3 Image Explorer Dialog */}
+      <Dialog 
+        open={isExplorerOpen} 
+        onClose={() => setIsExplorerOpen(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>Select an Image</DialogTitle>
+        <DialogContent>
+          <S3ImageExplorer onSelectImage={handleSelectImage} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsExplorerOpen(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
     </BaseSidebarPanel>
   );
 }

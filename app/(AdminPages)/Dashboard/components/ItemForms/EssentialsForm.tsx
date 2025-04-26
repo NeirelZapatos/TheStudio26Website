@@ -59,12 +59,12 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
   const [filteredTemplateList, setFilteredTemplateList] = useState<any[]>([]);
 
   // --------------- Options for selects --------------- //
-  const essentialsTypes = ["Tools", "Supplies", "Jewelry Kits", "Material and Components"];
-  const toolTypes = ["Jeweler’s Torches", "Hand Tools", "Measuring Tools", "Magnification", "Metalworking Tools", "Other"];
-  const materialCompositions = ["Steel", "Brass", "Aluminum", "Tungsten Carbide", "Plastic", "Rubber", "Other"];
-  const supplyTypes = ["Bezel Wire", "Sheet Metal", "Casting Supplies", "Polishing & Finishing Supplies", "Adhesives & Resins", "Other"];
-  const kitTypes = ["Beginner Kits", "Advanced Kits", "Metal Stamping Kits", "Soldering Kits", "Wire Wrapping Kits", "Other"];
-  const materialAndComponents = ["Sterling Silver Components", "Fine Silver Components", "Raw Silver", "Plated Silver Items", "Other"];
+  const essentialsTypes = ["Tools", "Supplies", "Jewelry Kits", "Material and Components", "Other"];
+  const toolTypes = ["Jeweler’s Torches", "Hand Tools", "Measuring Tools", "Magnification", "Metalworking Tools", "Other", "N/A"];
+  const materialCompositions = ["Steel", "Brass", "Aluminum", "Tungsten Carbide", "Plastic", "Rubber", "Other", "N/A"];
+  const supplyTypes = ["Bezel Wire", "Sheet Metal", "Casting Supplies", "Polishing & Finishing Supplies", "Adhesives & Resins", "Other", "N/A"];
+  const kitTypes = ["Beginner Kits", "Advanced Kits", "Metal Stamping Kits", "Soldering Kits", "Wire Wrapping Kits", "Other", "N/A"];
+  const materialAndComponents = ["Sterling Silver Components", "Fine Silver Components", "Raw Silver", "Plated Silver Items", "Other", "N/A"];
 
   // Options for Tools category
   // const toolTypes = [
@@ -152,6 +152,31 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
       setCurrentCarouselIndex(0);
       setShowTemplateSearch(false); // Close the template search panel
       setSearchText(""); // Clear the search text
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this template?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/item-templates?id=${templateId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete template");
+      }
+
+      // Remove the deleted template from the state
+      setTemplates((prev) => prev.filter((template) => template._id !== templateId));
+      setFilteredTemplateList((prev) => prev.filter((template) => template._id !== templateId));
+
+      alert("Template deleted successfully.");
+    } catch (error: any) {
+      console.error("Error deleting template:", error.message);
+      alert(error.message || "Failed to delete template.");
     }
   };
 
@@ -244,7 +269,7 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
   const handleAddS3Image = (imageUrl: string) => {
     const filteredPreviewUrls = previewUrls.filter(url => !url.includes("ProductPlaceholder"));
     let newPreviewUrls = [...filteredPreviewUrls, imageUrl];
-        if (newPreviewUrls.length === 1) {
+    if (newPreviewUrls.length === 1) {
       setCurrentCarouselIndex(0);
     } else {
       setCurrentCarouselIndex(newPreviewUrls.length - 1);
@@ -390,10 +415,20 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
                 {filteredTemplateList.map((template, index) => (
                   <li
                     key={index}
-                    onClick={() => loadTemplate(index.toString())}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    className="p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
                   >
-                    {template.name}
+                    <span onClick={() => loadTemplate(index.toString())}>
+                      {template.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the loadTemplate function
+                        handleDeleteTemplate(template._id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
