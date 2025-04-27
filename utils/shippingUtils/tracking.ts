@@ -6,7 +6,7 @@ import Shipping from '@/app/models/Shipping';
 // Initialize Shippo client (use test key for development)
 const SHIPPO_API_KEY = process.env.SHIPPO_TEST_KEY;
 const SHIPPO_TRACKING_URL = 'https://api.goshippo.com/tracks/';
-const SHIPPO_WEBHOOKS_URL = 'https://2de8-2600-1700-ef50-6e20-41ca-fd6c-f6a6-879b.ngrok-free.app/api/shipping/shippo-webhook';
+const SHIPPO_WEBHOOKS_URL = HTTPS_PACKAGE_TRACKING;
 
 // Helper function to register tracking with Shippo
 // Function to register tracking with Shippo

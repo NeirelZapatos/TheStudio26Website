@@ -11,7 +11,7 @@ interface PackageDetails {
   height: number;
   weight: number;
 }
-/*
+
 // Function to register a webhook with Shippo for all events
 export async function registerShippoWebhook(webhookUrl: string, isTest: boolean = false) {
   try {
@@ -45,7 +45,7 @@ export async function registerShippoWebhook(webhookUrl: string, isTest: boolean 
     throw error;
   }
 }
-*/
+
 export async function createShippingRecord(order: any, package_details: PackageDetails, test_mode: boolean) {
   const customer = order.customer_id as ICustomer;
 

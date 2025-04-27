@@ -162,7 +162,7 @@ const OrderTables: React.FC<{
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      {order.shipping_method === 'pickup' ? (
+                      {order.shipping_method === 'Pickup' ? (
                         <ShoppingBag className="w-4 h-4" />
                       ) : (
                         <Truck className="w-4 h-4" />
@@ -208,7 +208,11 @@ const OrderTables: React.FC<{
                           <div><strong>Order Date:</strong> {new Date(order.order_date).toLocaleDateString()}</div>
                           <div><strong>Shipping Method:</strong> {order.shipping_method}</div>
                           <div><strong>Payment Method:</strong> {order.payment_method}</div>
-                          <div><strong>Order Status:</strong> {order.order_status}</div>
+                          <div>
+                          <div>
+  <strong>Shipping Method:</strong> {order.shipping_method ? `${order.shipping_method[0].toUpperCase()}${order.shipping_method.slice(1)}` : ''}
+</div>
+                          </div>
                           <div className="col-span-2"><strong>Shipping Address:</strong> {order.shipping_address}</div>
                           <div className="col-span-2"><strong>Billing Address:</strong> {order.billing_address}</div>
                           <div className="col-span-2"><strong>Total Amount:</strong> ${order.total_amount}</div>
