@@ -7,14 +7,14 @@ import {
   deleteS3Object,
 } from "../../../../utils/s3";
 
-// Dynamically import ReactQuill with no SSR
-const ReactQuill = dynamic(
-  () => import("react-quill"),
-  { 
-    ssr: false,
-    loading: () => <p>Loading editor...</p>
-  }
-);
+// // Dynamically import ReactQuill with no SSR
+// const ReactQuill = dynamic(
+//   () => import("react-quill"),
+//   {
+//     ssr: false,
+//     loading: () => <p>Loading editor...</p>
+//   }
+// );
 
 // Simple pencil icon (Unicode). Replace with your preferred icon if needed.
 const PencilIcon = () => (
@@ -28,24 +28,36 @@ interface ImageEntry {
   key: string;
 }
 
+const stripHtmlTags = (html: string) => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
 const HomeSection: React.FC = () => {
   // Toggle for enabling/disabling edits
   const [isEditing, setIsEditing] = useState(false);
 
   // Text content states
-  const [aboutTitle, setAboutTitle] = useState("");
-  const [aboutText, setAboutText] = useState("");
-  const [jewelryTitle, setJewelryTitle] = useState("");
-  const [jewelryDescription, setJewelryDescription] = useState("");
-  const [buttonUrl, setButtonUrl] = useState("");
-  const [buttonLabel, setButtonLabel] = useState("");
-  const [callToActionText, setCallToActionText] = useState("");
-  const [projectsSectionTitle, setProjectsSectionTitle] = useState("");
+  const [aboutTitle, setAboutTitle] = useState<string>("");
+  const [aboutText, setAboutText] = useState<string>("");
+  const [jewelryTitle, setJewelryTitle] = useState<string>("");
+  const [jewelryDescription, setJewelryDescription] = useState<string>("");
+  const [buttonUrl, setButtonUrl] = useState<string>("");
+  const [buttonLabel, setButtonLabel] = useState<string>("");
+  const [callToActionText, setCallToActionText] = useState<string>("");
+  const [projectsSectionTitle, setProjectsSectionTitle] = useState<string>("");
 
   // Image management states
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [saveMessage, setSaveMessage] = useState("");
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Simple URL validation helper
   const isValidUrl = (url: string) => {
@@ -223,10 +235,12 @@ const HomeSection: React.FC = () => {
       <div className="mb-4">
         <label className="block font-medium">About Us Title</label>
         {isEditing ? (
-          <ReactQuill
-            value={aboutTitle}
-            onChange={setAboutTitle}
+          <textarea
+            value={stripHtmlTags(aboutTitle)}
+            onChange={(e) => setAboutTitle(e.target.value)}
             placeholder="Enter About Us Title (e.g., 'Ever since 2010...')"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -239,11 +253,13 @@ const HomeSection: React.FC = () => {
       {/* About Us Description */}
       <div className="mb-4">
         <label className="block font-medium">About Us Description</label>
-        {isEditing ? (
-          <ReactQuill
-            value={aboutText}
-            onChange={setAboutText}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(aboutText)}
+            onChange={(e) => setAboutText(e.target.value)}
             placeholder="Enter About Us text"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -256,11 +272,13 @@ const HomeSection: React.FC = () => {
       {/* Jewelry Class Title */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Title</label>
-        {isEditing ? (
-          <ReactQuill
-            value={jewelryTitle}
-            onChange={setJewelryTitle}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(jewelryTitle)}
+            onChange={(e) => setJewelryTitle(e.target.value)}
             placeholder="Enter Jewelry Class Title"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -273,11 +291,13 @@ const HomeSection: React.FC = () => {
       {/* Jewelry Class Description */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Description</label>
-        {isEditing ? (
-          <ReactQuill
-            value={jewelryDescription}
-            onChange={setJewelryDescription}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(jewelryDescription)}
+            onChange={(e) => setJewelryDescription(e.target.value)}
             placeholder="Enter Jewelry Class Description"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -303,11 +323,13 @@ const HomeSection: React.FC = () => {
       {/* Button Label (HTML) */}
       <div className="mb-4">
         <label className="block font-medium">Button Label</label>
-        {isEditing ? (
-          <ReactQuill
-            value={buttonLabel}
-            onChange={setButtonLabel}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(buttonLabel)}
+            onChange={(e) => setButtonLabel(e.target.value)}
             placeholder='e.g., "Beginning Jewelry Making Class" (you can style it)'
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -320,11 +342,13 @@ const HomeSection: React.FC = () => {
       {/* Call-to-Action Text */}
       <div className="mb-4">
         <label className="block font-medium">Call-to-Action Text</label>
-        {isEditing ? (
-          <ReactQuill
-            value={callToActionText}
-            onChange={setCallToActionText}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(callToActionText)}
+            onChange={(e) => setCallToActionText(e.target.value)}
             placeholder="Enter call-to-action text"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -337,11 +361,13 @@ const HomeSection: React.FC = () => {
       {/* Projects Section Title */}
       <div className="mb-4">
         <label className="block font-medium">Projects Section Title</label>
-        {isEditing ? (
-          <ReactQuill
-            value={projectsSectionTitle}
-            onChange={setProjectsSectionTitle}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(projectsSectionTitle)}
+            onChange={(e) => setProjectsSectionTitle(e.target.value)}
             placeholder="Enter projects section title"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
