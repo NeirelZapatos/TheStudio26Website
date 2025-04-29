@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import Admin from '@/app/models/Admin';
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 // Example JSON to send to this endpoint
 // {
@@ -11,6 +13,11 @@ import schema from './schema';
 // }
   
 export async function POST(request: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
 
@@ -58,6 +65,11 @@ export async function POST(request: NextRequest) {
 
 // This gets all the admins
 export async function GET(request: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
     try {
         await dbConnect();
 

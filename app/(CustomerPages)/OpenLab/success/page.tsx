@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon, DocumentTextIcon , CheckCircleIcon } from '@heroicons/react/24/outline';
@@ -38,7 +38,7 @@ interface BookingDetails {
 }
 
 
-export default function LabBookingSuccess() {
+function LabBookingSuccess() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -234,5 +234,14 @@ export default function LabBookingSuccess() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LabBooking() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {/* Your component logic */}
+      <LabBookingSuccess />
+    </Suspense>
   );
 }
