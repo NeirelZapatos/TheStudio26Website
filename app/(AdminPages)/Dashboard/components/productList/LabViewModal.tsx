@@ -26,7 +26,6 @@ const LabViewModal: React.FC<LabViewModalProps> = ({ lab, onClose, onDelete }) =
           <p className="text-gray-600">Time: {lab.time}</p>
           <p className="text-gray-600">Duration: {lab.duration} hours</p>
           <p className="text-gray-600">Location: {lab.location}</p>
-          <p className="text-gray-600">Instructor: {lab.instructor}</p>
           <p className="text-gray-600">Max Capacity: {lab.max_capacity}</p>
           <p className="text-gray-600">Price: ${lab.price.toFixed(2)}</p>
           <div className="mt-6 flex justify-end space-x-4">

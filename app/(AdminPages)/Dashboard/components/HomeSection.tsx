@@ -1,20 +1,21 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import {
   uploadHomepageFileToS3,
   listHomepageImages,
   deleteS3Object,
 } from "../../../../utils/s3";
+import S3ImageExplorer from "@/app/Components/S3ImageExplorer";
 
-// Dynamically import ReactQuill with no SSR
-const ReactQuill = dynamic(
-  () => import("react-quill"),
-  { 
-    ssr: false,
-    loading: () => <p>Loading editor...</p>
-  }
-);
+// // Dynamically import ReactQuill with no SSR
+// const ReactQuill = dynamic(
+//   () => import("react-quill"),
+//   {
+//     ssr: false,
+//     loading: () => <p>Loading editor...</p>
+//   }
+// );
 
 // Simple pencil icon (Unicode). Replace with your preferred icon if needed.
 const PencilIcon = () => (
@@ -28,24 +29,39 @@ interface ImageEntry {
   key: string;
 }
 
+const stripHtmlTags = (html: string) => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
 const HomeSection: React.FC = () => {
   // Toggle for enabling/disabling edits
   const [isEditing, setIsEditing] = useState(false);
 
   // Text content states
-  const [aboutTitle, setAboutTitle] = useState("");
-  const [aboutText, setAboutText] = useState("");
-  const [jewelryTitle, setJewelryTitle] = useState("");
-  const [jewelryDescription, setJewelryDescription] = useState("");
-  const [buttonUrl, setButtonUrl] = useState("");
-  const [buttonLabel, setButtonLabel] = useState("");
-  const [callToActionText, setCallToActionText] = useState("");
-  const [projectsSectionTitle, setProjectsSectionTitle] = useState("");
+  const [aboutTitle, setAboutTitle] = useState<string>("");
+  const [aboutText, setAboutText] = useState<string>("");
+  const [jewelryTitle, setJewelryTitle] = useState<string>("");
+  const [jewelryDescription, setJewelryDescription] = useState<string>("");
+  const [buttonUrl, setButtonUrl] = useState<string>("");
+  const [buttonLabel, setButtonLabel] = useState<string>("");
+  const [callToActionText, setCallToActionText] = useState<string>("");
+  const [projectsSectionTitle, setProjectsSectionTitle] = useState<string>("");
 
   // Image management states
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [saveMessage, setSaveMessage] = useState("");
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  const [isS3ExplorerOpen, setIsS3ExplorerOpen] = useState(false);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Simple URL validation helper
   const isValidUrl = (url: string) => {
@@ -83,7 +99,9 @@ const HomeSection: React.FC = () => {
   // Handle file selection for upload
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setFilePreview(URL.createObjectURL(file)); // Generate a preview URL
     }
   };
 
@@ -98,11 +116,20 @@ const HomeSection: React.FC = () => {
         const updatedImages = [...images, newImage].slice(-6); // keep only the six most recent
         setImages(updatedImages);
         setSaveMessage("Image uploaded successfully!");
+        setSelectedFile(null);
+        setFilePreview(null);
       } catch (error) {
         console.error("Upload error:", error);
         setSaveMessage("Error uploading image.");
       }
     }
+  };
+
+  const handleSelectS3Image = (imageUrl: string) => {
+    const newImage = { url: imageUrl, key: `homepage/${imageUrl.split('/').pop()}` };
+    const updatedImages = [...images, newImage].slice(-6); // Keep only the six most recent
+    setImages(updatedImages);
+    setIsS3ExplorerOpen(false); // Close the modal
   };
 
   // Image rearrangement functions
@@ -223,10 +250,12 @@ const HomeSection: React.FC = () => {
       <div className="mb-4">
         <label className="block font-medium">About Us Title</label>
         {isEditing ? (
-          <ReactQuill
-            value={aboutTitle}
-            onChange={setAboutTitle}
+          <textarea
+            value={stripHtmlTags(aboutTitle)}
+            onChange={(e) => setAboutTitle(e.target.value)}
             placeholder="Enter About Us Title (e.g., 'Ever since 2010...')"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -239,11 +268,13 @@ const HomeSection: React.FC = () => {
       {/* About Us Description */}
       <div className="mb-4">
         <label className="block font-medium">About Us Description</label>
-        {isEditing ? (
-          <ReactQuill
-            value={aboutText}
-            onChange={setAboutText}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(aboutText)}
+            onChange={(e) => setAboutText(e.target.value)}
             placeholder="Enter About Us text"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -256,11 +287,13 @@ const HomeSection: React.FC = () => {
       {/* Jewelry Class Title */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Title</label>
-        {isEditing ? (
-          <ReactQuill
-            value={jewelryTitle}
-            onChange={setJewelryTitle}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(jewelryTitle)}
+            onChange={(e) => setJewelryTitle(e.target.value)}
             placeholder="Enter Jewelry Class Title"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -273,11 +306,13 @@ const HomeSection: React.FC = () => {
       {/* Jewelry Class Description */}
       <div className="mb-4">
         <label className="block font-medium">Jewelry Class Description</label>
-        {isEditing ? (
-          <ReactQuill
-            value={jewelryDescription}
-            onChange={setJewelryDescription}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(jewelryDescription)}
+            onChange={(e) => setJewelryDescription(e.target.value)}
             placeholder="Enter Jewelry Class Description"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -303,11 +338,13 @@ const HomeSection: React.FC = () => {
       {/* Button Label (HTML) */}
       <div className="mb-4">
         <label className="block font-medium">Button Label</label>
-        {isEditing ? (
-          <ReactQuill
-            value={buttonLabel}
-            onChange={setButtonLabel}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(buttonLabel)}
+            onChange={(e) => setButtonLabel(e.target.value)}
             placeholder='e.g., "Beginning Jewelry Making Class" (you can style it)'
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -320,11 +357,13 @@ const HomeSection: React.FC = () => {
       {/* Call-to-Action Text */}
       <div className="mb-4">
         <label className="block font-medium">Call-to-Action Text</label>
-        {isEditing ? (
-          <ReactQuill
-            value={callToActionText}
-            onChange={setCallToActionText}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(callToActionText)}
+            onChange={(e) => setCallToActionText(e.target.value)}
             placeholder="Enter call-to-action text"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -337,11 +376,13 @@ const HomeSection: React.FC = () => {
       {/* Projects Section Title */}
       <div className="mb-4">
         <label className="block font-medium">Projects Section Title</label>
-        {isEditing ? (
-          <ReactQuill
-            value={projectsSectionTitle}
-            onChange={setProjectsSectionTitle}
+        {isEditing && isMounted ? (
+          <textarea
+            value={stripHtmlTags(projectsSectionTitle)}
+            onChange={(e) => setProjectsSectionTitle(e.target.value)}
             placeholder="Enter projects section title"
+            className="w-full border border-gray-300 rounded p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={4}
           />
         ) : (
           <div
@@ -352,23 +393,55 @@ const HomeSection: React.FC = () => {
       </div>
 
       {/* Image Management */}
-      <div className="mb-4">
-        <h3 className="font-semibold mb-2">Manage Images</h3>
-        <div className="flex items-center mb-2">
-          <input
-            type="file"
-            accept="image/jpeg, image/png"
-            onChange={handleFileChange}
-            disabled={!isEditing}
-          />
-          <button
-            onClick={handleUpload}
-            className="ml-2 bg-blue-500 text-white p-2 rounded disabled:opacity-50"
-            disabled={!isEditing}
-          >
-            Upload Image
-          </button>
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold text-center mb-2">Manage Images</h3>
+        <div className="flex justify-center gap-4 mb-4">
+          {/* Buttons */}
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setIsS3ExplorerOpen(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+              disabled={!isEditing}
+            >
+              Select from S3
+            </button>
+            <label
+              htmlFor="file-upload"
+              className={`bg-gray-500 text-white px-4 py-2 rounded cursor-pointer ${!isEditing ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+            >
+              Browse
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/jpeg, image/png"
+              onChange={handleFileChange}
+              disabled={!isEditing}
+              className="hidden"
+            />
+            <button
+              onClick={handleUpload}
+              className={`bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 ${selectedFile ? "" : "opacity-50 cursor-not-allowed"
+                }`}
+              disabled={!isEditing || !selectedFile}
+            >
+              Upload
+            </button>
+          </div>
         </div>
+
+        {/* Preview */}
+        {filePreview && (
+          <div className="flex flex-col items-center">
+            <img
+              src={filePreview}
+              alt="Preview"
+              className="h-24 w-24 object-cover border rounded mb-2"
+            />
+            <p className="text-sm text-gray-600">{selectedFile?.name}</p>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
           {images.map((img, idx) => (
             <div key={img.key} className="relative border p-2">
@@ -419,6 +492,22 @@ const HomeSection: React.FC = () => {
       {saveMessage && (
         <p className="mt-2 text-sm text-blue-600">{saveMessage}</p>
       )}
+
+      {isS3ExplorerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 w-11/12 max-w-4xl max-h-[90vh] overflow-auto">
+            <h3 className="text-lg font-semibold mb-4">Select Image</h3>
+            <S3ImageExplorer onSelectImage={handleSelectS3Image} />
+            <button
+              className="mt-4 bg-gray-300 text-gray-800 px-3 py-2 rounded hover:bg-gray-400"
+              onClick={() => setIsS3ExplorerOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
     </section>
   );
 };

@@ -3,9 +3,18 @@ import bcrypt from 'bcrypt';
 import schema from "../schema";
 import dbConnect from "@/app/lib/dbConnect";
 import Admin from '@/app/models/Admin';
+import { authOptions } from "../../auth/[...nextauth]/options";
+import { getServerSession } from "next-auth";
+
 
 // editing information of an existing user
 export async function PUT(request: NextRequest, { params }: { params: { id: number }}) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         await dbConnect();
 
@@ -40,6 +49,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: numb
 
 // gets a specific user
 export async function GET(request: NextRequest, { params }: { params: { id: number } }) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
     try {
         await dbConnect();
 
@@ -61,6 +76,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
 
 // deletes a specific user
 export async function DELETE(request: NextRequest, { params }: { params: { id: number } }) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         await dbConnect();
 
