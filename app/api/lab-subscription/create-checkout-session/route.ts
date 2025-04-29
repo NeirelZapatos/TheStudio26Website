@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
       if (existingSubscription) {
         // Generate management URL for existing subscription
-        const origin = request.headers.get('origin') || 'http://localhost:3000';
+        const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
         let managementToken = existingSubscription.management_token;
 
         // Generate a new token if none exists
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
       console.log("Created new customer:", customerId);
     }
 
-    const origin = request.headers.get('origin') || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
 
     // Create Stripe Checkout session
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -227,7 +227,7 @@ export async function GET(request: Request) {
 
     if (existingSubscription) {
       console.log("Subscription already exists for session:", sessionId);
-      const origin = request.headers.get('origin') || 'http://localhost:3000';
+      const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
       const managementUrl = existingSubscription.management_token
         ? `${origin}/OpenLab/subscription/manage?token=${existingSubscription.management_token}`
         : null;
@@ -289,7 +289,7 @@ export async function GET(request: Request) {
           console.log(`Customer ${customer._id} already has active subscription to plan ${subscriptionPlanId}`);
 
           // Generate management URL
-          const origin = request.headers.get('origin') || 'http://localhost:3000';
+          const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
           const managementUrl = existingActiveSub.management_token
             ? `${origin}/OpenLab/subscription/manage?token=${existingActiveSub.management_token}`
             : null;
@@ -418,7 +418,7 @@ export async function GET(request: Request) {
       console.log("Updated customer subscription array for:", customer._id.toString());
 
       // Generate management URL
-      const origin = request.headers.get('origin') || 'http://localhost:3000';
+      const origin = request.headers.get('origin') || 'http://localhost:3000' || process.env.NEXTAUTH_URL;
       const managementUrl = `${origin}/OpenLab/subscription/manage?token=${managementToken}`;
 
       // Send confirmation email with management link

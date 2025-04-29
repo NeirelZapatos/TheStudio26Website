@@ -61,14 +61,20 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
     try {
         await dbConnect();
 
-
         const product = await Course.findById(params.id);
 
         if (!product) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
-        return NextResponse.json(product);
+        const { current_participants, max_capacity, ...rest } = product.toObject();
+
+
+        return NextResponse.json({
+            ...rest,
+            current_participants,
+            max_capacity,
+        });
     } catch (err: unknown) {
         if (err instanceof Error) {
             return NextResponse.json({ error: err.message }, { status: 500 })

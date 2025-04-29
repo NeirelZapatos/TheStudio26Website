@@ -59,12 +59,12 @@ export default function EssentialsForm({ onClose }: ToolFormProps) {
   const [filteredTemplateList, setFilteredTemplateList] = useState<any[]>([]);
 
   // --------------- Options for selects --------------- //
-  const essentialsTypes = ["Tools", "Supplies", "Jewelry Kits", "Material and Components"];
-  const toolTypes = ["Jeweler’s Torches", "Hand Tools", "Measuring Tools", "Magnification", "Metalworking Tools", "Other"];
-  const materialCompositions = ["Steel", "Brass", "Aluminum", "Tungsten Carbide", "Plastic", "Rubber", "Other"];
-  const supplyTypes = ["Bezel Wire", "Sheet Metal", "Casting Supplies", "Polishing & Finishing Supplies", "Adhesives & Resins", "Other"];
-  const kitTypes = ["Beginner Kits", "Advanced Kits", "Metal Stamping Kits", "Soldering Kits", "Wire Wrapping Kits", "Other"];
-  const materialAndComponents = ["Sterling Silver Components", "Fine Silver Components", "Raw Silver", "Plated Silver Items", "Other"];
+  const essentialsTypes = ["Tools", "Supplies", "Jewelry Kits", "Material and Components", "Other"];
+  const toolTypes = ["Jeweler’s Torches", "Hand Tools", "Measuring Tools", "Magnification", "Metalworking Tools", "Other", "N/A"];
+  const materialCompositions = ["Steel", "Brass", "Aluminum", "Tungsten Carbide", "Plastic", "Rubber", "Other", "N/A"];
+  const supplyTypes = ["Bezel Wire", "Sheet Metal", "Casting Supplies", "Polishing & Finishing Supplies", "Adhesives & Resins", "Other", "N/A"];
+  const kitTypes = ["Beginner Kits", "Advanced Kits", "Metal Stamping Kits", "Soldering Kits", "Wire Wrapping Kits", "Other", "N/A"];
+  const materialAndComponents = ["Sterling Silver Components", "Fine Silver Components", "Raw Silver", "Plated Silver Items", "Other", "N/A"];
 
   // Options for Tools category
   // const toolTypes = [

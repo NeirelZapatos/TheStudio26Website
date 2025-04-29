@@ -387,31 +387,40 @@ const Page = () => {
             <h2 className="text-xl font-bold mb-4">All Available Labs</h2>
             <div className="max-h-[500px] overflow-y-auto">
               {labs.length > 0 ? (
-                labs.map((lab) => (
-                  <div
-                    key={lab._id}
-                    className={`p-4 mb-3 border rounded-lg cursor-pointer transition hover:bg-gray-50 ${selectedLab?._id === lab._id ? "bg-blue-50 border-blue-300" : ""
-                      }`}
-                    onClick={() => handleLabSelection(lab)}
-                  >
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 w-16 h-16 mr-4">
-                        <img
-                          src={lab.image_url || "/placeholder-image.jpg"}
-                          alt={lab.name}
-                          className="w-full h-full object-cover rounded"
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold">{lab.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {format(parseISO(lab.date), "EEEE, MMMM d")} at {lab.time}
-                        </p>
-                        <p className="font-medium mt-1">${lab.price.toFixed(2)}</p>
+                labs.map((lab) => {
+                  const isFull = (lab.current_participants || 0) >= lab.max_capacity;
+
+                  return (
+                    <div
+                      key={lab._id}
+                      className={`p-4 mb-3 border rounded-lg cursor-pointer transition ${selectedLab?._id === lab._id ? "bg-blue-50 border-blue-300" : ""
+                        } ${isFull ? "bg-gray-100 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                      onClick={() => {
+                        if (!isFull) handleLabSelection(lab);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 w-16 h-16 mr-4">
+                          <img
+                            src={lab.image_url || "/placeholder-image.jpg"}
+                            alt={lab.name}
+                            className="w-full h-full object-cover rounded"
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold">{lab.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {format(parseISO(lab.date), "EEEE, MMMM d")} at {lab.time}
+                          </p>
+                          <p className="font-medium mt-1">${lab.price.toFixed(2)}</p>
+                          {isFull && (
+                            <p className="text-red-500 font-medium mt-1">Full Capacity</p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-gray-500">No labs available.</p>
               )}
@@ -436,19 +445,28 @@ const Page = () => {
               </h3>
               <div className="space-y-2 max-h-[200px] overflow-y-auto">
                 {getLabsForSelectedDate().length > 0 ? (
-                  getLabsForSelectedDate().map((lab) => (
-                    <div
-                      key={lab._id}
-                      className={`p-3 border rounded cursor-pointer hover:bg-gray-50 ${selectedLab?._id === lab._id ? "bg-blue-50 border-blue-300" : ""
-                        }`}
-                      onClick={() => setSelectedLab(lab)}
-                    >
-                      <p className="font-medium">{lab.name}</p>
-                      <p className="text-sm text-gray-600">{lab.time} - {lab.duration} hrs</p>
-                    </div>
-                  ))
+                  getLabsForSelectedDate().map((lab) => {
+                    const isFull = (lab.current_participants || 0) >= lab.max_capacity;
 
-
+                    return (
+                      <div
+                        key={lab._id}
+                        className={`p-3 border rounded cursor-pointer transition ${selectedLab?._id === lab._id ? "bg-blue-50 border-blue-300" : ""
+                          } ${isFull ? "bg-gray-100 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                        onClick={() => {
+                          if (!isFull) setSelectedLab(lab);
+                        }}
+                      >
+                        <p className="font-medium">{lab.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {lab.time} - {lab.duration} hrs
+                        </p>
+                        {isFull && (
+                          <p className="text-red-500 font-medium mt-1">Full Capacity</p>
+                        )}
+                      </div>
+                    );
+                  })
                 ) : (
                   <p className="text-gray-500">No labs available on this date.</p>
                 )}

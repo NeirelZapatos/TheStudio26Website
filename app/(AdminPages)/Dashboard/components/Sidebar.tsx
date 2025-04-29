@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   }`}
               >
                 <i className="fa-solid fa-plus text-gray-300 w-5"></i>
-                <span className="ml-2 font-semibold">Create OpenLab</span>
+                <span className="ml-2 font-semibold">Create an Open Lab</span>
               </button>
 
               <button
@@ -172,7 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 </div>
               )}
-              <button
+              {/* <button
                 onClick={() => setActiveSection("classCatalogManager")}
                 className={`flex items-center w-full text-left p-2 rounded-lg ${activeSection === "classCatalogManager"
                   ? "bg-gray-700"
@@ -181,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 <i className="fa-solid fa-school text-gray-300 w-5"></i>
                 <span className="ml-2 font-semibold">Course Catalog</span>
-              </button>
+              </button> */}
             </div>
           )}
         </div>
