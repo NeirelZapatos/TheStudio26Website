@@ -1,5 +1,5 @@
 {
-  "aboutText": "<p>Ever since 2010, The Studio 26 has been providing students with a</p><p>rich and diverse learning environment. The Studio 26 is located in</p><p>Cameron Park, CA, and has taught 1000's of students. We encourage</p><p>students alike to explore, learn and create each passing day.</p>",
+  "aboutText": "Ever since 2010, The Studio 26 has been providing students with arich and diverse learning environment. The Studio 26 is located inCameron Park, CA, and has taught 1000's of students. We encouragestudents alike to explore, learn and create each passing day. asdawdasdwad",
   "buttonLink": "https://example.com",
   "images": [
     {
@@ -31,7 +31,7 @@
   "jewelryDescription": "<p>Discover the fundamentals of jewelry crafting, all in one comprehensive beginner class. This is a prerequisite for many of our advanced courses.</p>",
   "callToActionText": "<p>Hurry, Limited Seats Available! Secure your spot today by clicking the button below.</p>",
   "projectsSectionTitle": "<p>Past Projects Created At The Studio 26, LLC</p>",
-  "aboutTitle": "<p>About Us</p>",
+  "aboutTitle": "About Us asdwadsdad",
   "buttonUrl": "http://localhost:3000/class-catalog",
   "buttonLabel": "<p>Beginning Jewelry Making Class</p>"
 }
