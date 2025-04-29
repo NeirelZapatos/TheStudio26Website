@@ -4,12 +4,19 @@ import Order from "@/app/models/Order";
 import Item from "@/app/models/Item";
 import Course from "@/app/models/Course";
 import { start } from "repl";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 /*
  - API Route: Fetch top 3 best-selling items per category
 */
 
 export async function GET(request:NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") || "All Categories";
     const startDateString = searchParams.get("startDate");

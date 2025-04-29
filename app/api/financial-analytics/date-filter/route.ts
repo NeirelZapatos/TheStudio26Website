@@ -3,8 +3,17 @@ import dbConnect from '../../../lib/dbConnect';
 import Order from "../../../models/Order";
 import Item from "../../../models/Item";
 import Course from "../../../models/Course";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
+
 
 export async function GET(request: NextRequest) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") || "All Categories";
     const startDateString = searchParams.get("startDate");
