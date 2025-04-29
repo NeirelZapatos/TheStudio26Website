@@ -167,7 +167,7 @@ const OrderTables: React.FC<{
                       ) : (
                         <Truck className="w-4 h-4" />
                       )}
-                      <span className="text-sm">{order?.shipping_method ?? ''}</span>
+                      <span className="text-sm">{order?.shipping_method ? order.shipping_method.charAt(0).toUpperCase() + order.shipping_method.slice(1) : ''}</span>
                     </div>
                   </td>
                   <td className="p-4">

@@ -60,10 +60,12 @@ export const getOrderMatchScore = (
   
   // 1. ORDER ID MATCHING (LEADING CHARACTERS ONLY)
   const orderId = order._id.toString();
+  const isOrderIdSearch = /^[a-f0-9]{1,24}$/.test(queryLower);
   if (orderId === queryTrimmed) return 10.0;
   if (orderId.toLowerCase().startsWith(queryLower)) return 9.9;
+  if (isOrderIdSearch) return 0;
 
-  // 2. STRICT DATE MATCHING (MM/DD/YYYY ONLY)
+  // 2. STRICT DATE MATCHING (MM/DD/YYYY)
   const dateObj = new Date(order.order_date);
   const formattedDate = formatDateMMDDYYYY(dateObj);
   const [month, day] = formattedDate.split('/');
