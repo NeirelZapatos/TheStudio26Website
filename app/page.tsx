@@ -10,7 +10,7 @@ import { ImageEntry } from "./models/HomepageSettings";
 // Load environment variables
 env.config();
 
-export const revalidate = 3600;
+export const revalidate = 10; // Revalidate every 10 seconds
 
 export default async function Page() {
   const settings: HomepageSettingsData = await getHomepageSettings();

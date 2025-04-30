@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/app/lib/dbConnect';
 import LabTemplate from '@/app/models/LabTemplate';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function GET() {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   await dbConnect();
   try {
     // Fetch all lab templates from the MongoDB collection
     const templates = await LabTemplate.find({})
       .sort({ updatedAt: -1 });
-    
+
     return NextResponse.json(
       { success: true, data: templates },
       { status: 200 }
@@ -23,13 +31,19 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   await dbConnect();
   try {
     const body = await request.json();
-    
+
     // Ensure the category is set to "Lab"
     body.category = "Lab";
-    
+
     const template = await LabTemplate.create(body);
     return NextResponse.json(
       { success: true, data: template },
@@ -46,28 +60,34 @@ export async function POST(request: Request) {
 
 
 export async function DELETE(request: Request) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   await dbConnect();
-  
+
   const url = new URL(request.url);
   const id = url.searchParams.get('id');
-  
+
   if (!id) {
     return NextResponse.json(
       { success: false, error: 'Template ID is required' },
       { status: 400 }
     );
   }
-  
+
   try {
     const deletedTemplate = await LabTemplate.findByIdAndDelete(id);
-    
+
     if (!deletedTemplate) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json(
       { success: true, data: deletedTemplate },
       { status: 200 }

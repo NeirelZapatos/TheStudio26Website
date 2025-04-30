@@ -8,7 +8,7 @@ import { authOptions } from "../auth/[...nextauth]/options";
 export async function GET() {
   // const session = await getServerSession(authOptions);
   // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
 
   await dbConnect();
@@ -44,10 +44,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  // const session = await getServerSession(authOptions);
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   await dbConnect();
 
