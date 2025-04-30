@@ -1,52 +1,65 @@
-// app/lib/homepageSettings.ts
-import fs from "fs/promises";
-import path from "path";
+import dbConnect from './dbConnect';
+import HomepageSettings, { HomepageSettingsDocument, ImageEntry } from '../models/HomepageSettings';
 
-const dataFilePath = path.join(process.cwd(), "data", "homepageSettings.json");
+const defaultSettings = {
+  aboutTitle: "About Us",
+  aboutText: "Ever since 2010, The Studio 26 has been providing students with a rich and diverse learning environment. The Studio 26 is located in Cameron Park, CA, and has taught 1000's of students. We encourage students alike to explore, learn and create each passing day.",
+  jewelryTitle: "<p>Are you interested in learning jewelry making?</p>",
+  jewelryDescription: "<p>Discover the fundamentals of jewelry crafting, all in one comprehensive beginner class. This is a prerequisite for many of our advanced courses.</p>",
+  buttonUrl: "/class-catalog",
+  buttonLabel: "<p>Beginning Jewelry Making Class</p>",
+  callToActionText: "<p>Hurry, Limited Seats Available! Secure your spot today by clicking the button below.</p>",
+  projectsSectionTitle: "<p>Past Projects Created At The Studio 26, LLC</p>",
+  images: [] as ImageEntry[]
+};
 
-// Read the settings from the JSON file; if the file doesn't exist, create it with defaults.
+export type HomepageSettingsData = {
+  aboutTitle: string;
+  aboutText: string;
+  jewelryTitle: string;
+  jewelryDescription: string;
+  buttonUrl: string;
+  buttonLabel: string;
+  callToActionText: string;
+  projectsSectionTitle: string;
+  images: ImageEntry[];
+};
+
 export async function getHomepageSettings() {
-    try {
-        const data = await fs.readFile(dataFilePath, "utf8");
-        return JSON.parse(data);
-    } catch (error) {
-        console.error("Error reading homepage settings file:", error);
-        // File may not exist yet. Create default settings.
-        const defaultSettings = {
-            aboutText:
-                "Default About Us text goes here. Add your description about your company, its mission, and history.",
-            buttonLink: "https://example.com",
-            images: [] as { url: string; key: string }[],
-            jewelryTitle: "Are you interested in learning jewelry making?",
-            jewelryDescription:
-                "Discover the fundamentals of jewelry crafting, all in one comprehensive beginner class. This is a prerequisite for many of our advanced courses.",
-        };
-        await fs.mkdir(path.dirname(dataFilePath), { recursive: true });
-        await fs.writeFile(
-            dataFilePath,
-            JSON.stringify(defaultSettings, null, 2),
-            "utf8"
-        );
-        return defaultSettings;
-    }
-}
+  try {
+    await dbConnect();
+    const settings = await HomepageSettings.findOne({}).lean();
 
-// Merge new settings with the current settings and persist to disk.
-export async function updateHomepageSettings(
-    newSettings: Partial<{
-        aboutText: string;
-        buttonLink: string;
-        images: { url: string; key: string }[];
-        jewelryTitle: string;
-        jewelryDescription: string;
-    }>
-) {
-    const currentSettings = await getHomepageSettings();
-    const updatedSettings = { ...currentSettings, ...newSettings };
-    await fs.writeFile(
-        dataFilePath,
-        JSON.stringify(updatedSettings, null, 2),
-        "utf8"
-    );
-    return updatedSettings;
+    if (!settings) {
+      return defaultSettings;
+    }
+
+    const settingsData: HomepageSettingsData = {
+      aboutTitle: settings.aboutTitle || defaultSettings.aboutTitle,
+      aboutText: settings.aboutText || defaultSettings.aboutText,
+      jewelryTitle: settings.jewelryTitle || defaultSettings.jewelryTitle,
+      jewelryDescription: settings.jewelryDescription || defaultSettings.jewelryDescription,
+      buttonUrl: settings.buttonUrl || defaultSettings.buttonUrl,
+      buttonLabel: settings.buttonLabel || defaultSettings.buttonLabel,
+      callToActionText: settings.callToActionText || defaultSettings.callToActionText,
+      projectsSectionTitle: settings.projectsSectionTitle || defaultSettings.projectsSectionTitle,
+      images: settings.images || defaultSettings.images
+    };
+    
+    return settingsData;
+    
+  } catch (error) {
+    console.error('Error fetching homepage settings:', error);
+    return {
+      aboutTitle: "",
+      aboutText: "",
+      jewelryTitle: "",
+      jewelryDescription: "",
+      buttonUrl: "",
+      buttonLabel: "",
+      callToActionText: "",
+      projectsSectionTitle: "",
+      images: []
+    };
+  }
 }

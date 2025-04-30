@@ -4,24 +4,28 @@ import env from "dotenv";
 import Header2 from "./Components/Header2";
 import Footer2 from "./Components/Footer2";
 import Link from "next/link";
-import { getHomepageSettings } from "./lib/homepageSettings";
+import { getHomepageSettings, HomepageSettingsData } from "./lib/homepageSettings";
+import { ImageEntry } from "./models/HomepageSettings";
 
 // Load environment variables
 env.config();
 
+export const revalidate = 3600;
+
 export default async function Page() {
-  const settings = await getHomepageSettings();
+  const settings: HomepageSettingsData = await getHomepageSettings();
+
   const {
-    aboutTitle = "",
-    aboutText = "",
-    jewelryTitle = "",
-    jewelryDescription = "",
-    buttonUrl = "",
-    buttonLabel = "",
-    callToActionText = "",
-    projectsSectionTitle = "",
-    images = [],
-  } = settings || {};
+    aboutTitle,
+    aboutText,
+    jewelryTitle,
+    jewelryDescription,
+    buttonUrl,
+    buttonLabel,
+    callToActionText,
+    projectsSectionTitle,
+    images,
+  } = settings;
 
   // Only the six most recent images
   const displayedImages = images.slice(-6);
@@ -76,7 +80,7 @@ export default async function Page() {
           <div className="max-w-5xl mx-auto relative">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold text-black font-special-gothic mb-6">
-                Our Story
+                {aboutTitle || "Our Story"}
               </h2>
               <div className="w-24 h-1 bg-yellow-600 mx-auto mb-8"></div>
             </div>
