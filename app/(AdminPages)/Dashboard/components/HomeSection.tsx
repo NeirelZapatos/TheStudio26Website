@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
-// import dynamic from "next/dynamic";
 import {
   uploadHomepageFileToS3,
   listHomepageImages,
@@ -8,16 +7,7 @@ import {
 } from "../../../../utils/s3";
 import S3ImageExplorer from "@/app/Components/S3ImageExplorer";
 
-// // Dynamically import ReactQuill with no SSR
-// const ReactQuill = dynamic(
-//   () => import("react-quill"),
-//   {
-//     ssr: false,
-//     loading: () => <p>Loading editor...</p>
-//   }
-// );
-
-// Simple pencil icon (Unicode). Replace with your preferred icon if needed.
+// Simple pencil icon (Unicode)
 const PencilIcon = () => (
   <span role="img" aria-label="edit">
     ✏️
@@ -53,9 +43,9 @@ const HomeSection: React.FC = () => {
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [saveMessage, setSaveMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isMounted, setIsMounted] = useState(false);
-
   const [isS3ExplorerOpen, setIsS3ExplorerOpen] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
@@ -73,11 +63,18 @@ const HomeSection: React.FC = () => {
     }
   };
 
-  // Fetch existing settings on mount
   useEffect(() => {
+    setIsLoading(true);
     fetch("/api/homepage-settings")
-      .then((res) => res.json())
-      .then((data) => {
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch homepage settings");
+        }
+        return res.json();
+      })
+      .then((response) => {
+        const data = response.data;
+        
         setAboutTitle(data.aboutTitle || "");
         setAboutText(data.aboutText || "");
         setJewelryTitle(data.jewelryTitle || "");
@@ -86,14 +83,29 @@ const HomeSection: React.FC = () => {
         setButtonLabel(data.buttonLabel || "");
         setCallToActionText(data.callToActionText || "");
         setProjectsSectionTitle(data.projectsSectionTitle || "");
-        setImages(data.images || []);
+        
+        // If we have images in the response, use those
+        if (data.images && data.images.length > 0) {
+          setImages(data.images);
+        } else {
+          // Otherwise load images from S3
+          listHomepageImages()
+            .then((imgs) => setImages(imgs.slice(-6)))
+            .catch((err) => console.error("Error loading homepage images:", err));
+        }
+        
+        setIsLoading(false);
       })
-      .catch((err) => console.error("Failed to fetch homepage settings:", err));
-
-    // Also load images from S3 and limit to six
-    listHomepageImages()
-      .then((imgs) => setImages(imgs.slice(-6)))
-      .catch((err) => console.error("Error loading homepage images:", err));
+      .catch((err) => {
+        console.error("Failed to fetch homepage settings:", err);
+        setSaveMessage("Error loading settings. Please try again.");
+        setIsLoading(false);
+        
+        // Fallback to S3 images on error
+        listHomepageImages()
+          .then((imgs) => setImages(imgs.slice(-6)))
+          .catch((err) => console.error("Error loading homepage images:", err));
+      });
   }, []);
 
   // Handle file selection for upload
@@ -129,7 +141,7 @@ const HomeSection: React.FC = () => {
     const newImage = { url: imageUrl, key: `homepage/${imageUrl.split('/').pop()}` };
     const updatedImages = [...images, newImage].slice(-6); // Keep only the six most recent
     setImages(updatedImages);
-    setIsS3ExplorerOpen(false); // Close the modal
+    setIsS3ExplorerOpen(false);
   };
 
   // Image rearrangement functions
@@ -215,16 +227,23 @@ const HomeSection: React.FC = () => {
       images,
     };
 
-    const response = await fetch("/api/homepage-settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch("/api/homepage-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (response.ok) {
-      setSaveMessage("Settings saved successfully!");
-    } else {
-      setSaveMessage("Error saving settings.");
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSaveMessage(result.message || "Settings saved successfully!");
+      } else {
+        setSaveMessage(result.error || "Error saving settings.");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      setSaveMessage("Error saving settings. Please try again.");
     }
   };
 
@@ -232,6 +251,10 @@ const HomeSection: React.FC = () => {
   const toggleEdit = () => {
     setIsEditing(!isEditing);
   };
+
+  if (isLoading) {
+    return <div className="p-6">Loading homepage settings...</div>;
+  }
 
   return (
     <section className="bg-white shadow rounded-lg p-6">
@@ -507,7 +530,6 @@ const HomeSection: React.FC = () => {
           </div>
         </div>
       )}
-
     </section>
   );
 };
