@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import Image from "next/image";
@@ -55,7 +55,7 @@ interface OrderDetails {
   items?: CartItem[];
 }
 
-export default function OrderSuccessPage() {
+function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -355,5 +355,14 @@ export default function OrderSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionCheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {/* Your component logic */}
+      <OrderSuccessPage />
+    </Suspense>
   );
 }

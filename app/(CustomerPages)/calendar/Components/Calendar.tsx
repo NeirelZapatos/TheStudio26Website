@@ -114,7 +114,7 @@ const MyCalendar: React.FC = () => {
                         </div>
                         <div className="flex justify-between">
                             <a 
-                                href={`/class-catalog/courses/${selectedEvent.resource?._id}`}
+                                href={`/class-booking?id=${selectedEvent.resource?._id}`}
                                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
                                 target="_blank"
                                 rel="noopener noreferrer"

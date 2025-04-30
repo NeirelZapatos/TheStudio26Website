@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { courseSchema } from "@/app/api/common/productSchema";
 import dbConnect from "@/app/lib/dbConnect";
 import Course from "@/app/models/Course";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         await dbConnect();
 
@@ -38,6 +45,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
     try {
         await dbConnect();
         const { id } = params;

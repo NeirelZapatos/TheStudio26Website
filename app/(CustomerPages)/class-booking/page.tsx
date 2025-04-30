@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
@@ -31,7 +31,7 @@ interface ContactInfo {
   participants: number;
 }
 
-export default function ClassBookingPage() {
+function ClassBookingPage() {
   const searchParams = useSearchParams();
   const classId = searchParams.get('id');
 
@@ -538,5 +538,14 @@ export default function ClassBookingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionCheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {/* Your component logic */}
+      <ClassBookingPage />
+    </Suspense>
   );
 }

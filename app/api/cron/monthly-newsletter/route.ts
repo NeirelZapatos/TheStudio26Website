@@ -6,10 +6,15 @@ import Course from '@/app/models/Course';
 import NewsletterConfig from '@/app/models/NewsletterConfig';
 
 // Add Vercel Cron config
-export const config = {
-  runtime: 'edge',
-  regions: ['iad1'],
-};
+// export const config = {
+//   runtime: 'edge',
+//   regions: ['iad1'],
+// };
+
+// export const runtime = "edge";
+export const runtime = 'nodejs' // instead of 'edge'
+export const preferredRegion = ["iad1"];
+
 
 // Nodemailer transporter configuration
 const transporter = nodemailer.createTransport({
@@ -45,7 +50,8 @@ async function getUpcomingCourses(month: number, year: number) {
 }
 
 // This function will generate the newsletter content based on upcoming courses
-export async function generateMonthlyNewsletter() {
+// Removed 'export' keyword to make it a private function
+async function generateMonthlyNewsletter() {
   // Get the current date information
   const now = new Date();
   const currentMonth = now.getMonth();
