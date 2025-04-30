@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import Customer from '@/app/models/Customer';
 import { NextRequest, NextResponse } from 'next/server';
 import schema from './schema';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 // Example JSON to to send to this endpoint
 // {
@@ -90,6 +92,12 @@ export async function GET(request: NextRequest) {
 
 // This deletes a customer from the database
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    //protect
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         // Connect to the database
         await dbConnect();

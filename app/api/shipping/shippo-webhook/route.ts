@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/app/lib/dbConnect';
 import Order from '@/app/models/Order';
 import Shipping from '@/app/models/Shipping';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 // Shippo webhook handler
 export async function POST(req: NextRequest) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   console.log('[SHIPPO_WEBHOOK] Received webhook call');
   
   // Log all incoming headers for debugging

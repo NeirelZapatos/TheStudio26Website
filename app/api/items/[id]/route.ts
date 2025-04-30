@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { itemSchema } from "@/app/api/common/productSchema";
 import Item from '@/app/models/Item';
 import dbConnect from '@/app/lib/dbConnect';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
+
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+          const session = await getServerSession(authOptions);
+          if (!session) {
+              return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+          }
+    //protect maybe not
     try {
         await dbConnect();
 
@@ -38,6 +46,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    //protect
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         await dbConnect();
         const { id } = params;

@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/app/lib/dbConnect';
 import NewsletterConfig from '@/app/models/NewsletterConfig';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function GET() {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     await dbConnect();
     
@@ -29,6 +37,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const data = await request.json();
     await dbConnect();
