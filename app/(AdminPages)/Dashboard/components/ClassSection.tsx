@@ -465,8 +465,9 @@ export default function Page() {
                   <li
                     key={index}
                     className="p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
+                    onClick={() => loadTemplate(index.toString())}
                   >
-                    <span onClick={() => loadTemplate(index.toString())}>
+                    <span>
                       {template.name}
                     </span>
                     <button
