@@ -658,7 +658,7 @@ export async function GET(request: Request) {
               <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
                 <h3 style="margin-top: 0;">Pickup Information:</h3>
                 <p>Your order will be available for pickup at our studio. We'll notify you when your order is ready.</p>
-                <p><strong>Pickup Location:</strong> Studio 26, 123 Main St</p>
+                <p><strong>Pickup Location:</strong> 4100 Cameron Park Dr suite 118, Cameron Park, CA 95682</p>
               </div>
             `;
 
