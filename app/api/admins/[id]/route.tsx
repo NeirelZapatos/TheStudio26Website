@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
 }
 
 // deletes a specific user
-export async function DELETE(request: NextRequest, { params }: { params: { id: number } }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -84,6 +84,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: n
 
     try {
         await dbConnect();
+
+        if (params.id === process.env.MASTER_ADMIN_ID) {
+            return NextResponse.json({ error: 'Cannot delete the master admin user' }, { status: 403 });
+        }
 
         const existingAdmin = await Admin.findById(params.id);
         if(!existingAdmin) {
