@@ -1,8 +1,12 @@
 import { shippoClient } from './createShippoClient';
-import { parseAddressString } from './parseAddressString';
+import { parseAndValidateAddress, ShippoAddressValidationResult } from './addressValidation';
 import Shipping from '@/app/models/Shipping';
 import Order from '@/app/models/Order';
 import { ICustomer } from '@/app/models/Customer';
+import { createShippoTransaction } from './createTransaction';
+import { createShipment } from './createShipment';
+import { selectShippingRate } from './selectShippingRate';
+
 //import { registerTracking } from './tracking';
 
 interface PackageDetails {
@@ -19,10 +23,12 @@ export async function registerShippoWebhook(webhookUrl: string, isTest: boolean 
       throw new Error('Shippo client is not initialized');
     }
 
+    const SHIPPO_API_KEY = process.env.Shippo_Test_Key;
+
     const response = await fetch('https://api.goshippo.com/webhooks', {
       method: 'POST',
       headers: {
-        'Authorization': `ShippoToken ${process.env.SHIPPO_API_KEY}`,
+        'Authorization': `ShippoToken ${SHIPPO_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -49,170 +55,37 @@ export async function registerShippoWebhook(webhookUrl: string, isTest: boolean 
 export async function createShippingRecord(order: any, package_details: PackageDetails, test_mode: boolean) {
   const customer = order.customer_id as ICustomer;
 
-  // Parse shipping address
-  let street1 = '',
-    street2 = '',
-    street3 = '',
-    city = '',
-    state = '',
-    zip = '',
-    country = '';
-
-  if (order?.shipping_address) {
-    const addressParts = parseAddressString(order?.shipping_address);
-    street1 = addressParts.street;
-    street2 = addressParts.street2;
-    street3 = addressParts.street3;
-    city = addressParts.city;
-    state = addressParts.state;
-    zip = addressParts.zip;
-    country = addressParts.country;
-    
-    console.log('====== ADDRESS PARSING DEBUG ======');
-    console.log('Original shipping_address:', order.shipping_address);
-    console.log('Parsed components:', { street1, street2, street3, city, state, zip, country });
-    console.log('==================================');
-  } 
-
-  // Validate required address fields before proceeding
-  if (!street1 || !city || !state || !zip) {
-    const missingFields = [];
-    if (!street1) missingFields.push('street address');
-    if (!city) missingFields.push('city');
-    if (!state) missingFields.push('state');
-    if (!zip) missingFields.push('ZIP code');
-    
-    const errorMessage = `Cannot create shipping label: Missing required address fields (${missingFields.join(', ')})`;
-    console.error(errorMessage, { 
-      orderId: order._id,
-      customerName: `${customer.first_name} ${customer.last_name}`,
-      parsedAddress: { street1, street2, city, state, zip, country }
-    });
-    
-    throw new Error(errorMessage);
-  }
-
-  // Ensure phone number is a string
-  const phoneStr = customer.phone_number ? String(customer.phone_number) : '';
-
-  // Create shipment with error handling
-  let shipmentResponse;
-  try {
-    if (!shippoClient) {
-      throw new Error('Shippo client is not initialized');
-    }
-
-    shipmentResponse = await shippoClient.shipments.create({
-      addressFrom: {
-        name: 'Owner Name',
-        company: 'The Studio 26',
-        street1: '123 Main St',
-        street2: '',
-        city: 'Sacramento',
-        state: 'CA',
-        zip: '94107',
-        country: 'US',
-        phone: '555-555-5555',
-        email: 'your@email.com'
-      },
-      addressTo: {
-        name: `${customer.first_name} ${customer.last_name}`,
-        street1: street1,
-        street2: street2,
-        city: city,
-        state: state,
-        zip: zip,
-        country: country,
-        phone: phoneStr,
-        email: customer.email || ''
-      },
-      parcels: [
-        {
-          length: package_details.length.toString(),
-          width: package_details.width.toString(),
-          height: package_details.height.toString(),
-          distanceUnit: 'in',
-          weight: package_details.weight.toString(),
-          massUnit: 'lb'
-        }
-      ],
-      async: false,
-      test: test_mode
-    });
-
-    console.log('Shipment created:', shipmentResponse.objectId);
-    console.log('Shipment response:', JSON.stringify(shipmentResponse, null, 2));
-
-    if (!shipmentResponse.rates || !Array.isArray(shipmentResponse.rates) || shipmentResponse.rates.length === 0) {
-      console.error('No shipping rates returned from Shippo:', shipmentResponse);
-      throw new Error('No shipping rates returned from Shippo. Please check address information and package details.');
-    }
-  } catch (error: unknown) {
-    const shippoError = error as Error;
-    console.error('Shippo API error:', shippoError);
-    throw new Error(`Shippo API error: ${shippoError.message || 'Unknown error'}`);
-  }
-
-  // Filter and select rates
-  const uspsRates = shipmentResponse.rates.filter(rate => rate.provider === 'USPS');
-  const groundAdvantageRates = uspsRates.filter(rate => 
-    rate.servicelevel && rate.servicelevel.token === 'usps_ground_advantage'
+  // Validate the address with Shippo
+  let validatedAddress: ShippoAddressValidationResult;
+  
+  // Get full name for the address
+  const customerName = `${customer.first_name} ${customer.last_name}`;
+  
+  // Use Shippo's address validation
+  console.log('Validating address with Shippo:', order?.shipping_address);
+  validatedAddress = await parseAndValidateAddress(
+    order?.shipping_address || '',
+    customerName,
+    customer.phone_number ? String(customer.phone_number) : '',
+    customer.email || ''
   );
 
-  if (groundAdvantageRates.length > 0) {
-    groundAdvantageRates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
-  }
 
-  if (uspsRates.length > 0) {
-    uspsRates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
-  }
+  // Create shipment with error handling
+  const shipmentResponse = await createShipment(
+    validatedAddress,
+    customer,
+    package_details,
+    test_mode
+  );
+  // Filter and select rates
+  // Replace the rate selection code with:
+const selectedRate = selectShippingRate(shipmentResponse);
 
-  let selectedRate;
-  if (groundAdvantageRates.length > 0) {
-    selectedRate = groundAdvantageRates[0];
-    console.log('Selected USPS Ground Advantage rate');
-  } else if (uspsRates.length > 0) {
-    selectedRate = uspsRates[0];
-    console.log('Ground Advantage not available, using cheapest USPS rate');
-  } else {
-    shipmentResponse.rates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
-    selectedRate = shipmentResponse.rates[0];
-    console.log('No USPS rates available, using cheapest available rate');
-  }
 
-  console.log('Selected rate:', JSON.stringify(selectedRate, null, 2));
+  //Create Transaction
+  const transaction = await createShippoTransaction(selectedRate, test_mode);
 
-  // Create transaction
-  let transaction;
-  try {
-    const transactionParams = {
-      rate: selectedRate.objectId,
-      label_file_type: 'PDF_A4',
-      async: false,
-      test: test_mode
-    };
-    
-    console.log('Creating transaction with params:', JSON.stringify(transactionParams, null, 2));
-    
-    if (!shippoClient) {
-      throw new Error('Shippo client is not initialized');
-    }
-    
-    transaction = await shippoClient.transactions.create(transactionParams);
-
-    console.log('Transaction response:', JSON.stringify(transaction, null, 2));
-    
-    if (transaction.status !== 'SUCCESS' || !transaction.labelUrl) {
-      console.error('Transaction failed or missing label URL:', transaction);
-      throw new Error(transaction.messages ? transaction.messages[0]?.text || 'Label creation failed' : 'No label URL returned from Shippo');
-    }
-
-    console.log('Transaction created successfully:', transaction.objectId);
-  } catch (error: unknown) {
-    const transactionError = error as Error;
-    console.error('Shippo transaction error:', transactionError);
-    throw new Error(`Shippo transaction error: ${transactionError.message || 'Unknown error'}`);
-  }
   
   // Define the tracking number to use - Use SHIPPO_DELIVERED for tests
   const trackingNumber = test_mode ? 'SHIPPO_DELIVERED' : transaction.trackingNumber;
@@ -267,17 +140,17 @@ try {
       metadata: 'Store Address',
     },
     address_to: {
-      name: `${customer.first_name} ${customer.last_name}`,
-      company: '',
-      street1: street1,
-      street2: street2 || '',
-      street3: street3 || '',
-      city: city,
-      state: state,
-      zip: zip,
-      country: country,
-      phone: String(customer.phone_number || ''),
-      email: customer.email || '',
+      name: validatedAddress.name || `${customer.first_name} ${customer.last_name}`,
+      company: validatedAddress.company || '',
+      street1: validatedAddress.street1,
+      street2: validatedAddress.street2 || '',
+      street3: validatedAddress.street3 || '',
+      city: validatedAddress.city,
+      state: validatedAddress.state,
+      zip: validatedAddress.zip,
+      country: validatedAddress.country,
+      phone: validatedAddress.phone || '',
+      email: validatedAddress.email || '',
       metadata: `Customer ID ${customer._id}`,
     },
     parcel: {
@@ -319,6 +192,19 @@ try {
   });
   
   await shippingRecord.save();
+
+  // Store address validation results in the shipping record
+  if (validatedAddress.validationResults) {
+    await Shipping.findByIdAndUpdate(shippingRecord._id, {
+      $set: {
+        'address_validation': {
+          is_valid: validatedAddress.isValid,
+          messages: validatedAddress.validationResults.messages || [],
+          validated_at: new Date()
+        }
+      }
+    });
+  }
 
   // Update the order with the shipping information
   await Order.findByIdAndUpdate(order._id, {

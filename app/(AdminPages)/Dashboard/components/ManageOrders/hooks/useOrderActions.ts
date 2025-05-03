@@ -1,58 +1,79 @@
-// Updated useOrderActions hook
 import { useState } from 'react';
 import { ProcessPickup } from '@/utils/orderUtils/ProcessPickup';
 import exportOrdersToCSV from '@/utils/docUtils/ExportReport';
 import generateReceiptPDF from '@/utils/docUtils/GenerateReceipt';
 import { IOrder } from '@/app/models/Order';
 
-type MutateFunction = () => Promise<any>;
+/**
+ * Helper function to standardize shipping method detection
+ */
+const isPickupOrder = (order: IOrder): boolean => {
+  if (!order.shipping_method) return false;
+  const method = order.shipping_method.toLowerCase();
+  return method === 'pickup';
+};
+
+const isDeliveryOrder = (order: IOrder): boolean => {
+  if (!order.shipping_method) return false;
+  const method = order.shipping_method.toLowerCase();
+  
+  return method === 'delivery' || 
+         method === 'standard' || 
+         method.startsWith('rate_') || 
+         method.startsWith('shr_') || 
+         method.includes('ground') || 
+         method.includes('usps') || 
+         method.includes('advantage');
+};
+
+interface OrderActionsReturn {
+  handleMarkAsFulfilled: () => Promise<void>;
+  handleExportReport: () => void;
+  handlePrintReceipt: () => void;
+  getTimeElapsed: (orderDate: string) => string;
+  hasOnlyPickupOrders: () => boolean;
+  hasDeliveryOrders: () => boolean;
+}
 
 export const useOrderActions = (
   orders: IOrder[] | null, 
   selectedOrders: Set<string>, 
-  mutate: MutateFunction,
+  mutate: () => Promise<any>,
   setSelectedOrders: React.Dispatch<React.SetStateAction<Set<string>>>
-) => {
-      // Check if all selected orders are pickup orders
-const hasOnlyPickupOrders = () => {
-  if (!orders) return false;
-  
-  const selectedOrderIds = Array.from(selectedOrders);
-  if (selectedOrderIds.length === 0) return false;
-  
-  const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
-  return selectedOrdersData.every(order => 
-    order.shipping_method?.toLowerCase() === 'pickup'
-  );
-};
-
+): OrderActionsReturn => {
+  // Check if all selected orders are pickup orders
+  const hasOnlyPickupOrders = (): boolean => {
+    if (!orders) return false;
+    
+    const selectedOrderIds = Array.from(selectedOrders);
+    if (selectedOrderIds.length === 0) return false;
+    
+    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+    return selectedOrdersData.every(order => isPickupOrder(order));
+  };
   
   // Check if any selected order is a delivery order
-const hasDeliveryOrders = () => {
-  if (!orders) return false;
-  
-  const selectedOrderIds = Array.from(selectedOrders);
-  if (selectedOrderIds.length === 0) return false;
-  
-  const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
-  return selectedOrdersData.some(order => 
-    order.shipping_method?.toLowerCase() === 'delivery'
-  );
-};
+  const hasDeliveryOrders = (): boolean => {
+    if (!orders) return false;
+    
+    const selectedOrderIds = Array.from(selectedOrders);
+    if (selectedOrderIds.length === 0) return false;
+    
+    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+    return selectedOrdersData.some(order => isDeliveryOrder(order));
+  };
 
-  const handleMarkAsFulfilled = async () => {
+  const handleMarkAsFulfilled = async (): Promise<void> => {
     if (!orders) {
       alert('Orders data not loaded yet');
       return;
     }
 
-
-
     const selectedOrderIds = Array.from(selectedOrders);
     const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
 
     // Double-check that all selected orders are pickup orders
-    if (!selectedOrdersData.every(order => order.shipping_method === 'pickup')) {
+    if (!selectedOrdersData.every(order => isPickupOrder(order))) {
       alert('Cannot fulfill delivery orders. Select only pickup orders.');
       return;
     }
@@ -66,13 +87,13 @@ const hasDeliveryOrders = () => {
     }
   };
 
-  const handleExportReport = () => {
+  const handleExportReport = (): void => {
     if (orders) {
       exportOrdersToCSV(orders);
     }
   };
 
-  const handlePrintReceipt = () => {
+  const handlePrintReceipt = (): void => {
     if (orders) {
       selectedOrders.forEach((orderId: string) => {
         const order = orders.find((order) => order._id.toString() === orderId);
@@ -83,7 +104,7 @@ const hasDeliveryOrders = () => {
     }
   };
 
-  const getTimeElapsed = (orderDate: string) => {
+  const getTimeElapsed = (orderDate: string): string => {
     const orderTime = new Date(orderDate).getTime();
     const now = Date.now();
     const diff = now - orderTime;

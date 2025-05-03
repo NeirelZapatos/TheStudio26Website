@@ -5,6 +5,8 @@ import CartSummary from "./Components/CartSummary";
 import { loadStripe } from "@stripe/stripe-js";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
+import AddressValidationModal from "./addressValidationModal";
+import { isValid } from "date-fns";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
@@ -22,6 +24,22 @@ interface CustomerInfo {
   email: string;
   phone: string;
   deliveryMethod: 'pickup' | 'delivery';
+  address?: {
+    street1: string;
+    street2: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
+  shippingMethod?: string;
+}
+
+interface AddressValidationError {
+  show: boolean;
+  message: string;
+  originalAddress?: any;
+  suggestedAddress?: any;
 }
 
 export default function CheckoutPage() {
@@ -31,6 +49,10 @@ export default function CheckoutPage() {
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'info' | 'confirmation'>('cart');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addressValidationError, setAddressValidationError] = useState<AddressValidationError>({
+    show: false,
+    message: '',
+  });
 
   // * Default Info
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
@@ -39,7 +61,16 @@ export default function CheckoutPage() {
     email: '',
     phone: '',
     deliveryMethod: 'pickup',
-  })
+    address: {
+      street1: '',
+      street2: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: 'US',
+    },
+    shippingMethod: 'standard', // Default shipping method
+  });
 
   // Fetch cart data from localStorage on component mount
   useEffect(() => {
@@ -81,6 +112,17 @@ export default function CheckoutPage() {
     }));
   };
 
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setCustomerInfo((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address!,
+        [name]: value,
+      },
+    }));
+  };
+
   const handleProceedToInfo = () => {
     if (cart.length === 0) {
       setError("Your cart is empty");
@@ -88,10 +130,68 @@ export default function CheckoutPage() {
     }
     setError(null);
     setCheckoutStep('info');
+  };
+
+  // Define a loading state for the address validation
+const [validatingAddress, setValidatingAddress] = useState(false);
+
+// Modified validateAddress function that blocks proceeding until corrected
+const validateAddress = async () => {
+  const { street1, street2, city, state, zip, country } = customerInfo.address!;
+    
+  // Basic validation before sending to API
+  if (!street1 || !city || !state || !zip || !country) {
+    setError("Please complete all required address fields");
+    return false;
   }
 
+  setValidatingAddress(true);
+  
+  try {
+    const response = await fetch('/api/validate-address', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        address: {
+          street1,
+          street2,
+          city,
+          state,
+          zip,
+          country
+        },
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to validate address');
+    }
+
+    if (!data.is_valid) {
+      setAddressValidationError({
+        show: true,
+        message: "The address you entered appears to be invalid or incomplete. Please edit your address and try again."
+      });
+      setValidatingAddress(false);
+      return false;
+    }
+    
+    setValidatingAddress(false);
+    return true;
+  } catch (err: any) {
+    setError(err.message || 'Error validating address');
+    setValidatingAddress(false);
+    return false;
+  }
+};
+
+
   // Handle proceeding to confirmation stage
-  const handleProceedToConfirmation = (e: React.FormEvent) => {
+  const handleProceedToConfirmation = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate form
@@ -105,6 +205,14 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Validate address if delivery is selected
+    if (customerInfo.deliveryMethod === 'delivery') {
+      const isAddressValid = await validateAddress();
+      if (!isAddressValid) {
+        return;
+      }
+    }
+
     setError(null);
     setCheckoutStep('confirmation');
   };
@@ -116,6 +224,21 @@ export default function CheckoutPage() {
     } else if (checkoutStep === 'confirmation') {
       setCheckoutStep('info');
     }
+  };
+
+  const handleUseSuggestedAddress = () => {
+    if (addressValidationError.suggestedAddress) {
+      setCustomerInfo((prev) => ({
+        ...prev,
+        address: addressValidationError.suggestedAddress,
+      }));
+      setAddressValidationError({ show: false, message: '' });
+    }
+  };
+
+  const handleUseOriginalAddress = () => {
+    setAddressValidationError({ show: false, message: '' });
+    setCheckoutStep('confirmation');
   };
 
   const handleCheckout = async () => {
@@ -158,7 +281,6 @@ export default function CheckoutPage() {
     }
   };
 
-
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -191,6 +313,16 @@ export default function CheckoutPage() {
         </div>
       )}
 
+      {/* Address Validation Modal */}
+<AddressValidationModal
+  show={addressValidationError.show}
+  message={addressValidationError.message}
+  originalAddress={addressValidationError.originalAddress}
+  suggestedAddress={addressValidationError.suggestedAddress}
+  onUseSuggested={handleUseSuggestedAddress}
+  onUseOriginal={handleUseOriginalAddress}
+  onEditAddress={() => setAddressValidationError({ show: false, message: '' })}
+/>
       <div className="grid md:grid-cols-3 gap-10 mt-4">
         {/* Left side: Main Content */}
         <div className="md:col-span-2 space-y-4">
@@ -296,13 +428,107 @@ export default function CheckoutPage() {
                     <option value="pickup">Pickup</option>
                     <option value="delivery">Delivery</option>
                   </select>
-
-                  {customerInfo.deliveryMethod === 'delivery' && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      You'll be asked to provide your shipping address during payment.
-                    </p>
-                  )}
                 </div>
+
+                {customerInfo.deliveryMethod === 'delivery' && (
+                  <div className="border border-gray-200 rounded-md p-4 mb-6">
+                    <h3 className="font-medium text-gray-700 mb-3">Shipping Address</h3>
+                    
+                    <div className="mb-3">
+                      <label htmlFor="street1" className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address*
+                      </label>
+                      <input
+                        type="text"
+                        id="street1"
+                        name="street1"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        value={customerInfo.address?.street1 || ''}
+                        onChange={handleAddressChange}
+                        required={customerInfo.deliveryMethod === 'delivery'}
+                      />
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label htmlFor="street2" className="block text-sm font-medium text-gray-700 mb-1">
+                        Apartment, suite, etc. (optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="street2"
+                        name="street2"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        value={customerInfo.address?.street2 || ''}
+                        onChange={handleAddressChange}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div>
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                          City*
+                        </label>
+                        <input
+                          type="text"
+                          id="city"
+                          name="city"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={customerInfo.address?.city || ''}
+                          onChange={handleAddressChange}
+                          required={customerInfo.deliveryMethod === 'delivery'}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                          State/Province*
+                        </label>
+                        <input
+                          type="text"
+                          id="state"
+                          name="state"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={customerInfo.address?.state || ''}
+                          onChange={handleAddressChange}
+                          required={customerInfo.deliveryMethod === 'delivery'}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="zip" className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP/Postal Code*
+                        </label>
+                        <input
+                          type="text"
+                          id="zip"
+                          name="zip"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={customerInfo.address?.zip || ''}
+                          onChange={handleAddressChange}
+                          required={customerInfo.deliveryMethod === 'delivery'}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                          Country*
+                        </label>
+                        <select
+                          id="country"
+                          name="country"
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={customerInfo.address?.country || 'US'}
+                          onChange={handleAddressChange}
+                          required={customerInfo.deliveryMethod === 'delivery'}
+                        >
+                          <option value="US">United States</option>
+                          <option value="CA">Canada</option>
+                          <option value="MX">Mexico</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-between mt-6">
                   <button
@@ -314,9 +540,10 @@ export default function CheckoutPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    disabled={!isValid}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
                   >
-                    Continue to Confirmation
+                    {validatingAddress ? 'Validating Address...' : 'Continue to Confirmation'}
                   </button>
                 </div>
               </form>
@@ -335,10 +562,15 @@ export default function CheckoutPage() {
                   {customerInfo.phone && <p><span className="font-medium">Phone:</span> {customerInfo.phone}</p>}
                   <p><span className="font-medium">Delivery Method:</span> {customerInfo.deliveryMethod === 'pickup' ? 'Pickup' : 'Delivery'}</p>
 
-                  {customerInfo.deliveryMethod === 'delivery' && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      You'll enter your shipping address in the next step.
-                    </p>
+                  {customerInfo.deliveryMethod === 'delivery' && customerInfo.address && (
+                    <div className="mt-2">
+                      <p><span className="font-medium">Shipping Address:</span></p>
+                      <p className="ml-4">{customerInfo.address.street1}</p>
+                      {customerInfo.address.street2 && <p className="ml-4">{customerInfo.address.street2}</p>}
+                      <p className="ml-4">{customerInfo.address.city}, {customerInfo.address.state} {customerInfo.address.zip}</p>
+                      <p className="ml-4">{customerInfo.address.country}</p>
+                      <p className="mt-1"><span className="font-medium">Shipping Method:</span> {customerInfo.shippingMethod === 'standard' ? 'Standard Shipping' : 'Express Shipping'}</p>
+                    </div>
                   )}
                 </div>
               </div>

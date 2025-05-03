@@ -8,59 +8,30 @@ import { usePackageManagement } from '../hooks/usePackageManagement';
 import { useOrderActions } from '../hooks/useOrderActions'; 
 import { useOrderFilters } from '../hooks/useOrderFilters'; 
 
-
-
 /**
- * ManageOrders Component:
- * Main component for managing orders, including filtering, searching, selecting, and performing actions like exporting, printing, and marking orders as fulfilled.
- * 
- * State:
- * - activeFilter: Currently active filter for orders (e.g., ALL, PICKUP, PRIORITY, etc.).
- * - searchQuery: Current search query for filtering orders.
- * - selectedOrders: Set of selected order IDs for bulk actions.
- * - expandedOrder: ID of the currently expanded order to show details.
- * - searchResults: Array of orders matching the search query.
- * - isPackageModalOpen: Boolean state to control package details modal visibility.
- * - selectedForShipping: Array of order IDs selected for shipping label generation.
- * 
- * Props:
- * None (This is a standalone component).
- * 
- * Utilities/Functions:
- * - SortOrders: Utility to filter and sort orders based on active filter and search query.
- * - exportOrdersToCSV: Utility to export orders to a CSV file.
- * - generateReceiptPDF: Utility to generate and print receipts for selected orders.
- * - ProcessPickup: Utility to process pickup orders and mark them as fulfilled.
- * - printShippingLabels: Utility to print shipping labels for selected orders.
- * - fetchOrders: Utility to fetch orders from the API using SWR.
- * 
- * Subcomponents:
- * - Buttons: Component for action buttons (export, print, filter, etc.).
- * - OrderTables: Component for displaying and interacting with the orders table.
- * - SearchBar: Component for searching and filtering orders.
- * - PackageDetailsModal: Component for collecting package dimensions and weight.
- * 
- * Handlers:
- * - handleMarkAsFulfilled: Marks selected pickup orders as fulfilled.
- * - handleSelectOrder: Handles selecting/deselecting an individual order.
- * - handleSelectAll: Handles selecting/deselecting all orders.
- * - handlePrintShippingLabels: Prints shipping labels for selected orders.
- * - handleExportReport: Exports orders to a CSV file.
- * - handlePrintReceipt: Prints receipts for selected orders.
- * - handleToggleDetails: Toggles the expanded view of an order's details.
- * - getTimeElapsed: Calculates the time elapsed since an order was placed.
- * - handlePackageDetailsSubmit: Handles submission of package details for shipping labels.
- * 
- * Data Fetching:
- * - Uses SWR to fetch orders from the API with a refresh interval of 5 minutes.
- * 
- * Error Handling:
- * - Displays loading state while fetching orders.
- * - Displays error message if fetching orders fails.
- * 
- * Filter Buttons:
- * - Dynamically generates filter buttons with counts for different order statuses and types (e.g., All Orders, Pickup, Priority, etc.).
+ * Resolves shipping method strings into standardized display values.
+ * @param {string | undefined} method - The shipping method to normalize
+ * @returns {string} - The standardized shipping method display value
  */
+const resolveShippingMethod = (method?: string): string => {
+  if (!method) return '';
+  const lower = method.toLowerCase();
+
+  // Convert all these cases to 'Delivery'
+  if (
+    lower === 'standard' ||
+    lower.startsWith('rate_') ||
+    lower.startsWith('shr_') ||  // Added for rate IDs like Shr_1RD8KuBoMBkg4rm6KNjLVXsz
+    lower.includes('ground') ||
+    lower.includes('usps') ||
+    lower.includes('advantage')
+  ) {
+    return 'Delivery';
+  }
+
+  // Keep 'Pickup' or anything else unchanged (but capitalized)
+  return method.charAt(0).toUpperCase() + method.slice(1);
+};
 
 const ManageOrders = () => {
   const {
@@ -80,6 +51,12 @@ const ManageOrders = () => {
     handleSelectAll,
     handleToggleDetails,
   } = useOrderManagement();
+
+  // Pre-process orders to standardize shipping method display values
+  const processedOrders = (filteredOrders || []).map(order => ({
+    ...order,
+    shipping_method_display: resolveShippingMethod(order.shipping_method)
+  }));
 
   const {
     packageDetails,
@@ -126,7 +103,6 @@ const ManageOrders = () => {
         hasOnlyPickupOrders={hasOnlyPickupOrders}
         hasDeliveryOrders={hasDeliveryOrders}
       />
-      {/* Rest of the component remains the same */}
       <div className="mb-4">
         <SearchBar
           orders={orders}
@@ -137,7 +113,7 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders}
+        filteredOrders={processedOrders}
         selectedOrders={selectedOrders}
         expandedOrder={expandedOrder}
         handleSelectAll={handleSelectAll}
