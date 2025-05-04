@@ -219,8 +219,8 @@ export const FILTER_DEFINITIONS: FilterDefinition[] = [
     type: "checkbox",
     category: "certification_available",
     options: [
-      { value: "yes", label: "Yes" },
-      { value: "no", label: "No" },
+      { value: "Yes", label: "Yes" },
+      { value: "No", label: "No" },
     ],
   },
 ];
