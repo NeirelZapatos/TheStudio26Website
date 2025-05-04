@@ -347,7 +347,7 @@ const ItemFilters = ({ filter, setFilter }: FilterProps) => {
                   cut_category: [],
                   price: {
                     isCustom: false,
-                    range: [0, 500] as [number, number],
+                    range: [0, 100000] as [number, number],
                   },
                   searchTerm: "",
                 })

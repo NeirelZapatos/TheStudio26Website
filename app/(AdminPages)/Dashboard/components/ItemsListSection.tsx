@@ -34,7 +34,7 @@ const ItemsListSection: React.FC = () => {
     jewelry_type: [],
     essentials_type: [],
     cut_category: [],
-    price: { isCustom: false, range: [0, 500] as [number, number] },
+    price: { isCustom: false, range: [0, 100000] as [number, number] },
     searchTerm: "",
   });
 
