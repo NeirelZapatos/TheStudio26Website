@@ -58,24 +58,57 @@ export const getOrderMatchScore = (
 ): number => {
   if (!queryLower) return 0;
   
-  // 1. ORDER ID MATCHING (LEADING CHARACTERS ONLY)
-  const orderId = order._id.toString();
-  const isOrderIdSearch = /^[a-f0-9]{1,24}$/.test(queryLower);
-  if (orderId === queryTrimmed) return 10.0;
-  if (orderId.toLowerCase().startsWith(queryLower)) return 9.9;
-  if (isOrderIdSearch) return 0;
-
-  // 2. STRICT DATE MATCHING (MM/DD/YYYY)
+  // 1. CHECK FOR DATE MATCHING FIRST (ESPECIALLY FOR SINGLE DIGITS)
   const dateObj = new Date(order.order_date);
   const formattedDate = formatDateMMDDYYYY(dateObj);
-  const [month, day] = formattedDate.split('/');
-
+  const [month, day, year] = formattedDate.split('/');
+  
+  // Handle digit matches for day/month - including prefixes of order IDs
+  const dayNoZero = day.replace(/^0+/, '');
+  const monthNoZero = month.replace(/^0+/, '');
+  
+  // For short queries that might be parts of dates
+  if (queryLower.length <= 2) {
+    // Direct match with day or month as digits
+    if (queryLower === day || queryLower === month) return 9.0;
+    
+    // Match day or month with leading zeros removed
+    if (queryLower === dayNoZero || queryLower === monthNoZero) return 9.0;
+    
+    // For 2-digit years (e.g., "25" for 2025)
+    const yearLastTwo = year.slice(-2);
+    if (queryLower === yearLastTwo) return 8.5;
+  }
+  
+  // Full date matching
   if (formattedDate === queryLower) return 9.0;
   if (queryLower === month) return 9.0;
   if (queryLower === `${month}/`) return 8.9;
   if (queryLower === `${month}/${day}`) return 8.8;
   if (queryLower === `${month}/${day}/`) return 8.7;
   if (formattedDate.startsWith(queryLower)) return 8.6;
+  
+  // 2. ORDER ID MATCHING
+  const orderId = order._id.toString();
+  const orderIdLower = orderId.toLowerCase();
+  
+  // First, check for exact match with the full order ID
+  if (orderId === queryTrimmed) return 10.0;
+  
+  // Next, check if the query is a prefix of the order ID
+  if (orderIdLower.startsWith(queryLower)) {
+    // For short queries (1-2 chars), give a good score but don't make it exclusive
+    if (queryLower.length <= 2) {
+      return 9.5; // High score but allows date matches to compete
+    }
+    // For longer queries that look like hex strings, give higher priority
+    else if (/^[a-f0-9]+$/.test(queryLower)) {
+      return 9.9;
+    }
+  }
+  
+  // Skip other matches only for long hex strings (likely intentional ID search)
+  if (/^[a-f0-9]{4,24}$/.test(queryLower)) return 0;
 
   // 3. CUSTOMER NAME MATCHING (IMPROVED FUZZY LOGIC)
   const firstName = (order.customer?.first_name || '').toLowerCase();
