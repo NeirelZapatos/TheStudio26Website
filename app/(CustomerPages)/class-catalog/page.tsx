@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import ProductGrid from "./Components/ProductGrid";
 import CourseFilters from "./Components/CourseFilters";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import SearchBar from "@/app/(AdminPages)/Dashboard/components/productList/SearchBar";
 
 const SORT_OPTIONS = [
@@ -11,13 +11,6 @@ const SORT_OPTIONS = [
   { name: "Price: Low to High", value: "price-asc" },
   { name: "Price: High to Low", value: "price-desc" },
 ] as const;
-// Define multiple sets of prerequisites to choose from
-// const prerequisitesPool = [
-//   ["Basic metalsmithing skills", "Must be 18+ years old"],
-//   ["No prior experience required", "Familiarity with hand tools"],
-//   ["Basic jewelry design knowledge", "Comfortable with small materials"],
-//   ["Some experience with shaping metal", "An interest in ring design"],
-// ];
 
 interface FilterState {
   sort: string;
@@ -33,7 +26,7 @@ export default function StorePage() {
   const [courseFilter, setCourseFilter] = useState<FilterState>({
     sort: "none",
     class_category: "all",
-    price: { isCustom: false, range: [0, 500] as [number, number] },
+    price: { isCustom: false, range: [0, 100000] as [number, number] },
     searchTerm: "",
   });
 
@@ -91,27 +84,21 @@ export default function StorePage() {
             </ul>
           </div>
 
-          {/* Mobile filter drawer trigger button */}
-          <label htmlFor="mobile-filter-drawer" className="drawer-button btn btn-ghost lg:hidden ml-2">
-            <Filter className="h-5 w-5" />
-            <span className="sr-only">Filters</span>
+          {/* Mobile filter button */}
+          <label
+            htmlFor="filter-drawer"
+            className="btn btn-ghost lg:hidden ml-4"
+          >
+            <SlidersHorizontal />
           </label>
         </div>
       </div>
 
       <section className="pb-24 pt-6">
-        {/* Main content with drawer wrapper */}
-        <div className="drawer lg:drawer-open">
-          <input id="mobile-filter-drawer" type="checkbox" className="drawer-toggle" />
-          
-          {/* Drawer content */}
-          <div className="drawer-side z-20 lg:relative">
-            <label htmlFor="mobile-filter-drawer" className="drawer-overlay lg:hidden"></label>
-            <div className="w-80 min-h-full bg-base-100 text-base-content pt-4 px-4 lg:pt-0">
-              <div className="flex justify-between items-center lg:hidden mb-4">
-                <h2 className="text-lg font-medium">Filters</h2>
-                <label htmlFor="mobile-filter-drawer" className="btn btn-sm btn-ghost">✕</label>
-              </div>
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+          {/* Desktop Filters */}
+          <div className="hidden sticky top-20 h-[calc(100vh-6rem)] overflow-y-auto lg:block">
+            <div className="mb-3 mr-4">
               <SearchBar
                 onSearch={(searchTerm: string) => {
                   setCourseFilter((prev) => ({
@@ -122,35 +109,55 @@ export default function StorePage() {
                 className="mb-6"
                 placeholder="Search courses..."
               />
-              <CourseFilters
-                courseFilter={courseFilter}
-                setCourseFilter={setCourseFilter}
-              />
             </div>
+            <CourseFilters
+              courseFilter={courseFilter}
+              setCourseFilter={setCourseFilter}
+            />
           </div>
-          
-          {/* Main content */}
-          <div className="drawer-content">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10">
-              {/* Only shown on mobile */}
-              {/* <div className="lg:hidden mb-4">
-                <SearchBar
-                  onSearch={(searchTerm: string) => {
-                    setCourseFilter((prev) => ({
-                      ...prev,
-                      searchTerm,
-                    }));
-                  }}
-                  className="w-full"
-                  placeholder="Search courses..."
+
+          {/* Mobile Drawer */}
+          <div className="drawer drawer-end lg:hidden z-50">
+            <input
+              id="filter-drawer"
+              type="checkbox"
+              className="drawer-toggle"
+            />
+            <div className="drawer-side">
+              <label htmlFor="filter-drawer" className="drawer-overlay"></label>
+              <div className="p-4 w-80 min-h-full bg-base-200">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Filters</h2>
+                  <label
+                    htmlFor="filter-drawer"
+                    className="btn btn-ghost btn-circle"
+                  >
+                    ✕
+                  </label>
+                </div>
+                <div className="mb-4">
+                  <SearchBar
+                    onSearch={(searchTerm: string) => {
+                      setCourseFilter((prev) => ({
+                        ...prev,
+                        searchTerm,
+                      }));
+                    }}
+                    className="mb-6"
+                    placeholder="Search courses..."
+                  />
+                </div>
+                <CourseFilters
+                  courseFilter={courseFilter}
+                  setCourseFilter={setCourseFilter}
                 />
-              </div> */}
-              
-              {/* Product grid */}
-              <div className="w-full">
-                <ProductGrid filter={courseFilter} />
               </div>
             </div>
+          </div>
+
+          {/* Product Grid */}
+          <div className="lg:col-span-3">
+            <ProductGrid filter={courseFilter} />
           </div>
         </div>
       </section>
