@@ -32,6 +32,7 @@ interface OrderActionsReturn {
   handlePrintReceipt: () => void;
   getTimeElapsed: (orderDate: string) => string;
   hasOnlyPickupOrders: () => boolean;
+  hasOnlyDeliveryOrders: () => boolean; // New function
   hasDeliveryOrders: () => boolean;
 }
 
@@ -61,6 +62,17 @@ export const useOrderActions = (
     
     const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
     return selectedOrdersData.some(order => isDeliveryOrder(order));
+  };
+
+  // NEW FUNCTION: Check if all selected orders are delivery orders
+  const hasOnlyDeliveryOrders = (): boolean => {
+    if (!orders) return false;
+    
+    const selectedOrderIds = Array.from(selectedOrders);
+    if (selectedOrderIds.length === 0) return false;
+    
+    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+    return selectedOrdersData.every(order => isDeliveryOrder(order));
   };
 
   const handleMarkAsFulfilled = async (): Promise<void> => {
@@ -124,6 +136,7 @@ export const useOrderActions = (
     handlePrintReceipt,
     getTimeElapsed,
     hasOnlyPickupOrders,
+    hasOnlyDeliveryOrders, // Added new function to return object
     hasDeliveryOrders
   };
 };

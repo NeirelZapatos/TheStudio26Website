@@ -75,9 +75,10 @@ const ManageOrders = () => {
     handlePrintReceipt,
     getTimeElapsed,
     hasOnlyPickupOrders,
+    hasOnlyDeliveryOrders, // Make sure this is correctly destructured
     hasDeliveryOrders
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
-
+  
   const { filterButtons } = useOrderFilters(orders || []);
 
   if (!orders) {
@@ -91,18 +92,19 @@ const ManageOrders = () => {
   return (
     <div className="space-y-6">
       <Buttons
-        selectedOrdersSize={selectedOrders.size}
-        selectedOrders={selectedOrders}
-        filterButtons={filterButtons}
-        activeFilter={activeFilter}
-        setActiveFilter={(filter) => setActiveFilter(filter)}
-        handlePrintShippingLabels={handlePrintShippingLabels}
-        handlePrintReceipt={handlePrintReceipt}
-        handleMarkAsFulfilled={handleMarkAsFulfilled}
-        orders={orders || []}
-        hasOnlyPickupOrders={hasOnlyPickupOrders}
-        hasDeliveryOrders={hasDeliveryOrders}
-      />
+  selectedOrdersSize={selectedOrders.size}
+  selectedOrders={selectedOrders}
+  filterButtons={filterButtons}
+  activeFilter={activeFilter}
+  setActiveFilter={(filter) => setActiveFilter(filter)}
+  handlePrintShippingLabels={handlePrintShippingLabels}
+  handlePrintReceipt={handlePrintReceipt}
+  handleMarkAsFulfilled={handleMarkAsFulfilled}
+  orders={orders || []}
+  hasOnlyPickupOrders={hasOnlyPickupOrders}
+  hasOnlyDeliveryOrders={hasOnlyDeliveryOrders} // Make sure this is being passed properly
+  hasDeliveryOrders={hasDeliveryOrders}
+/>
       <div className="mb-4">
         <SearchBar
           orders={orders}

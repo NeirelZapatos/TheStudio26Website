@@ -17,6 +17,9 @@ import { OrderFilter } from'@/utils/filterUtils/filterOrders'; // Import OrderFi
  * - handlePrintReceipt: Function to print receipts.
  * - handleMarkAsFulfilled: Function to mark orders as fulfilled.
  * - orders: Array of orders.
+ * - hasOnlyPickupOrders: Function that returns true if all selected orders are pickup orders.
+ * - hasOnlyDeliveryOrders: Function that returns true if all selected orders are delivery orders.
+ * - hasDeliveryOrders: Function that returns true if any selected order is a delivery order.
  */
 
 const Buttons: React.FC<{
@@ -30,6 +33,7 @@ const Buttons: React.FC<{
   handleMarkAsFulfilled: () => void;
   orders: IOrder[];
   hasOnlyPickupOrders: () => boolean;
+  hasOnlyDeliveryOrders: () => boolean; // Added new prop
   hasDeliveryOrders: () => boolean;
 }> = ({
   selectedOrdersSize,
@@ -41,6 +45,7 @@ const Buttons: React.FC<{
   handleMarkAsFulfilled,
   orders,
   hasOnlyPickupOrders,
+  hasOnlyDeliveryOrders, // Added to destructuring
   hasDeliveryOrders
 }) => {
   const filterIcons: Record<OrderFilter, JSX.Element> = {
@@ -53,7 +58,8 @@ const Buttons: React.FC<{
   };
 
   // Check conditions for button activation
-  const canPrintShippingLabels = selectedOrdersSize > 0 && hasDeliveryOrders();
+  // Make sure hasOnlyDeliveryOrders is defined before using it
+  const canPrintShippingLabels = selectedOrdersSize > 0 && (typeof hasOnlyDeliveryOrders === 'function' ? hasOnlyDeliveryOrders() : false);
   const canMarkAsFulfilled = selectedOrdersSize > 0 && hasOnlyPickupOrders();
 
   return (
