@@ -115,15 +115,15 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={processedOrders}
-        selectedOrders={selectedOrders}
-        expandedOrder={expandedOrder}
-        handleSelectAll={handleSelectAll}
-        handleSelectOrder={handleSelectOrder}
-        handleToggleDetails={handleToggleDetails}
-        getTimeElapsed={getTimeElapsed}
-        searchQuery={searchQuery}
-      />
+  filteredOrders={filteredOrders} // Use original filteredOrders instead of processedOrders
+  selectedOrders={selectedOrders}
+  expandedOrder={expandedOrder}
+  handleSelectAll={handleSelectAll}
+  handleSelectOrder={handleSelectOrder}
+  handleToggleDetails={handleToggleDetails}
+  getTimeElapsed={getTimeElapsed}
+  searchQuery={searchQuery}
+/>
 
       <PackageDetailsModal
         isOpen={isPackageModalOpen}

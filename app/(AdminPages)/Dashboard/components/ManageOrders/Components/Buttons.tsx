@@ -33,7 +33,7 @@ const Buttons: React.FC<{
   handleMarkAsFulfilled: () => void;
   orders: IOrder[];
   hasOnlyPickupOrders: () => boolean;
-  hasOnlyDeliveryOrders: () => boolean; // Added new prop
+  hasOnlyDeliveryOrders: () => boolean; 
   hasDeliveryOrders: () => boolean;
 }> = ({
   selectedOrdersSize,
@@ -45,8 +45,7 @@ const Buttons: React.FC<{
   handleMarkAsFulfilled,
   orders,
   hasOnlyPickupOrders,
-  hasOnlyDeliveryOrders, // Added to destructuring
-  hasDeliveryOrders
+  hasOnlyDeliveryOrders, 
 }) => {
   const filterIcons: Record<OrderFilter, JSX.Element> = {
     [OrderFilter.PRIORITY]: <AlertCircle size={24} />,

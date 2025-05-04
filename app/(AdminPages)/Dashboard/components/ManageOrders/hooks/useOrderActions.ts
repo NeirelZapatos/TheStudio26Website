@@ -5,8 +5,19 @@ import generateReceiptPDF from '@/utils/docUtils/GenerateReceipt';
 import { IOrder } from '@/app/models/Order';
 
 /**
- * Helper function to standardize shipping method detection
+ * Helper function to check if an order is in pending state
  */
+const isPendingOrder = (order: IOrder): boolean => {
+  if (!order.order_status) return true; 
+  const status = order.order_status.toLowerCase();
+  return status === 'pending';
+};
+
+const isShippableOrder = (order: IOrder): boolean => {
+  // An order is shippable if it's a delivery order and it's in pending status
+  return isDeliveryOrder(order) && isPendingOrder(order);
+};
+
 const isPickupOrder = (order: IOrder): boolean => {
   if (!order.shipping_method) return false;
   const method = order.shipping_method.toLowerCase();
@@ -30,10 +41,12 @@ interface OrderActionsReturn {
   handleMarkAsFulfilled: () => Promise<void>;
   handleExportReport: () => void;
   handlePrintReceipt: () => void;
+  handlePrintShippingLabels?: () => void; // Add this function
   getTimeElapsed: (orderDate: string) => string;
   hasOnlyPickupOrders: () => boolean;
-  hasOnlyDeliveryOrders: () => boolean; // New function
   hasDeliveryOrders: () => boolean;
+  hasOnlyDeliveryOrders: () => boolean; // Add this function to fix the error
+  hasOnlyShippableOrders: () => boolean;
 }
 
 export const useOrderActions = (
@@ -64,7 +77,7 @@ export const useOrderActions = (
     return selectedOrdersData.some(order => isDeliveryOrder(order));
   };
 
-  // NEW FUNCTION: Check if all selected orders are delivery orders
+  // Check if all selected orders are delivery orders (fix for hasOnlyDeliveryOrders error)
   const hasOnlyDeliveryOrders = (): boolean => {
     if (!orders) return false;
     
@@ -73,6 +86,17 @@ export const useOrderActions = (
     
     const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
     return selectedOrdersData.every(order => isDeliveryOrder(order));
+  };
+
+  // Check if all selected orders are delivery orders AND pending
+  const hasOnlyShippableOrders = (): boolean => {
+    if (!orders) return false;
+    
+    const selectedOrderIds = Array.from(selectedOrders);
+    if (selectedOrderIds.length === 0) return false;
+    
+    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+    return selectedOrdersData.every(order => isShippableOrder(order));
   };
 
   const handleMarkAsFulfilled = async (): Promise<void> => {
@@ -116,6 +140,29 @@ export const useOrderActions = (
     }
   };
 
+  // Add the print shipping labels function that only works on delivery + pending orders
+  const handlePrintShippingLabels = (): void => {
+    if (!orders) return;
+    
+    const selectedOrderIds = Array.from(selectedOrders);
+    const selectedOrdersData = orders.filter(order => selectedOrderIds.includes(order._id.toString()));
+    
+    // Double-check that all selected orders are delivery orders and pending
+    if (!selectedOrdersData.every(order => isShippableOrder(order))) {
+      alert('Can only print shipping labels for pending delivery orders.');
+      return;
+    }
+    
+    // Implement your shipping label printing logic here
+    // This is a placeholder implementation
+    alert('Printing shipping labels for selected delivery orders');
+    
+    // Example implementation:
+    // selectedOrdersData.forEach(order => {
+    //   generateShippingLabel(order);
+    // });
+  };
+
   const getTimeElapsed = (orderDate: string): string => {
     const orderTime = new Date(orderDate).getTime();
     const now = Date.now();
@@ -134,9 +181,11 @@ export const useOrderActions = (
     handleMarkAsFulfilled,
     handleExportReport,
     handlePrintReceipt,
+    handlePrintShippingLabels, // Add this to the return value
     getTimeElapsed,
     hasOnlyPickupOrders,
-    hasOnlyDeliveryOrders, // Added new function to return object
-    hasDeliveryOrders
+    hasDeliveryOrders,
+    hasOnlyDeliveryOrders, // Add this to the return value to fix the error
+    hasOnlyShippableOrders,
   };
 };
