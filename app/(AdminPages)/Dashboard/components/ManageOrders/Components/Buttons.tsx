@@ -2,6 +2,8 @@ import { CheckCircle, CheckSquare, DownloadIcon, Receipt, ShoppingBag, Truck, Cl
 import exportOrdersToCSV from '@/utils/docUtils/ExportReport'; // Import exportOrdersToCSV utility
 import { IOrder } from "@/app/models/Order"; // Import IOrder interface
 import { OrderFilter } from'@/utils/filterUtils/filterOrders'; // Import OrderFilter enum
+import { Tags } from "lucide-react";
+
 
 /**
  * Buttons Component:
@@ -20,6 +22,7 @@ import { OrderFilter } from'@/utils/filterUtils/filterOrders'; // Import OrderFi
  * - hasOnlyPickupOrders: Function that returns true if all selected orders are pickup orders.
  * - hasOnlyDeliveryOrders: Function that returns true if all selected orders are delivery orders.
  * - hasDeliveryOrders: Function that returns true if any selected order is a delivery order.
+ * - hasOnlyShippableOrders: Function that returns true if all selected orders are delivery and pending.
  */
 
 const Buttons: React.FC<{
@@ -35,6 +38,7 @@ const Buttons: React.FC<{
   hasOnlyPickupOrders: () => boolean;
   hasOnlyDeliveryOrders: () => boolean; 
   hasDeliveryOrders: () => boolean;
+  hasOnlyShippableOrders: () => boolean; // Added the missing prop
 }> = ({
   selectedOrdersSize,
   filterButtons,
@@ -45,7 +49,9 @@ const Buttons: React.FC<{
   handleMarkAsFulfilled,
   orders,
   hasOnlyPickupOrders,
-  hasOnlyDeliveryOrders, 
+  hasOnlyDeliveryOrders,
+  hasDeliveryOrders, // Add this to the destructured props
+  hasOnlyShippableOrders, // Add this to the destructured props
 }) => {
   const filterIcons: Record<OrderFilter, JSX.Element> = {
     [OrderFilter.PRIORITY]: <AlertCircle size={24} />,
@@ -57,8 +63,8 @@ const Buttons: React.FC<{
   };
 
   // Check conditions for button activation
-  // Make sure hasOnlyDeliveryOrders is defined before using it
-  const canPrintShippingLabels = selectedOrdersSize > 0 && (typeof hasOnlyDeliveryOrders === 'function' ? hasOnlyDeliveryOrders() : false);
+  // Updated to use hasOnlyShippableOrders for shipping labels
+  const canPrintShippingLabels = selectedOrdersSize > 0 && hasOnlyShippableOrders();
   const canMarkAsFulfilled = selectedOrdersSize > 0 && hasOnlyPickupOrders();
 
   return (
@@ -89,7 +95,8 @@ const Buttons: React.FC<{
                 : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
           >
-            🏷️ Print Shipping Labels ({selectedOrdersSize})
+            <Tags size={24} />
+            Print Shipping Labels ({selectedOrdersSize})
           </button>
 
           <button

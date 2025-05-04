@@ -75,8 +75,9 @@ const ManageOrders = () => {
     handlePrintReceipt,
     getTimeElapsed,
     hasOnlyPickupOrders,
-    hasOnlyDeliveryOrders, // Make sure this is correctly destructured
-    hasDeliveryOrders
+    hasOnlyDeliveryOrders,
+    hasDeliveryOrders,
+    hasOnlyShippableOrders // Use this function to check if all selected orders are delivery + pending
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
   
   const { filterButtons } = useOrderFilters(orders || []);
@@ -92,19 +93,20 @@ const ManageOrders = () => {
   return (
     <div className="space-y-6">
       <Buttons
-  selectedOrdersSize={selectedOrders.size}
-  selectedOrders={selectedOrders}
-  filterButtons={filterButtons}
-  activeFilter={activeFilter}
-  setActiveFilter={(filter) => setActiveFilter(filter)}
-  handlePrintShippingLabels={handlePrintShippingLabels}
-  handlePrintReceipt={handlePrintReceipt}
-  handleMarkAsFulfilled={handleMarkAsFulfilled}
-  orders={orders || []}
-  hasOnlyPickupOrders={hasOnlyPickupOrders}
-  hasOnlyDeliveryOrders={hasOnlyDeliveryOrders} // Make sure this is being passed properly
-  hasDeliveryOrders={hasDeliveryOrders}
-/>
+        selectedOrdersSize={selectedOrders.size}
+        selectedOrders={selectedOrders}
+        filterButtons={filterButtons}
+        activeFilter={activeFilter}
+        setActiveFilter={(filter) => setActiveFilter(filter)}
+        handlePrintShippingLabels={handlePrintShippingLabels}
+        handlePrintReceipt={handlePrintReceipt}
+        handleMarkAsFulfilled={handleMarkAsFulfilled}
+        orders={orders || []}
+        hasOnlyPickupOrders={hasOnlyPickupOrders}
+        hasOnlyDeliveryOrders={hasOnlyDeliveryOrders}
+        hasDeliveryOrders={hasDeliveryOrders}
+        hasOnlyShippableOrders={hasOnlyShippableOrders} // Pass this function to Buttons
+      />
       <div className="mb-4">
         <SearchBar
           orders={orders}
@@ -115,15 +117,15 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-  filteredOrders={filteredOrders} // Use original filteredOrders instead of processedOrders
-  selectedOrders={selectedOrders}
-  expandedOrder={expandedOrder}
-  handleSelectAll={handleSelectAll}
-  handleSelectOrder={handleSelectOrder}
-  handleToggleDetails={handleToggleDetails}
-  getTimeElapsed={getTimeElapsed}
-  searchQuery={searchQuery}
-/>
+        filteredOrders={filteredOrders} // Use original filteredOrders instead of processedOrders
+        selectedOrders={selectedOrders}
+        expandedOrder={expandedOrder}
+        handleSelectAll={handleSelectAll}
+        handleSelectOrder={handleSelectOrder}
+        handleToggleDetails={handleToggleDetails}
+        getTimeElapsed={getTimeElapsed}
+        searchQuery={searchQuery}
+      />
 
       <PackageDetailsModal
         isOpen={isPackageModalOpen}
