@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import schema from "../schema";
 import dbConnect from "@/app/lib/dbConnect";
 import Customer from "@/app/models/Customer";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 // Adding a new customer
 export async function POST(request: NextRequest) {
@@ -31,6 +33,11 @@ export async function POST(request: NextRequest) {
 
 // Editing information of an existing user
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         await dbConnect();
 
@@ -97,6 +104,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 // Delete an existing user
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+    //protect
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    
     try {
         await dbConnect();
 

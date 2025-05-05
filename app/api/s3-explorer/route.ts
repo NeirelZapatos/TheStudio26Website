@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function GET(request: NextRequest) {
+  //protect 
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const bucket = searchParams.get('bucket');
   const prefix = searchParams.get('prefix') || '';

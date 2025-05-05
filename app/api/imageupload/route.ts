@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { uploadFileToS3 } from "@/utils/s3";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function POST(request: Request) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;

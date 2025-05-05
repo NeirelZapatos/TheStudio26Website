@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import dbConnect from '@/app/lib/dbConnect';
 import Subscriber from '@/app/models/Subscriber';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 // Nodemailer transporter configuration
 const transporter = nodemailer.createTransport({
@@ -13,6 +15,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function POST(request) {
+  // protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     await dbConnect();
 

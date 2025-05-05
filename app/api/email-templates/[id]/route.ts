@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from "@/app/lib/dbConnect";
 import EmailTemplate from '@/app/models/EmailTemplate';
 import mongoose from 'mongoose';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  //protect
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = params;
   
   // Validate ID format
@@ -39,9 +47,15 @@ export async function GET(
 }
 
 export async function PUT(
+  //protect
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = params;
   
   // Validate ID format
@@ -85,6 +99,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = params;
   
   // Validate ID format
