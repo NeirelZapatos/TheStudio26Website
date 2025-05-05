@@ -43,13 +43,10 @@ const generatePlaceholderLabels = (timeFrame: string): string[] => {
 
 const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ category, salesData, timeFrame }) => {
   const safeSalesData = salesData ?? {};
-  const dataLabels = Object.keys(safeSalesData).sort();
-  const dataValues = dataLabels.map(label => safeSalesData[label]);
 
-  const labelsToUse = dataLabels.length >= 3 ? dataLabels : generatePlaceholderLabels(timeFrame);
-  const valuesToUse = dataLabels.length >= 3
-    ? dataValues
-    : labelsToUse.map(label => safeSalesData[label] ?? 0);
+  //generate three consistent labels for the chart
+  const labelsToUse = generatePlaceholderLabels(timeFrame);
+  const valuesToUse = labelsToUse.map((label) => safeSalesData[label] || 0);
 
   const isUpwardTrend = valuesToUse.length > 1 && valuesToUse.at(-1)! >= valuesToUse[0];
   const trendColor = isUpwardTrend ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)";

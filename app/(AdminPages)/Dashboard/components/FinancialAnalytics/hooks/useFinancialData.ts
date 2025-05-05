@@ -140,7 +140,7 @@ const useFinancialData = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/category-sales-trend?startDate=${startDate}&endDate=${endDate}`);
+        const res = await fetch(`/api/category-sales-trend?startDate=${startDate}&endDate=${endDate}&timeFrame=${timeFrame}`);
         if (!res.ok) throw new Error("Failed to fetch category sales");
         const data = await res.json();
         setCategorySales(data.categorySales);
