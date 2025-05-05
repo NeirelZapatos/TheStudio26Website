@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { IOrder } from '@/app/models/Order';
-import { 
-  Store, 
+import {  
   Truck, 
   Calendar,
   Package,
@@ -22,12 +21,12 @@ const resolveShippingMethod = (method?: string): string => {
   if (
     lower === 'standard' ||
     lower.startsWith('rate_') ||
-    lower.startsWith('shr_') ||  // This will catch 'Shr_1RD8KuBoMBkg4rm6KNjLVXsz'
-    lower.includes('ground') ||
+    lower.startsWith('shr_') ||  
+    lower.includes('ground') || 
     lower.includes('usps') ||
     lower.includes('advantage')
   ) {
-    return 'Delivery';  // Changed from 'Delivery' to 'Delivery Method'
+    return 'Delivery';  
   }
 
   // Keep 'Pickup' or anything else unchanged (but capitalized)
@@ -59,10 +58,7 @@ const OrderTables: React.FC<{
   handleSelectOrder,
   handleToggleDetails,
   getTimeElapsed,
-  searchQuery,
 }) => {
-  const [isPackageModalOpen, setPackageModalOpen] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
 
   const getCustomerName = (order: IOrder): string => {
     if (!order.customer) return 'N/A';
@@ -203,7 +199,6 @@ const OrderTables: React.FC<{
                             <div><strong>Order Date:</strong> {new Date(order.order_date).toLocaleDateString()}</div>
                             <div><strong>Shipping Method:</strong> {displayShippingMethod}</div>
                             <div><strong>Payment Method:</strong> {order.payment_method}</div>
-                            <div><strong>Shipping Method:</strong> {displayShippingMethod}</div>
                             <div className="col-span-2"><strong>Shipping Address:</strong> {order.shipping_address}</div>
                             <div className="col-span-2"><strong>Billing Address:</strong> {order.billing_address}</div>
                             <div className="col-span-2"><strong>Total Amount:</strong> ${order.total_amount}</div>
@@ -269,6 +264,6 @@ const OrderTables: React.FC<{
       </div>
     </>
   );
-};
-
-export default OrderTables;
+}
+  
+  export default OrderTables;

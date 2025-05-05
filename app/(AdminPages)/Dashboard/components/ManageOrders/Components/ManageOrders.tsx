@@ -53,10 +53,10 @@ const ManageOrders = () => {
   } = useOrderManagement();
 
   // Pre-process orders to standardize shipping method display values
-  const processedOrders = (filteredOrders || []).map(order => ({
-    ...order,
-    shipping_method_display: resolveShippingMethod(order.shipping_method)
-  }));
+  //const processedOrders = (filteredOrders || []).map(order => ({
+  //  ...order,
+ //   shipping_method_display: resolveShippingMethod(order.shipping_method)
+//  }));
 
   const {
     packageDetails,
@@ -77,7 +77,7 @@ const ManageOrders = () => {
     hasOnlyPickupOrders,
     hasOnlyDeliveryOrders,
     hasDeliveryOrders,
-    hasOnlyShippableOrders // Use this function to check if all selected orders are delivery + pending
+    hasOnlyShippableOrders 
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
   
   const { filterButtons } = useOrderFilters(orders || []);
@@ -105,7 +105,7 @@ const ManageOrders = () => {
         hasOnlyPickupOrders={hasOnlyPickupOrders}
         hasOnlyDeliveryOrders={hasOnlyDeliveryOrders}
         hasDeliveryOrders={hasDeliveryOrders}
-        hasOnlyShippableOrders={hasOnlyShippableOrders} // Pass this function to Buttons
+        hasOnlyShippableOrders={hasOnlyShippableOrders} 
       />
       <div className="mb-4">
         <SearchBar
@@ -117,7 +117,7 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders} // Use original filteredOrders instead of processedOrders
+        filteredOrders={filteredOrders} 
         selectedOrders={selectedOrders}
         expandedOrder={expandedOrder}
         handleSelectAll={handleSelectAll}
