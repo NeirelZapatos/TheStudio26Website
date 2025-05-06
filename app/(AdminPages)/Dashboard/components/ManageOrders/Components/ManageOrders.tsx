@@ -1,12 +1,23 @@
-import React from 'react'; // Import React and useState hook
+import React, { useState, Suspense } from 'react'; // Added Suspense
+import dynamic from 'next/dynamic'; // Added dynamic import
 import Buttons from './Buttons'; // Import Buttons component
 import OrderTables from './OrderTables'; // Import OrderTables component
 import SearchBar from './SearchBar'; // Import SearchBar component
-import PackageDetailsModal from '@/app/(AdminPages)/Dashboard/components/ManageOrders/Components/PackageDetailsModal';  
+// COMMENTED OUT: Direct import of modal
+// import PackageDetailsModal from '@/app/(AdminPages)/Dashboard/components/ManageOrders/Components/PackageDetailsModal';  
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { usePackageManagement } from '../hooks/usePackageManagement';
 import { useOrderActions } from '../hooks/useOrderActions'; 
 import { useOrderFilters } from '../hooks/useOrderFilters'; 
+
+// ADDED: Dynamic import for PackageDetailsModal
+const PackageDetailsModal = dynamic(() => 
+  import('@/app/(AdminPages)/Dashboard/components/ManageOrders/Components/PackageDetailsModal'),
+  { 
+    ssr: false,
+    loading: () => <div className="flex justify-center items-center">Loading modal...</div>
+  }
+);
 
 /**
  * Resolves shipping method strings into standardized display values.
@@ -52,11 +63,11 @@ const ManageOrders = () => {
     handleToggleDetails,
   } = useOrderManagement();
 
-  // Pre-process orders to standardize shipping method display values
-  //const processedOrders = (filteredOrders || []).map(order => ({
-  //  ...order,
- //   shipping_method_display: resolveShippingMethod(order.shipping_method)
-//  }));
+  // COMMENTED OUT: Pre-processing of orders
+  // const processedOrders = (filteredOrders || []).map(order => ({
+  //   ...order,
+  //   shipping_method_display: resolveShippingMethod(order.shipping_method)
+  // }));
 
   const {
     packageDetails,
@@ -127,20 +138,25 @@ const ManageOrders = () => {
         searchQuery={searchQuery}
       />
 
-      <PackageDetailsModal
-        isOpen={isPackageModalOpen}
-        onClose={() => setPackageModalOpen(false)}
-        onSubmit={handlePackageDetailsSubmit}
-        initialValues={packageDetails[currentPackageIndex] || undefined}
-        currentPackageIndex={currentPackageIndex}
-        totalPackages={selectedOrders.size}
-        onPrevious={() => setCurrentPackageIndex(currentPackageIndex - 1)}
-        onNext={() => setCurrentPackageIndex(currentPackageIndex + 1)}
-        customerName={`${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.first_name || 'N/A'} ${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.last_name || ''}`}
-        orderId={Array.from(selectedOrders)[currentPackageIndex]}
-        modifiedDetails={modifiedDetails}
-        handleTemporaryUpdate={handleTemporaryUpdate}
-      />
+      {/* ADDED: Wrap modal in Suspense for better loading experience */}
+      <Suspense fallback={<div className="flex justify-center items-center">Loading package details...</div>}>
+        {isPackageModalOpen && (
+          <PackageDetailsModal
+            isOpen={isPackageModalOpen}
+            onClose={() => setPackageModalOpen(false)}
+            onSubmit={handlePackageDetailsSubmit}
+            initialValues={packageDetails[currentPackageIndex] || undefined}
+            currentPackageIndex={currentPackageIndex}
+            totalPackages={selectedOrders.size}
+            onPrevious={() => setCurrentPackageIndex(currentPackageIndex - 1)}
+            onNext={() => setCurrentPackageIndex(currentPackageIndex + 1)}
+            customerName={`${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.first_name || 'N/A'} ${orders.find(order => order._id.toString() === Array.from(selectedOrders)[currentPackageIndex])?.customer?.last_name || ''}`}
+            orderId={Array.from(selectedOrders)[currentPackageIndex]}
+            modifiedDetails={modifiedDetails}
+            handleTemporaryUpdate={handleTemporaryUpdate}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };
