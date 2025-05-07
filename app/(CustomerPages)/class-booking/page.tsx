@@ -73,6 +73,12 @@ function ClassBookingPage() {
     }
   };
 
+  const isClassInPast = (classDate: string): boolean => {
+    const today = new Date();
+    const classDateObj = new Date(classDate);
+    return classDateObj < today;
+  };
+
   // const formatPhoneNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const input = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
   //   const { name, value } = e.target;
@@ -276,13 +282,13 @@ function ClassBookingPage() {
   const totalPrice = classDetails.price * contactInfo.participants;
 
   const formattedTime = classDetails.time
-  ? new Date(`1970-01-01T${classDetails.time}`).toLocaleTimeString("en-US", {
+    ? new Date(`1970-01-01T${classDetails.time}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     })
-  : null;
-  
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto p-4">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Book Your Class</h1>
@@ -516,10 +522,16 @@ function ClassBookingPage() {
 
             <button
               onClick={handleSubmit}
-              disabled={isProcessing || availableSpots === 0}
+              disabled={isProcessing || availableSpots === 0 || isClassInPast(classDetails.date)}
               className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
-              {isProcessing ? 'Processing...' : 'Book Now'}
+              {isProcessing
+                ? 'Processing...'
+                : availableSpots === 0
+                  ? 'Class Fully Booked'
+                  : isClassInPast(classDetails.date)
+                    ? 'Class Date Passed'
+                    : 'Book Now'}
             </button>
 
             {availableSpots === 0 && (
