@@ -9,24 +9,27 @@ const useImageUpload = () => {
         if (event.target.files && event.target.files.length > 0) {
             const selectedFiles = Array.from(event.target.files); // Convert FileList to array
 
-            // Generate preview URLs for the new files
+            const invalidFiles = selectedFiles.filter((file) => file.name.includes(" "));
+            if (invalidFiles.length > 0) {
+                alert("File names cannot contain spaces. Please rename your files and try again.");
+                return -1; // Stop processing if invalid files are found
+            }
+
             const newPreviewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
-            const newFileNames = selectedFiles.map((file) => file.name.replace(/\s+/g, "-"));
 
             // Check if only image is placeholder
             const placeholderOnly =
-                previewUrls.length === 1 &&
-                previewUrls[0].includes("ProductPlaceholder");
+                previewUrls.length === 1 && previewUrls[0].includes("ProductPlaceholder");
 
             if (placeholderOnly) {
                 setFiles([...selectedFiles]);
                 setPreviewUrls([...newPreviewUrls]);
+                return newPreviewUrls.length - 1; // Return the index of the last image
             } else {
                 setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
                 setPreviewUrls((prevUrls) => [...prevUrls, ...newPreviewUrls]);
+                return previewUrls.length + newPreviewUrls.length - 1; // Return the index of the last image
             }
-
-            return placeholderOnly ? 0 : previewUrls.length;
         }
         return -1;
     };
