@@ -73,7 +73,7 @@ export const usePackageManagement = (
     
     setPackageDetails(newPackageDetails);
     
-    // Only when Print button is clicked, print the labels
+    // Only when the last package details are submitted, print the labels
     printLabels(newPackageDetails);
     setPackageModalOpen(false);
     setCurrentPackageIndex(0);
