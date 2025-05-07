@@ -47,9 +47,8 @@ export default function Page() {
 
   // Instructor list
   const instructorList = [
-    "Instructor 1",
-    "Instructor 2",
-    "Instructor 3",
+    "Master Dan",
+    "Ruben Lerma",
     "Other"
   ];
 
