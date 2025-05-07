@@ -6,7 +6,7 @@ import Shipping from '@/app/models/Shipping';
 // Initialize Shippo client (use test key for development)
 const SHIPPO_API_KEY = process.env.SHIPPO_TEST_KEY;
 const SHIPPO_TRACKING_URL = 'https://api.goshippo.com/tracks/';
-const SHIPPO_WEBHOOKS_URL = 'https://2de8-2600-1700-ef50-6e20-41ca-fd6c-f6a6-879b.ngrok-free.app/api/shipping/shippo-webhook';
+const SHIPPO_WEBHOOKS_URL = process.env.HTTPS_PACKAGE_TRACKING || '';
 
 // Helper function to register tracking with Shippo
 // Function to register tracking with Shippo
@@ -20,8 +20,13 @@ export async function registerTracking(trackingNumber: string, carrier: string, 
 
     console.log('[SHIPPO_OUTBOUND] Registering tracking:', JSON.stringify(requestBody, null, 2));
 
-    // Fetch API approach
-    const response = await fetch('https://api.goshippo.com/tracks/', {
+    // Ensure the API key is available
+    if (!process.env.SHIPPO_API_KEY) {
+      throw new Error('SHIPPO_API_KEY is not defined');
+    }
+
+    // Fetch API approach with fixed URL parameter
+    const response = await fetch(SHIPPO_TRACKING_URL, {
       method: 'POST',
       headers: {
         'Authorization': `ShippoToken ${process.env.SHIPPO_API_KEY}`,
@@ -54,9 +59,20 @@ export async function registerTracking(trackingNumber: string, carrier: string, 
     throw error;
   }
 }
+
 // Function to register a webhook subscription for all events
 export async function registerAllWebhooks(webhookUrl: string, isTest: boolean = false) {
   try {
+    // Check if webhook URL is defined
+    if (!SHIPPO_WEBHOOKS_URL) {
+      throw new Error('SHIPPO_WEBHOOKS_URL is not defined');
+    }
+
+    // Check if API key is defined
+    if (!SHIPPO_API_KEY) {
+      throw new Error('SHIPPO_API_KEY is not defined');
+    }
+
     const response = await fetch(SHIPPO_WEBHOOKS_URL, {
       method: 'POST',
       headers: {
@@ -85,6 +101,16 @@ export async function registerAllWebhooks(webhookUrl: string, isTest: boolean = 
 // Function to list all webhook subscriptions
 export async function listWebhooks() {
   try {
+    // Check if webhook URL is defined
+    if (!SHIPPO_WEBHOOKS_URL) {
+      throw new Error('SHIPPO_WEBHOOKS_URL is not defined');
+    }
+    
+    // Check if API key is defined
+    if (!SHIPPO_API_KEY) {
+      throw new Error('SHIPPO_API_KEY is not defined');
+    }
+
     const response = await fetch(SHIPPO_WEBHOOKS_URL, {
       headers: {
         'Authorization': `ShippoToken ${SHIPPO_API_KEY}`
@@ -106,6 +132,16 @@ export async function listWebhooks() {
 // Function to delete a webhook
 export async function deleteWebhook(webhookId: string) {
   try {
+    // Check if webhook URL is defined
+    if (!SHIPPO_WEBHOOKS_URL) {
+      throw new Error('SHIPPO_WEBHOOKS_URL is not defined');
+    }
+    
+    // Check if API key is defined
+    if (!SHIPPO_API_KEY) {
+      throw new Error('SHIPPO_API_KEY is not defined');
+    }
+    
     const response = await fetch(`${SHIPPO_WEBHOOKS_URL}${webhookId}`, {
       method: 'DELETE',
       headers: {
@@ -121,6 +157,33 @@ export async function deleteWebhook(webhookId: string) {
     return true;
   } catch (error) {
     console.error('Error deleting webhook:', error);
+    throw error;
+  }
+}
+
+// Function to get tracking status
+export async function getTrackingStatus(trackingNumber: string, carrier: string = 'shippo') {
+  try {
+    // Check if API key is defined
+    if (!SHIPPO_API_KEY) {
+      throw new Error('SHIPPO_API_KEY is not defined');
+    }
+    
+    const response = await fetch(`${SHIPPO_TRACKING_URL}${carrier}/${trackingNumber}`, {
+      headers: {
+        'Authorization': `ShippoToken ${SHIPPO_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Tracking lookup failed: ${errorData.detail || response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting tracking status:', error);
     throw error;
   }
 }
@@ -249,26 +312,4 @@ async function handleBatchPurchased(event: any) {
   // Logic for when a batch is purchased
   
   return NextResponse.json({ status: 'success', event: 'batch_purchased' }, { status: 200 });
-}
-
-// Function to get tracking status
-export async function getTrackingStatus(trackingNumber: string, carrier: string = 'shippo') {
-  try {
-    const response = await fetch(`${SHIPPO_TRACKING_URL}${carrier}/${trackingNumber}`, {
-      headers: {
-        'Authorization': `ShippoToken ${SHIPPO_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Tracking lookup failed: ${errorData.detail || response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error getting tracking status:', error);
-    throw error;
-  }
 }

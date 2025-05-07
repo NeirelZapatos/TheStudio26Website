@@ -88,7 +88,18 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
       return;
     }
 
-    onSubmit(packageDetails);
+    const isLastPackage = currentPackageIndex === totalPackages - 1;
+
+    // Save current package details
+    handleTemporaryUpdate(packageDetails);
+    
+    if (isLastPackage) {
+      // Only submit for printing if it's the last package
+      onSubmit(packageDetails);
+    } else {
+      // Otherwise, just go to the next package
+      onNext();
+    }
   };
 
   const handlePackageDetailChange = (field: keyof PackageDetails, value: string) => {
@@ -107,12 +118,6 @@ const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
     // Store current values before navigating
     handleTemporaryUpdate(packageDetails);
     onPrevious();
-  };
-  
-  const handleNextPackage = () => {
-    // Store current values before navigating
-    handleTemporaryUpdate(packageDetails);
-    onNext();
   };
 
   if (!isOpen) return null;
