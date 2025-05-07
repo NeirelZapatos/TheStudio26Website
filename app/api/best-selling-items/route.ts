@@ -34,7 +34,8 @@ export async function GET(request:NextRequest) {
 
     try {
         await dbConnect();
-        const validCategories = ["Courses", "Jewelry", "Stones", "Supplies"];
+        //const validCategories = ["Courses", "Jewelry", "Stones", "Supplies"];
+        const validCategories = ["Courses", "Jewelry", "Stones", "Essentials"]; // Supplies --> Essentials update
 
         //Orders from Date Range
         const orders = await Order.find({
@@ -44,7 +45,7 @@ export async function GET(request:NextRequest) {
             }
         });
 
-        const itemSales: Record<string, { name: string; sales: number }> = {};
+        const itemSales: Record<string, { name: string; category: string; sales: number }> = {};
         const courseSales: Record<string, { name: string; sales: number }> = {};
 
         //Sales per Item Processing
@@ -54,8 +55,13 @@ export async function GET(request:NextRequest) {
 
                 if (!product) continue;
 
-                if (!itemSales[productId]) 
-                    itemSales[productId] = { name: product.name, sales: 0 };
+                if (!itemSales[productId]) {
+                    itemSales[productId] = {
+                      name: product.name,
+                      category: product.category,
+                      sales: 0
+                    };
+                  }                  
 
                 itemSales[productId].sales += 1;
             }
@@ -74,17 +80,17 @@ export async function GET(request:NextRequest) {
 
         //Sorting Items
         const sortedJewelry = Object.values(itemSales)
-            .filter(item => validCategories.includes("Jewelry"))
+            .filter(item => item.category === "Jewelry")
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
         const sortedStones = Object.values(itemSales)
-            .filter(item => validCategories.includes("Stones"))
+            .filter(item => item.category === "Stones")
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
-        const sortedSupplies = Object.values(itemSales)
-            .filter(item => validCategories.includes("Supplies"))
+        const sortedEssentials = Object.values(itemSales)
+            .filter(item => item.category === "Essentials")
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
@@ -96,7 +102,7 @@ export async function GET(request:NextRequest) {
             bestSellingItems: {
                 "Jewelry": sortedJewelry,
                 "Stones": sortedStones,
-                "Supplies": sortedSupplies,
+                "Essentials": sortedEssentials,
                 "Courses": sortedCourses
             }
         }, { status: 200 })

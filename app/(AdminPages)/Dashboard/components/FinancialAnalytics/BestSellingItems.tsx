@@ -16,7 +16,7 @@ interface BestSellingItemsProps {
   bestSellingItems: {
     Jewelry: BestSellingItem[];
     Stones: BestSellingItem[];
-    Supplies: BestSellingItem[];
+    Essentials: BestSellingItem[];
     Courses: BestSellingItem[];
   };
 }

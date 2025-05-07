@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     try {
         await dbConnect();
-        const validCategories = ['Courses', 'Jewelry', 'Stones', 'Supplies'];
+        const validCategories = ['Courses', 'Jewelry', 'Stones', 'Essentials'];
 
         const allCategoriesData = await Order.find({
             order_date: {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
         let totalRevenue = 0;
         let jewelryRevenue = 0;
-        let suppliesRevenue = 0;
+        let essentialsRevenue = 0;
         let stonesRevenue = 0;
         let courseRevenue = 0;
 
@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
                         stonesRevenue += Number(product.price);
                         totalRevenue += Number(product.price);
                         break;
-                    case "Supplies":
-                        suppliesRevenue += Number(product.price);
+                    case "Essentials":
+                        essentialsRevenue += Number(product.price);
                         totalRevenue += Number(product.price);
                         break;
                 }
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 
         categoryRevenue["Jewelry"] = { revenue: jewelryRevenue };
         categoryRevenue["Stones"] = { revenue: stonesRevenue };
-        categoryRevenue["Supplies"] = { revenue: suppliesRevenue };
+        categoryRevenue["Essentials"] = { revenue: essentialsRevenue };
         categoryRevenue["Courses"] = { revenue: courseRevenue };
 
         return NextResponse.json({

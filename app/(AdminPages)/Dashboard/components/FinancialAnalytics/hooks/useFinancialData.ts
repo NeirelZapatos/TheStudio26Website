@@ -35,7 +35,7 @@ interface BestSellingItem {
 interface BestSellingItems {
   Jewelry: BestSellingItem[];
   Stones: BestSellingItem[];
-  Supplies: BestSellingItem[];
+  Essentials: BestSellingItem[];
   Courses: BestSellingItem[]; 
 }
 
@@ -54,14 +54,14 @@ const useFinancialData = () => {
   const [bestSellingItems, setBestSellingItems] = useState<BestSellingItems>({
     Jewelry: [],
     Stones: [],
-    Supplies: [],
+    Essentials: [],
     Courses: [],
   });
 
    const [categorySales, setCategorySales] = useState<CategorySales>({
     Jewelry: {},
     Stones: {},
-    Supplies: {},
+    Essentials: {},
     Courses: {},
    })
 
@@ -140,7 +140,7 @@ const useFinancialData = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/category-sales-trend?startDate=${startDate}&endDate=${endDate}`);
+        const res = await fetch(`/api/category-sales-trend?startDate=${startDate}&endDate=${endDate}&timeFrame=${timeFrame}`);
         if (!res.ok) throw new Error("Failed to fetch category sales");
         const data = await res.json();
         setCategorySales(data.categorySales);
