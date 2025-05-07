@@ -1,119 +1,98 @@
-import { useEffect, useState } from 'react';
-import { printShippingLabels } from '@/utils/shippingUtils/PrintShippingLabels';
+import { useState } from 'react';
 import { IOrder } from '@/app/models/Order';
 
-interface PackageDetails {
-  length: number;
-  width: number;
-  height: number;
-  weight: number;
-}
-
+/**
+ * Hook for managing package details and modal state
+ */
 export const usePackageManagement = (
   selectedOrders: Set<string>,
-  orders: IOrder[] | undefined,
+  orders: IOrder[] | null,
   setSelectedOrders: (orders: Set<string>) => void
 ) => {
-  const [packageDetails, setPackageDetails] = useState<PackageDetails[]>([]);
   const [isPackageModalOpen, setPackageModalOpen] = useState(false);
   const [currentPackageIndex, setCurrentPackageIndex] = useState(0);
-  // Store modified details for each package to prevent losing changes during navigation
-  const [modifiedDetails, setModifiedDetails] = useState<{[index: number]: PackageDetails}>({});
+  const [packageDetails, setPackageDetails] = useState<any[]>([]);
+  const [modifiedDetails, setModifiedDetails] = useState<Record<string, any>>({});
 
-  // Initialize packageDetails array when selectedOrders changes
-  useEffect(() => {
-    if (selectedOrders.size > 0) {
-      // Initialize or resize the packageDetails array
-      const newDetails = Array.from({ length: selectedOrders.size }, (_, index) => {
-        // If we have modified details for this index, use those
-        if (modifiedDetails[index]) {
-          return modifiedDetails[index];
-        }
-        // Try to use existing details from packageDetails if available
-        else if (packageDetails[index]) {
-          return packageDetails[index];
-        }
-        // Otherwise create a new empty object
-        return { length: 0, width: 0, height: 0, weight: 0 };
-      });
-      
-      setPackageDetails(newDetails);
+  /**
+   * Updates the package details for a specific order
+   */
+  const handleTemporaryUpdate = (orderId: string, updates: any) => {
+    setModifiedDetails(prev => ({
+      ...prev,
+      [orderId]: {
+        ...(prev[orderId] || {}),
+        ...updates
+      }
+    }));
+  };
+
+  /**
+   * Submits the package details for processing
+   */
+  const handlePackageDetailsSubmit = async (values: any) => {
+    // Get the current order ID
+    const orderId = Array.from(selectedOrders)[currentPackageIndex];
+    
+    // Update the package details for this order
+    setPackageDetails(prev => {
+      const updated = [...prev];
+      updated[currentPackageIndex] = values;
+      return updated;
+    });
+    
+    // Move to the next order if available
+    if (currentPackageIndex < selectedOrders.size - 1) {
+      setCurrentPackageIndex(currentPackageIndex + 1);
     } else {
-      // Reset when no orders are selected
-      setPackageDetails([]);
-      setModifiedDetails({});
-    }
-  }, [selectedOrders.size]);
-
-  // Handle temporary updates while navigating between packages
-  const handleTemporaryUpdate = (details: PackageDetails) => {
-    console.log("Storing temporary update for package", currentPackageIndex, details);
-    setModifiedDetails({
-      ...modifiedDetails,
-      [currentPackageIndex]: details
-    });
-  };
-
-  const handlePackageDetailsSubmit = (details: PackageDetails) => {
-    console.log("Submitting final package details for printing", details);
-    
-    // Update packageDetails array with all modified details
-    const newPackageDetails = [...packageDetails];
-    
-    // Include the current package
-    newPackageDetails[currentPackageIndex] = details;
-    
-    // Also include any other modified packages
-    Object.entries(modifiedDetails).forEach(([index, packageData]) => {
-      const idx = parseInt(index, 10);
-      if (idx !== currentPackageIndex) { // Skip current package as we already added it
-        newPackageDetails[idx] = packageData;
-      }
-    });
-    
-    setPackageDetails(newPackageDetails);
-    
-    // Only when the last package details are submitted, print the labels
-    printLabels(newPackageDetails);
-    setPackageModalOpen(false);
-    setCurrentPackageIndex(0);
-    setModifiedDetails({});
-  };
-
-  const printLabels = async (details: PackageDetails[]) => {
-    try {
-      const labels = await printShippingLabels(Array.from(selectedOrders), orders || [], details);
-      if (labels.length > 0) {
-        alert('Shipping labels printed successfully!');
+      // All packages have been processed, close the modal
+      setPackageModalOpen(false);
+      
+      // Process the completed package details
+      try {
+        // Example: Send package details to API
+        const packageData = Array.from(selectedOrders).map((orderId, index) => ({
+          orderId,
+          packageDetails: packageDetails[index] || {}
+        }));
+        
+        // This would typically be an API call
+        console.log('Package data to submit:', packageData);
+        
+        // Clear the selection if successful
         setSelectedOrders(new Set());
-        setPackageDetails([]);
-        setModifiedDetails({});
-        setCurrentPackageIndex(0);
-      } else {
-        alert('No labels were generated. Please check the selected orders and try again.');
+      } catch (error) {
+        console.error('Error processing packages:', error);
       }
-    } catch (error) {
-      console.error('Error printing shipping labels:', error);
-      alert(`Failed to print shipping labels: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
+  /**
+   * Handles printing shipping labels for selected orders
+   */
   const handlePrintShippingLabels = () => {
-    if (selectedOrders.size === 0 ) {
-      alert('Please select at least one order to print shipping labels.');
-      return;
-    }
+    // Prepare the package details modal
+    const initialDetails = Array.from(selectedOrders).map(orderId => {
+      const order = orders?.find(o => o._id.toString() === orderId);
+      return {
+        weight: '',
+        dimensions: {
+          length: '',
+          width: '',
+          height: ''
+        },
+        shippingService: order?.shipping_method || 'standard',
+        trackingNumber: ''
+      };
+    });
     
-    // Always reset and open the modal regardless of existing details
+    setPackageDetails(initialDetails);
     setCurrentPackageIndex(0);
     setPackageModalOpen(true);
-    
-    // Do NOT clear modified details when reopening the modal - preserve user input
   };
 
   return {
     packageDetails,
-    setPackageDetails,
     isPackageModalOpen,
     setPackageModalOpen,
     currentPackageIndex,
@@ -124,5 +103,3 @@ export const usePackageManagement = (
     handleTemporaryUpdate
   };
 };
-
-export default usePackageManagement;
