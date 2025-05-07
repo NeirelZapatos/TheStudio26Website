@@ -44,10 +44,10 @@ function getBucketKey(date: Date, timeFrame: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  // const session = await getServerSession(authOptions);
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { searchParams } = new URL(request.url);
   const startDateString = searchParams.get("startDate");
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const categories = ["Courses", "Jewelry", "Stones", "Essentials"];
     const categorySales: Record<string, Record<string, number>> = {};
 
-    // Initialize buckets with 0 revenue
+    // Initialize every category and bucket with 0
     for (const category of categories) {
       categorySales[category] = {};
       for (const bucket of timeBuckets) {
@@ -77,9 +77,13 @@ export async function GET(request: NextRequest) {
     for (const order of orders) {
       const bucketKey = getBucketKey(new Date(order.order_date), timeFrame);
 
+      // Log for debugging
+      console.log("Order Date:", order.order_date, "Bucket:", bucketKey);
+
       for (const courseId of order.course_items) {
         const course = await Course.findById(courseId);
         if (!course) continue;
+        categorySales["Courses"][bucketKey] ??= 0;
         categorySales["Courses"][bucketKey] += Number(course.price);
       }
 
@@ -88,6 +92,7 @@ export async function GET(request: NextRequest) {
         if (!item) continue;
         const category = item.category;
         if (categorySales[category]) {
+          categorySales[category][bucketKey] ??= 0;
           categorySales[category][bucketKey] += Number(item.price);
         }
       }
