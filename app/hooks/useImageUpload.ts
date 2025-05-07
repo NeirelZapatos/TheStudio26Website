@@ -14,10 +14,10 @@ const useImageUpload = () => {
             const newFileNames = selectedFiles.map((file) => file.name.replace(/\s+/g, "-"));
 
             // Check if only image is placeholder
-            const placeholderOnly = 
+            const placeholderOnly =
                 previewUrls.length === 1 &&
                 previewUrls[0].includes("ProductPlaceholder");
-            
+
             if (placeholderOnly) {
                 setFiles([...selectedFiles]);
                 setPreviewUrls([...newPreviewUrls]);
@@ -37,8 +37,11 @@ const useImageUpload = () => {
         const uploadedImageUrls: string[] = [];
 
         for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             const formData = new FormData();
-            formData.append("file", files[i]);
+            formData.append("file", file);
+            const sanitizedFileName = file.name.replace(/\s+/g, "-").toLowerCase();
+            formData.append("fileName", sanitizedFileName);
             formData.append("folder", folder); // Upload to folder
             try {
                 const response = await fetch("/api/imageupload", {
