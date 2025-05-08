@@ -527,10 +527,18 @@ function ClassBookingPage() {
             )}
 
             {/* Back to Classes Button */}
-            <Link href="/course-catalog">
+            <Link href="/class-catalog">
               <div className="text-center mt-4">
                 <span className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer">
                   View All Classes
+                </span>
+              </div>
+            </Link>
+            {/* Cancellation policy Button */}
+            <Link href="/policies/cancellation-policy">
+              <div className="text-center mt-4">
+                <span className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer">
+                  Cancellation Policy
                 </span>
               </div>
             </Link>
