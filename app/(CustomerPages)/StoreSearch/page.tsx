@@ -53,7 +53,7 @@ export default function StorePage() {
                   <button
                     className={`btn btn-ghost font-medium text-left w-full block px-4 py-2 ${
                       filter.sort === option.value
-                        ? "bg-gray-100 text-gray-800"
+                        ? "bg-blue-300 text-gray-800"
                         : "text-gray-500 hover:bg-gray-100"
                     }`}
                     onClick={() => handleSortChange(option.value)}

@@ -10,6 +10,8 @@ const SORT_OPTIONS = [
   { name: "None", value: "none" },
   { name: "Price: Low to High", value: "price-asc" },
   { name: "Price: High to Low", value: "price-desc" },
+  { name: "Date: Earliest First", value: "date-asc" },
+  { name: "Date: Latest First", value: "date-desc" }
 ] as const;
 
 interface FilterState {
@@ -24,7 +26,7 @@ interface FilterState {
 
 export default function StorePage() {
   const [courseFilter, setCourseFilter] = useState<FilterState>({
-    sort: "none",
+    sort: "date-asc",
     class_category: "all",
     price: { isCustom: false, range: [0, 100000] as [number, number] },
     searchTerm: "",
@@ -67,7 +69,7 @@ export default function StorePage() {
                   <button
                     className={`btn btn-ghost font-medium text-left w-full block px-4 py-2 ${
                       courseFilter.sort === option.value
-                        ? "bg-gray-100 text-gray-800"
+                        ? "bg-blue-300 text-gray-800"
                         : "text-gray-500 hover:bg-gray-100"
                     }`}
                     onClick={() => {
