@@ -4,14 +4,14 @@ import React, { useState } from "react";
 import ProductGrid from "./Components/ProductGrid";
 import CourseFilters from "./Components/CourseFilters";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import SearchBar from "@/app/(AdminPages)/Dashboard/components/productList/SearchBar";
+import SearchBar from "../StoreSearch/Components/SearchBar";
 
 const SORT_OPTIONS = [
   { name: "None", value: "none" },
   { name: "Price: Low to High", value: "price-asc" },
   { name: "Price: High to Low", value: "price-desc" },
   { name: "Date: Earliest First", value: "date-asc" },
-  { name: "Date: Latest First", value: "date-desc" }
+  { name: "Date: Latest First", value: "date-desc" },
 ] as const;
 
 interface FilterState {
@@ -31,6 +31,13 @@ export default function StorePage() {
     price: { isCustom: false, range: [0, 100000] as [number, number] },
     searchTerm: "",
   });
+
+  const handleSearch = (searchTerm: string) => {
+    setCourseFilter((prev) => ({
+      ...prev,
+      searchTerm,
+    }));
+  };
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -102,12 +109,8 @@ export default function StorePage() {
           <div className="hidden sticky top-20 h-[calc(100vh-6rem)] overflow-y-auto lg:block">
             <div className="mb-3 mr-4">
               <SearchBar
-                onSearch={(searchTerm: string) => {
-                  setCourseFilter((prev) => ({
-                    ...prev,
-                    searchTerm,
-                  }));
-                }}
+                onSearch={handleSearch}
+                value={courseFilter.searchTerm}
                 className="mb-6"
                 placeholder="Search courses..."
               />
@@ -139,12 +142,8 @@ export default function StorePage() {
                 </div>
                 <div className="mb-4">
                   <SearchBar
-                    onSearch={(searchTerm: string) => {
-                      setCourseFilter((prev) => ({
-                        ...prev,
-                        searchTerm,
-                      }));
-                    }}
+                    onSearch={handleSearch}
+                    value={courseFilter.searchTerm}
                     className="mb-6"
                     placeholder="Search courses..."
                   />

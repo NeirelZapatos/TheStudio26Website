@@ -83,8 +83,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
 
     const searchTermLower = filter.searchTerm.toLowerCase().trim();
     const filtered = courses.filter((course) =>
-      course.name.toLowerCase().includes(searchTermLower) ||
-      (course.description && course.description.toLowerCase().includes(searchTermLower))
+      course.name.toLowerCase().includes(searchTermLower)
     );
 
     setFilteredCourses(filtered);
