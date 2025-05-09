@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { parseISO } from "date-fns";
 import ProductCard from "./ProductCard";
 import ProductSkeleton from "../../StoreSearch/Components/ProductSkeleton";
 import Pagination from "../../StoreSearch/Components/Pagination";
@@ -82,13 +83,29 @@ export default function ProductGrid({ filter }: ProductGridProps) {
 
     const searchTermLower = filter.searchTerm.toLowerCase().trim();
     const filtered = courses.filter((course) =>
-      course.name.toLowerCase().includes(searchTermLower) ||
-      (course.description && course.description.toLowerCase().includes(searchTermLower))
+      course.name.toLowerCase().includes(searchTermLower)
     );
 
     setFilteredCourses(filtered);
     setCurrentPage(1); // Reset to first page when search changes
   }, [courses, filter.searchTerm]);
+
+  const sortCourses = (courses: Course[]) => {
+    return [...courses].sort((a, b) => {
+      switch (filter.sort) {
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        case "date-asc":
+          return parseISO(a.date!).getTime() - parseISO(b.date!).getTime();
+        case "date-desc":
+          return parseISO(b.date!).getTime() - parseISO(a.date!).getTime();
+        default:
+          return 0;
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -115,9 +132,10 @@ export default function ProductGrid({ filter }: ProductGridProps) {
   }
 
   const coursesToDisplay = filteredCourses.length > 0 || filter.searchTerm ? filteredCourses : courses;
+  const sortedCourses = sortCourses(coursesToDisplay);
   const lastPostIndex = currentPage * postPerPage;
   const firstPostIndex = lastPostIndex - postPerPage;
-  const currentPosts = coursesToDisplay.slice(firstPostIndex, lastPostIndex);
+  const currentPosts = sortedCourses.slice(firstPostIndex, lastPostIndex);
 
   if (noSearchResults) {
     return (
@@ -134,7 +152,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
     );
   }
 
-  if (coursesToDisplay.length === 0) {
+  if (sortedCourses.length === 0) {
     return (
       <div className="lg:col-span-3 text-center py-8">
         <div className="p-8 bg-gray-50 rounded-lg">
@@ -164,7 +182,7 @@ export default function ProductGrid({ filter }: ProductGridProps) {
       </div>
       <div className="col-span-full flex justify-center mt-8">
         <Pagination
-          totalPosts={coursesToDisplay.length}
+          totalPosts={sortedCourses.length}
           postsPerPage={postPerPage}
           setCurrentPage={setCurrentPage}
           currentPage={currentPage}
