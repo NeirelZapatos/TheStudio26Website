@@ -7,31 +7,7 @@ import { useOrderManagement } from '../hooks/useOrderManagement';
 import { usePackageManagement } from '../hooks/usePackageManagement';
 import { useOrderActions } from '../hooks/useOrderActions'; 
 import { useOrderFilters } from '../hooks/useOrderFilters'; 
-
-/**
- * Resolves shipping method strings into standardized display values.
- * @param {string | undefined} method - The shipping method to normalize
- * @returns {string} - The standardized shipping method display value
- */
-const resolveShippingMethod = (method?: string): string => {
-  if (!method) return '';
-  const lower = method.toLowerCase();
-
-  // Convert all these cases to 'Delivery'
-  if (
-    lower === 'standard' ||
-    lower.startsWith('rate_') ||
-    lower.startsWith('shr_') ||  // Added for rate IDs like Shr_1RD8KuBoMBkg4rm6KNjLVXsz
-    lower.includes('ground') ||
-    lower.includes('usps') ||
-    lower.includes('advantage')
-  ) {
-    return 'Delivery';
-  }
-
-  // Keep 'Pickup' or anything else unchanged (but capitalized)
-  return method.charAt(0).toUpperCase() + method.slice(1);
-};
+import { IOrder } from "@/app/models/Order";
 
 const ManageOrders = () => {
   const {
@@ -52,12 +28,6 @@ const ManageOrders = () => {
     handleToggleDetails,
   } = useOrderManagement();
 
-  // Pre-process orders to standardize shipping method display values
-  //const processedOrders = (filteredOrders || []).map(order => ({
-  //  ...order,
- //   shipping_method_display: resolveShippingMethod(order.shipping_method)
-//  }));
-
   const {
     packageDetails,
     isPackageModalOpen,
@@ -77,7 +47,7 @@ const ManageOrders = () => {
     hasOnlyPickupOrders,
     hasOnlyDeliveryOrders,
     hasDeliveryOrders,
-    hasOnlyShippableOrders 
+    hasOnlyShippableOrders
   } = useOrderActions(orders || null, selectedOrders, mutate, setSelectedOrders);
   
   const { filterButtons } = useOrderFilters(orders || []);
@@ -105,7 +75,7 @@ const ManageOrders = () => {
         hasOnlyPickupOrders={hasOnlyPickupOrders}
         hasOnlyDeliveryOrders={hasOnlyDeliveryOrders}
         hasDeliveryOrders={hasDeliveryOrders}
-        hasOnlyShippableOrders={hasOnlyShippableOrders} 
+        hasOnlyShippableOrders={hasOnlyShippableOrders}
       />
       <div className="mb-4">
         <SearchBar
@@ -117,7 +87,7 @@ const ManageOrders = () => {
       </div>
 
       <OrderTables
-        filteredOrders={filteredOrders} 
+        filteredOrders={filteredOrders}
         selectedOrders={selectedOrders}
         expandedOrder={expandedOrder}
         handleSelectAll={handleSelectAll}

@@ -13,39 +13,58 @@ const isPendingOrder = (order: IOrder): boolean => {
   return status === 'pending';
 };
 
+/**
+ * Helper function to check if an order is a class booking
+ */
+const isClassBooking = (order: IOrder): boolean => {
+  return order.order_type === 'class_booking';
+};
+
+/**
+ * Helper function to check if an order is a pickup order by checking the delivery_method or is_pickup fields
+ */
+const isPickupOrder = (order: IOrder): boolean => {
+  // Check if it has the is_pickup flag
+  if (order.is_pickup === true) return true;
+  
+  // Check if it has delivery_method set to pickup
+  if (order.delivery_method && order.delivery_method.toLowerCase() === 'pickup') return true;
+  
+  // Otherwise, it's not a pickup order
+  return false;
+};
+
+/**
+ * Helper function to check if an order is a delivery order
+ */
+const isDeliveryOrder = (order: IOrder): boolean => {
+  // If it's a pickup order, it's not a delivery order
+  if (isPickupOrder(order)) return false;
+  
+  // If it's a class booking, it's not a delivery order
+  if (isClassBooking(order)) return false;
+  
+  // By process of elimination, it must be a delivery order
+  return true;
+};
+
+/**
+ * Helper function to check if an order is shippable (delivery + pending)
+ */
 const isShippableOrder = (order: IOrder): boolean => {
   // An order is shippable if it's a delivery order and it's in pending status
   return isDeliveryOrder(order) && isPendingOrder(order);
-};
-
-const isPickupOrder = (order: IOrder): boolean => {
-  if (!order.shipping_method) return false;
-  const method = order.shipping_method.toLowerCase();
-  return method === 'pickup';
-};
-
-const isDeliveryOrder = (order: IOrder): boolean => {
-  if (!order.shipping_method) return false;
-  const method = order.shipping_method.toLowerCase();
-  
-  return method === 'delivery' || 
-         method === 'standard' || 
-         method.startsWith('rate_') || 
-         method.startsWith('shr_') || 
-         method.includes('ground') || 
-         method.includes('usps') || 
-         method.includes('advantage');
 };
 
 interface OrderActionsReturn {
   handleMarkAsFulfilled: () => Promise<void>;
   handleExportReport: () => void;
   handlePrintReceipt: () => void;
-  handlePrintShippingLabels?: () => void; // Add this function
+  handlePrintShippingLabels: () => void;
   getTimeElapsed: (orderDate: string) => string;
   hasOnlyPickupOrders: () => boolean;
   hasDeliveryOrders: () => boolean;
-  hasOnlyDeliveryOrders: () => boolean; // Add this function to fix the error
+  hasOnlyDeliveryOrders: () => boolean;
   hasOnlyShippableOrders: () => boolean;
 }
 
@@ -77,7 +96,7 @@ export const useOrderActions = (
     return selectedOrdersData.some(order => isDeliveryOrder(order));
   };
 
-  // Check if all selected orders are delivery orders (fix for hasOnlyDeliveryOrders error)
+  // Check if all selected orders are delivery orders
   const hasOnlyDeliveryOrders = (): boolean => {
     if (!orders) return false;
     
@@ -140,7 +159,6 @@ export const useOrderActions = (
     }
   };
 
-  // Add the print shipping labels function that only works on delivery + pending orders
   const handlePrintShippingLabels = (): void => {
     if (!orders) return;
     
@@ -181,11 +199,11 @@ export const useOrderActions = (
     handleMarkAsFulfilled,
     handleExportReport,
     handlePrintReceipt,
-    handlePrintShippingLabels, // Add this to the return value
+    handlePrintShippingLabels,
     getTimeElapsed,
     hasOnlyPickupOrders,
     hasDeliveryOrders,
-    hasOnlyDeliveryOrders, // Add this to the return value to fix the error
+    hasOnlyDeliveryOrders,
     hasOnlyShippableOrders,
   };
 };

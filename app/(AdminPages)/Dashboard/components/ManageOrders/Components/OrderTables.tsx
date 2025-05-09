@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IOrder } from '@/app/models/Order';
-import {  
+import { 
+  Store, 
   Truck, 
   Calendar,
   Package,
@@ -9,38 +10,45 @@ import {
 } from 'lucide-react';
 
 /**
- * Resolves shipping method strings into standardized display values.
- * @param {string | undefined} method - The shipping method to normalize
- * @returns {string} - The standardized shipping method display value
+ * Determines if an order is a pickup order by checking the delivery_method or is_pickup fields
+ * @param {IOrder} order - The order to check
+ * @returns {boolean} - True if the order is considered pickup
  */
-const resolveShippingMethod = (method?: string): string => {
-  if (!method) return '';
-  const lower = method.toLowerCase();
-
-  // Convert all these cases to 'Delivery'
-  if (
-    lower === 'standard' ||
-    lower.startsWith('rate_') ||
-    lower.startsWith('shr_') ||  
-    lower.includes('ground') || 
-    lower.includes('usps') ||
-    lower.includes('advantage')
-  ) {
-    return 'Delivery';  
-  }
-
-  // Keep 'Pickup' or anything else unchanged (but capitalized)
-  return method.charAt(0).toUpperCase() + method.slice(1);
+const isPickupOrder = (order: IOrder): boolean => {
+  // Check if it has the is_pickup flag
+  if (order.is_pickup === true) return true;
+  
+  // Check if it has delivery_method set to pickup
+  if (order.delivery_method && order.delivery_method.toLowerCase() === 'pickup') return true;
+  
+  // Otherwise, it's not a pickup order
+  return false;
 };
 
 /**
- * Determines if a shipping method should be treated as pickup
+ * Resolves shipping method strings into standardized display values based on the order type.
+ * @param {IOrder} order - The complete order object
+ * @returns {string} - The standardized shipping method display value
  */
-const isPickupMethod = (method?: string): boolean => {
-  if (!method) return false;
-  return method.toLowerCase() === 'pickup';
+const resolveShippingMethod = (order: IOrder): string => {
+  // First check if it's a class booking
+  if (order.order_type === 'class_booking') {
+    return 'Class Booking';
+  }
+  
+  // Then check if it's a pickup order
+  if (isPickupOrder(order)) {
+    return 'Pickup';
+  }
+  
+  // Default to delivery
+  return 'Delivery';
 };
 
+/**
+ * Order Tables Component:
+ * Displays a table of orders with expandable details
+ */
 const OrderTables: React.FC<{
   filteredOrders: IOrder[];
   selectedOrders: Set<string>;
@@ -58,8 +66,8 @@ const OrderTables: React.FC<{
   handleSelectOrder,
   handleToggleDetails,
   getTimeElapsed,
+  searchQuery,
 }) => {
-
   const getCustomerName = (order: IOrder): string => {
     if (!order.customer) return 'N/A';
     const firstName = order.customer.first_name || '';
@@ -81,8 +89,6 @@ const OrderTables: React.FC<{
           <span className="text-sm text-gray-500">
             {selectedOrders.size} of {filteredOrders.length} orders selected
           </span>
-        </div>
-        <div className="flex gap-2">
         </div>
       </div>
       
@@ -120,8 +126,8 @@ const OrderTables: React.FC<{
           <tbody>
             {filteredOrders.map((order: IOrder) => {
               // Pre-process the shipping method for display
-              const displayShippingMethod = resolveShippingMethod(order.shipping_method);
-              const isPickup = isPickupMethod(order.shipping_method);
+              const displayShippingMethod = resolveShippingMethod(order);
+              const isPickup = isPickupOrder(order);
               
               return (
                 <React.Fragment key={order._id?.toString() ?? ''}>
@@ -154,7 +160,7 @@ const OrderTables: React.FC<{
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         {isPickup ? (
-                          <ShoppingBag className="w-4 h-4" />
+                          <Store className="w-4 h-4" />
                         ) : (
                           <Truck className="w-4 h-4" />
                         )}
@@ -168,10 +174,12 @@ const OrderTables: React.FC<{
                             ? 'bg-yellow-100 text-yellow-800'
                             : order.order_status === 'shipped'
                               ? 'bg-blue-100 text-blue-800'
-                              : 'bg-green-100 text-green-800'
+                              : order.order_status === 'fulfilled'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {order.order_status}
+                        {order.order_status || 'pending'}
                       </span>
                     </td>
                     <td className="p-4">
@@ -235,7 +243,7 @@ const OrderTables: React.FC<{
                                     <div key={index} className="bg-white p-4 rounded-lg shadow">
                                       <div className="flex flex-col sm:flex-row gap-4">
                                         <img
-                                          src={item.product?.image_url}
+                                          src={item.product?.image_url || '/api/placeholder/100/100'}
                                           alt={item.product?.name}
                                           className="w-32 h-32 object-cover rounded"
                                         />
@@ -264,6 +272,6 @@ const OrderTables: React.FC<{
       </div>
     </>
   );
-}
-  
-  export default OrderTables;
+};
+
+export default OrderTables;
