@@ -11,7 +11,7 @@ import { authOptions } from "../auth/[...nextauth]/options";
  - API Route: Fetch top 3 best-selling items per category
 */
 
-export async function GET(request:NextRequest) {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,7 +35,7 @@ export async function GET(request:NextRequest) {
     try {
         await dbConnect();
         //const validCategories = ["Courses", "Jewelry", "Stones", "Supplies"];
-        const validCategories = ["Courses", "Jewelry", "Stones", "Essentials"]; // Supplies --> Essentials update
+        const validCategories = ["Courses", "Jewelry", "Stones", "Essentials", "Miscellaneous"]; // Supplies --> Essentials update
 
         //Orders from Date Range
         const orders = await Order.find({
@@ -57,11 +57,11 @@ export async function GET(request:NextRequest) {
 
                 if (!itemSales[productId]) {
                     itemSales[productId] = {
-                      name: product.name,
-                      category: product.category,
-                      sales: 0
+                        name: product.name,
+                        category: product.category,
+                        sales: 0
                     };
-                  }                  
+                }
 
                 itemSales[productId].sales += 1;
             }
@@ -94,6 +94,11 @@ export async function GET(request:NextRequest) {
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
 
+        const sortedMiscellaneous = Object.values(itemSales)
+            .filter(item => item.category === "Miscellaneous")
+            .sort((a, b) => b.sales - a.sales)
+            .slice(0, 3);
+
         const sortedCourses = Object.values(courseSales)
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 3);
@@ -103,7 +108,8 @@ export async function GET(request:NextRequest) {
                 "Jewelry": sortedJewelry,
                 "Stones": sortedStones,
                 "Essentials": sortedEssentials,
-                "Courses": sortedCourses
+                "Courses": sortedCourses,
+                "Miscellaneous": sortedMiscellaneous
             }
         }, { status: 200 })
 

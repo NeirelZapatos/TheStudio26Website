@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const timeBuckets = generateTimeBuckets(timeFrame, startDate, endDate);
-    const categories = ["Courses", "Jewelry", "Stones", "Essentials"];
+    const categories = ["Courses", "Jewelry", "Stones", "Essentials", "Miscellaneous"];
     const categorySales: Record<string, Record<string, number>> = {};
 
     // Initialize every category and bucket with 0
