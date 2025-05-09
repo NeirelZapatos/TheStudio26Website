@@ -19,6 +19,7 @@ import ClassCatalogManager from "./components/ClassCatalogManager";
 import AddAdmin from "./components/AddAdmin";
 import RentalEquipmentSection from "./components/RentalEquipmentSection";
 import UpComingClasses from "./components/UpComingClasses"; // Added Upcoming Classes import
+import ReturnsAndTax from "./components/ReturnsAndTax";
 
 function DashboardPage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -62,6 +63,7 @@ function DashboardPage() {
             {activeSection === "newsletter" && <NewsletterSection />}
             {/* {activeSection === "financialAnalytics" && <FinancialAnalytics />} */}
             {/* {activeSection === "productList" && <ProductList />} */}
+            {activeSection === "returnsAndTax" && <ReturnsAndTax />}
             {activeSection === "coursesList" && <CoursesListSection />}
             {activeSection === "itemsList" && <ItemsListSection />}
             {activeSection === "labsList" && <LabsListSection />}
