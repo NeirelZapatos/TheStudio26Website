@@ -59,7 +59,10 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
             </div>
             <button
               className="text-green-500 hover:text-green-700"
-              onClick={() => setShowAlert(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                setShowAlert(false);
+              }}
             >
               <span className="text-xl">&times;</span>
             </button>
@@ -71,7 +74,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
       <div className="hidden md:block absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={(e) => {
-            e.preventDefault();  // prevents navigation when button is clicked
+            e.preventDefault(); // prevents navigation when button is clicked
             handleAddToCart();
           }}
           className="bg-white bg-opacity-90 text-gray-700 p-2 rounded-full shadow-md hover:bg-blue-500 hover:text-black transition-colors duration-200"

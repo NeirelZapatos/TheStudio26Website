@@ -136,12 +136,12 @@ const Navbar = () => {
           </div>
 
           {/* Left side of logo on navbar */}
-          <div className="hidden md:flex items-center space-x-9 ml-4">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-9 ml-4">
             {leftNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-extralight text-black hover:text-red-500 transition-all duration-300 py-2 group"
+                className="relative font-extralight text-black hover:text-red-500 transition-all duration-300 py-2 group text-sm lg:text-base"
               >
                 {link.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 transition-all duration-300 group-hover:w-full"></span>
@@ -153,19 +153,23 @@ const Navbar = () => {
           <div className="flex justify-center mx-auto">
             <Link
               href="/"
-              className={`md:mr-8 font-special-gothic font-bold text-red-700 transition-all duration-300 text-center ${scrolled ? "text-xl md:text-2xl" : "text-xl md:text-3xl"}`}
+              className={`md:mr-4 lg:mr-8 font-special-gothic font-bold text-red-700 transition-all duration-300 text-center ${
+                scrolled
+                  ? "text-lg md:text-xl lg:text-2xl"
+                  : "text-xl md:text-2xl lg:text-3xl"
+              }`}
             >
               THE STUDIO 26
             </Link>
           </div>
 
           {/* Right side of logo on navbar */}
-          <div className="hidden md:flex items-center space-x-9 mr-8">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-9 mr-4 lg:mr-8">
             {rightNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-extralight text-black hover:text-red-500 transition-all py-2 group"
+                className="relative font-extralight text-black hover:text-red-500 transition-all py-2 group text-sm lg:text-base"
               >
                 {link.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 transition-all duration-300 group-hover:w-full"></span>
@@ -174,7 +178,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile cart button */}
-          <div className="flex items-center gap-4 lg:hidden">
+          <div className="flex items-center gap-4 md:hidden">
             <button
               onClick={toggleCart}
               className="text-black hover:text-red-500 transition-colors relative"
