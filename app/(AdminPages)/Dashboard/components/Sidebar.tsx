@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             className="flex items-center w-full text-left p-3 rounded-lg hover:bg-gray-600"
           >
             <i className="fa-solid fa-dollar-sign text-gray-300 w-6"></i>
-            <span className="ml-2 font-semibold">Getting Paid</span>
+            <span className="ml-2 font-semibold">Finances</span>
             <i className={`fa-solid fa-chevron-${showGettingPaid ? 'down' : 'right'} ml-auto text-gray-400`}></i>
           </button>
           {showGettingPaid && (
@@ -60,14 +60,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <span className="ml-2 font-semibold">Financial Analytics</span>
               </button>
               <button
-                onClick={() => setActiveSection("finances")}
-                className={`flex items-center w-full text-left p-2 rounded-lg ${activeSection === "finances"
+                onClick={() => setActiveSection("returnsAndTax")}
+                className={`flex items-center w-full text-left p-2 rounded-lg ${activeSection === "returnsAndTax"
                   ? "bg-gray-700"
                   : "hover:bg-gray-600"
                   }`}
               >
                 <i className="fa-solid fa-wallet text-gray-300 w-5"></i>
-                <span className="ml-2 font-semibold">Finances</span>
+                <span className="ml-2 font-semibold">Returns and Tax Info</span>
               </button>
             </div>
           )}

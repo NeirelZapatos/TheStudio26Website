@@ -37,6 +37,7 @@ interface BestSellingItems {
   Stones: BestSellingItem[];
   Essentials: BestSellingItem[];
   Courses: BestSellingItem[]; 
+  Miscellaneous: BestSellingItem[];
 }
 
 interface CategorySales {
@@ -56,6 +57,7 @@ const useFinancialData = () => {
     Stones: [],
     Essentials: [],
     Courses: [],
+    Miscellaneous: [],
   });
 
    const [categorySales, setCategorySales] = useState<CategorySales>({
@@ -63,6 +65,7 @@ const useFinancialData = () => {
     Stones: {},
     Essentials: {},
     Courses: {},
+    Miscellaneous: {},
    })
 
   const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");

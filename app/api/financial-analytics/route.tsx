@@ -63,8 +63,9 @@ export async function GET(request: NextRequest) {
 
     let totalRevenue = 0;
     let jewelryRevenue = 0;
-    let suppliesRevenue = 0;
+    let essentialsRevenue = 0;
     let stonesRevenue = 0;
+    let miscellaneousRevenue = 0;
     let courseRevenue = 0;
     for (const catData of allCategoriesData) {
       totalRevenue += catData.total_amount;
@@ -76,8 +77,10 @@ export async function GET(request: NextRequest) {
           jewelryRevenue += product.price;
         } else if (product.category === "Stones") {
           stonesRevenue += product.price;
-        } else if (product.category === "Supplies") {
-          suppliesRevenue += product.price;
+        } else if (product.category === "Essentials") {
+          essentialsRevenue += product.price;
+        } else if (product.category === "Miscellaneous") {
+          miscellaneousRevenue += product.price;
         }
       }
       for (let i = 0; i < catData.course_items.length; i++) {
@@ -90,9 +93,9 @@ export async function GET(request: NextRequest) {
 
     categoryRevenue["Jewelry"] = { revenue: jewelryRevenue };
     categoryRevenue["Stones"] = { revenue: stonesRevenue };
-    categoryRevenue["Supplies"] = { revenue: suppliesRevenue };
+    categoryRevenue["Essentials"] = { revenue: essentialsRevenue };
+    categoryRevenue["Miscellaneous"] = { revenue: miscellaneousRevenue };
     categoryRevenue["Courses"] = { revenue: courseRevenue };
-
     return NextResponse.json({
       revenue: totalRevenue,
       categoryRevenue,

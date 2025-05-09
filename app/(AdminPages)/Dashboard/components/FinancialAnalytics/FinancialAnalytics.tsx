@@ -110,6 +110,7 @@ const FinancialAnalytics: React.FC = () => {
           <CategorySalesChart category="Jewelry" salesData={categorySales.Jewelry} timeFrame={timeFrame}/>
           <CategorySalesChart category="Stones" salesData={categorySales.Stones} timeFrame={timeFrame}/>
           <CategorySalesChart category="Essentials" salesData={categorySales.Essentials} timeFrame={timeFrame}/>
+          <CategorySalesChart category="Miscellaneous" salesData={categorySales.Miscellaneous} timeFrame={timeFrame}/>
           <CategorySalesChart category="Courses" salesData={categorySales.Courses} timeFrame={timeFrame}/>
         </div>
         </>

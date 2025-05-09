@@ -48,7 +48,7 @@ const CategorySalesChart: React.FC<CategorySalesChartProps> = ({ category, sales
   const labelsToUse = generatePlaceholderLabels(timeFrame);
   const valuesToUse = labelsToUse.map((label) => safeSalesData[label] || 0);
 
-  const isUpwardTrend = valuesToUse.length > 1 && valuesToUse.at(-1)! >= valuesToUse[0];
+  const isUpwardTrend = valuesToUse.length > 1 && valuesToUse.at(-1)! > valuesToUse[0];
   const trendColor = isUpwardTrend ? "rgba(34,197,94,1)" : "rgba(239,68,68,1)";
 
   const chartData = {
