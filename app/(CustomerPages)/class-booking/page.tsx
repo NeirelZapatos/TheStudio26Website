@@ -52,6 +52,16 @@ function ClassBookingPage() {
 
   const [isEmailValid, setIsEmailValid] = useState(true);
 
+  const [validationErrors, setValidationErrors] = useState<{
+    firstName: boolean;
+    lastName: boolean;
+    contact: boolean;
+  }>({
+    firstName: false,
+    lastName: false,
+    contact: false,
+  });
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setContactInfo(prev => ({
@@ -184,15 +194,33 @@ function ClassBookingPage() {
     setIsProcessing(true);
     setError(null);
 
+    // Reset validation errors
+    setValidationErrors({
+      firstName: false,
+      lastName: false,
+      contact: false,
+    });
+
+    let hasErrors = false;
+
     // Validate form
-    if (!contactInfo.firstName || !contactInfo.lastName) {
-      setError("Please provide your full name");
-      setIsProcessing(false);
-      return;
+    if (!contactInfo.firstName) {
+      setValidationErrors(prev => ({ ...prev, firstName: true }));
+      hasErrors = true;
+    }
+
+    if (!contactInfo.lastName) {
+      setValidationErrors(prev => ({ ...prev, lastName: true }));
+      hasErrors = true;
     }
 
     if (!contactInfo.email && !contactInfo.phone) {
-      setError("Please provide either email or phone number");
+      setValidationErrors(prev => ({ ...prev, contact: true }));
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setError("Please fill in all required fields");
       setIsProcessing(false);
       return;
     }
@@ -356,11 +384,16 @@ function ClassBookingPage() {
                       type="text"
                       id="firstName"
                       name="firstName"
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className={`w-full p-2 border ${
+                        validationErrors.firstName ? 'border-red-500' : 'border-gray-300'
+                      } rounded-md`}
                       value={contactInfo.firstName}
                       onChange={handleInfoChange}
                       required
                     />
+                    {validationErrors.firstName && (
+                      <p className="text-red-500 text-xs mt-1">First name is required</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -370,11 +403,16 @@ function ClassBookingPage() {
                       type="text"
                       id="lastName"
                       name="lastName"
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className={`w-full p-2 border ${
+                        validationErrors.lastName ? 'border-red-500' : 'border-gray-300'
+                      } rounded-md`}
                       value={contactInfo.lastName}
                       onChange={handleInfoChange}
                       required
                     />
+                    {validationErrors.lastName && (
+                      <p className="text-red-500 text-xs mt-1">Last name is required</p>
+                    )}
                   </div>
                 </div>
 
@@ -386,7 +424,11 @@ function ClassBookingPage() {
                     type="email"
                     id="email"
                     name="email"
-                    className={`w-full p-2 border ${!isEmailValid && contactInfo.email ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                    className={`w-full p-2 border ${
+                      !isEmailValid && contactInfo.email ? 'border-red-500' : 
+                      validationErrors.contact && !contactInfo.phone ? 'border-red-500' : 
+                      'border-gray-300'
+                    } rounded-md`}
                     value={contactInfo.email}
                     onChange={handleEmailChange}
                     onBlur={validateEmail}
@@ -404,7 +446,9 @@ function ClassBookingPage() {
                     type="tel"
                     id="phone"
                     name="phone"
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className={`w-full p-2 border ${
+                      validationErrors.contact && !contactInfo.email ? 'border-red-500' : 'border-gray-300'
+                    } rounded-md`}
                     value={contactInfo.phone}
                     onChange={handleInfoChange}
                     maxLength={14}
